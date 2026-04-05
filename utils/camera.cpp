@@ -84,7 +84,7 @@ Ponto* Camera::projetar(Ponto3* pontos, int quantidadePontos){
     for( int i = 0 ; i < quantidadePontos ; i++ ){
         y1 = ( ( dist_f*-1 / (pontos[i].z-camera->posicao.z) ) * (pontos[i].x-camera->posicao.x) );
 	    y2 = ( ( dist_f*-1 / (pontos[i].z-camera->posicao.z) ) * (pontos[i].y-camera->posicao.y) );
-        projecaoTemp[i] = Ponto(y1,y2);
+        projecaoTemp[i] = Ponto(y1,y2-240);
     }
 	return projecaoTemp;
 }

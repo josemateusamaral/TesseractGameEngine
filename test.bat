@@ -1,0 +1,13 @@
+@echo off
+
+echo Limpando executavel...
+del teste.exe 2>nul
+
+echo Gerando build...
+cmake -G "MinGW Makefiles" ..
+
+echo Compilando...
+mingw32-make
+
+echo Executando...
+teste.exe
