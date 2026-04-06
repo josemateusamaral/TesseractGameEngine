@@ -69,7 +69,7 @@ int main(int argc, char *args[])
 		};
 
 		// modelo3d do sol
-		Esfera sol{Ponto3(0, -10, 50), 2, 60};
+		Esfera sol{Ponto3(8, -16, 60), 2, 60};
 		sol.girar(10, 10, 10);
 		sol.renderType = 2;
 		sol.corR = 255;
@@ -206,16 +206,16 @@ int main(int argc, char *args[])
 			////////////////////////////////////q
 
 			// testes de desenho das formas
-			cilindro.girar(1, 1, 1);
-			cilindro.desenhar(window);
-			cone.girar(1, 1, 1);
-			cone.desenhar(window);
-			cuboX.girar(5, 0, 0);
-			cuboX.desenhar(window);
-			cuboY.girar(0, 5, 0);
-			cuboY.desenhar(window);
-			cuboZ.girar(0, 0, 5);
-			cuboZ.desenhar(window);
+			//cilindro.girar(1, 1, 1);
+			//cilindro.desenhar(window);
+			//cone.girar(1, 1, 1);
+			//cone.desenhar(window);
+			//cuboX.girar(5, 0, 0);
+			//cuboX.desenhar(window);
+			//cuboY.girar(0, 5, 0);
+			//cuboY.desenhar(window);
+			//cuboZ.girar(0, 0, 5);
+			//cuboZ.desenhar(window);
 
 			// entradas do teclado
 			while (SDL_PollEvent(&ev) != 0)
