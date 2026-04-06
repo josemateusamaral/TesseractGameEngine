@@ -69,7 +69,7 @@ int main(int argc, char *args[])
 		};
 
 		// modelo3d do sol
-		Esfera sol{Ponto3(8, -16, 60), 2, 60};
+		Esfera sol{Ponto3(7, -16, 60), 2, 60};
 		sol.girar(10, 10, 10);
 		sol.renderType = 2;
 		sol.corR = 255;
