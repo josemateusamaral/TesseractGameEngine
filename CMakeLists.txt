@@ -9,6 +9,7 @@ find_package(SDL2 REQUIRED)
 
 include_directories(
     ${SDL2_INCLUDE_DIRS}
+    ${ASSIMP_INCLUDE_DIRS}
     utils
     pontos
     formas
@@ -25,6 +26,7 @@ set(SOURCES
     utils/janela.cpp
     utils/camera.cpp
     utils/Vec3.cpp
+    utils/model.cpp
 
     pontos/ponto.cpp
     pontos/ponto3.cpp
@@ -39,5 +41,8 @@ set(SOURCES
 # Criar executável
 add_executable(teste ${SOURCES})
 
+include_directories("C:/assimp/include")
+link_directories("C:/assimp/lib")
+
 # Linkar SDL2
-target_link_libraries(teste ${SDL2_LIBRARIES})
+target_link_libraries(teste ${SDL2_LIBRARIES} assimp)

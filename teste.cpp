@@ -10,6 +10,7 @@
 #include "formas/cilindro/cilindro.h"
 #include "formas/forma.h"
 #include "utils/Vec3.h"
+#include "utils/model.h"
 #include <iostream>
 #include "utils/camera.h"
 
@@ -69,13 +70,15 @@ int main(int argc, char *args[])
 		};
 
 		// modelo3d do sol
-		Esfera sol{Ponto3(0, -10, 50), 2, 60};
+		Model sol{Ponto3(0, -10, 50), 2, 60};
 		sol.girar(10, 10, 10);
 		sol.renderType = 2;
 		sol.corR = 255;
 		sol.corG = 255;
 		sol.corB = 0;
 		sol.comSombra = false;
+
+		sol.loadModel("samples/planets/earth.obj");
 
 		// modelo 3d de um cubo verde que pode ser interpretado como um satelite
 		Cubo cuboSatelite{Ponto3(5, 5, 10), 1};
