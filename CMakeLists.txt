@@ -27,6 +27,7 @@ set(SOURCES
     utils/camera.cpp
     utils/Vec3.cpp
     utils/model.cpp
+    utils/polygon.cpp
 
     pontos/ponto.cpp
     pontos/ponto3.cpp
@@ -40,9 +41,6 @@ set(SOURCES
 
 # Criar executável
 add_executable(teste ${SOURCES})
-
-include_directories("C:/assimp/include")
-link_directories("C:/assimp/lib")
 
 # Linkar SDL2
 target_link_libraries(teste ${SDL2_LIBRARIES} assimp)

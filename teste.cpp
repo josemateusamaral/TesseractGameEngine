@@ -45,12 +45,6 @@ int main(int argc, char *args[])
 		// Create window
 		Window window = Window(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-		// carregar textura do fundo
-		SDL_Texture *textura;
-		SDL_Surface *Loading_Surf;
-		Loading_Surf = SDL_LoadBMP("fundo.bmp");
-		textura = SDL_CreateTextureFromSurface(window.renderer, Loading_Surf);
-
 		// criar objetos para testes de renderizacao
 		Cubo cuboX{Ponto3(5, 5, 10), 1.0};
 		Cubo cuboZ{Ponto3(0, 5, 10), 1.0};
@@ -69,7 +63,7 @@ int main(int argc, char *args[])
 		};
 
 		// modelo3d do sol
-		Model sol{Ponto3(0, -10, 50), 2, 60};
+		Model sol{Ponto3(8, -10, 60), 2, 60};
 		sol.girar(10, 10, 10);
 		sol.renderType = 2;
 		sol.corR = 255;
@@ -77,7 +71,7 @@ int main(int argc, char *args[])
 		sol.corB = 0;
 		sol.comSombra = false;
 
-		sol.loadModel("samples/planets/earth.obj");
+		//sol.loadModel("samples/planets/earth.obj");
 
 		// modelo 3d de um cubo verde que pode ser interpretado como um satelite
 		Cubo cuboSatelite{Ponto3(5, 5, 10), 1};
@@ -153,12 +147,6 @@ int main(int argc, char *args[])
 
 			window.limpar();
 
-			///////////////////////////////////////////////////
-			// DEMO PLANETARIO - INICIO
-
-			// colocar fundo de estrelas
-			SDL_RenderCopy(window.renderer, textura, NULL, NULL);
-
 			// girar cubo do satelite
 			cuboSatelite.girar(1, 1, 1);
 
@@ -183,11 +171,12 @@ int main(int argc, char *args[])
 				planetas[i].modelo->iluminacao = Vec3(b, a);
 			}
 
-			// ordenar a lista de planetas para começar renderizando de traz para frente
+			// ordenar a lista de planetas para começar renderizando de trás para frente
 			Forma *swap;
 			for (int j = 0; j < 5; j++)
 			{
-				for (int k = 0; k < 5; k++)
+				// Limite alterado para garantir que k+1 nunca passe de 4
+				for (int k = 0; k < 4 - j; k++) 
 				{
 					if (render[k]->posicao.z < render[k + 1]->posicao.z)
 					{
@@ -203,21 +192,6 @@ int main(int argc, char *args[])
 			{
 				render[l]->desenhar(window);
 			}
-
-			// DEMO PLANETARIO - FIM
-			////////////////////////////////////q
-
-			// testes de desenho das formas
-			//cilindro.girar(1, 1, 1);
-			//cilindro.desenhar(window);
-			//cone.girar(1, 1, 1);
-			//cone.desenhar(window);
-			//cuboX.girar(5, 0, 0);
-			//cuboX.desenhar(window);
-			//cuboY.girar(0, 5, 0);
-			//cuboY.desenhar(window);
-			//cuboZ.girar(0, 0, 5);
-			//cuboZ.desenhar(window);
 
 			// entradas do teclado
 			while (SDL_PollEvent(&ev) != 0)

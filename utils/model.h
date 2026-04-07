@@ -3,8 +3,9 @@
 #include <iostream>
 #include "../../pontos/ponto3.h"
 #include "../../formas/forma.h"
-#include "../../utils/janela.h"
-#include "../../utils/Vec3.h"
+#include "janela.h"
+#include "Vec3.h"
+#include "polygon.h"
 
 using namespace std;
 
@@ -13,6 +14,9 @@ class Model : virtual public Forma
     private:
         int LOD;
         int faixas;
+
+        int polygonCount;
+        Ponto3* polygons;
         
     public:
         
