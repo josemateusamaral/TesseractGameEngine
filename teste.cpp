@@ -70,7 +70,7 @@ int main(int argc, char *args[])
 		sol.corG = 255;
 		sol.corB = 0;
 		sol.comSombra = false;
-		//sol.loadModel("samples/planets/esfere.obj");
+		sol.loadModel("samples/planets/esfere.obj");
 
 		// modelo 3d de um cubo verde que pode ser interpretado como um satelite
 		Cubo cuboSatelite{Ponto3(5, 5, 10), 1};

@@ -40,43 +40,41 @@ void Model::calcular_pontos_base(){
 
 void Model::loadModel(string path)
 {
-    // ler o arquivo
+
+    printf("chegando aqui 1...\n"); // <-- Adicionado \n
+
+    // Ler o arquivo
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(path,aiProcess_Triangulate | aiProcess_FlipUVs);
+    const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-        std::cout << "Erro: " << importer.GetErrorString() << std::endl;
+        std::cout << "Erro do Assimp: " << importer.GetErrorString() << std::endl;
         return;
     }
 
-     // Pegando a primeira mesh
-    aiMesh* mesh = scene->mMeshes[0];
-
-    // Carregar Vértices
-    this->quantidadePontos = mesh->mNumVertices;
-    if (pontos_base) free(pontos_base); 
-    pontos_base = (Ponto3*)malloc(sizeof(Ponto3) * quantidadePontos);
-    for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
-        pontos_base[i] = Ponto3(mesh->mVertices[i].x * tamanho, 
-                                mesh->mVertices[i].y * tamanho, 
-                                mesh->mVertices[i].z * tamanho);
+    // verificar se o modelo tem mesh
+    if (scene->mNumMeshes == 0) {
+        std::cout << "Erro: O modelo carregou, mas nao contem nenhuma mesh!" << std::endl;
+        return;
     }
 
-    //Carregar Polígonos
+    // Pegando a primeira mesh
+    aiMesh* mesh = scene->mMeshes[0];
+    this->quantidadePontos = mesh->mNumVertices;
+
+    pontos_base = new Ponto3[quantidadePontos]; 
+
+    // guardar todos os vertices em um array
+    for (unsigned int i = 0; i < mesh->mNumVertices; i++) {        
+        pontos_base[i] = Ponto3(
+            mesh->mVertices[i].x * tamanho, 
+            mesh->mVertices[i].y * tamanho, 
+            mesh->mVertices[i].z * tamanho
+        );
+    }
+    
+    // Carregar Polígonos
     this->polygonCount = mesh->mNumFaces;
 
-    //calcular_pontos_3D();
-    
-    // Alocando memória para o array de objetos Polygon
-    /*if (polygons) delete[] polygons; // Se já existia algo, limpa antes
-    polygons = new Ponto3[polygonCount]; 
-
-    for (unsigned int j = 0; j < mesh->mNumFaces; j++) {
-        aiFace face = mesh->mFaces[j];
-        
-        // Aqui assumo que seu Polygon guarde 3 índices (matriz 1x3)
-        // Se a sua classe Polygon tiver um método 'setIndices' ou similar:
-        polygons[j] = Ponto3(face.mIndices[0], face.mIndices[1], face.mIndices[2]);
-    }*/
 }
 
 /**
@@ -86,6 +84,7 @@ void Model::loadModel(string path)
  */
 void Model::desenhar(Window &window)
 {
+
     // calcular pontos do R2 calculando primeiramente os pontos do R3
     calcular_pontos_3D();
     projecao = camera->projetar(pontos,quantidadePontos);
