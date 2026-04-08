@@ -23,9 +23,7 @@ Model::Model(Ponto3 posicao, double tamanho, int lod)
     iluminacao = Vec3(1,1,0);
     faixas = LOD / 2 + 1;
     quantidadePontos = LOD * faixas;
-    calcular_pontos_base();
-    calcular_pontos_3D();
-
+    
 }
 
 Model::Model(Ponto3 posicao,int lod)
@@ -34,8 +32,9 @@ Model::Model(Ponto3 posicao,int lod)
     iluminacao = Vec3(1,1,0);
     faixas = LOD / 2 + 1;
     quantidadePontos = LOD * faixas;
-    calcular_pontos_base();
-    calcular_pontos_3D();
+}
+
+void Model::calcular_pontos_base(){
 
 }
 
@@ -64,6 +63,8 @@ void Model::loadModel(string path)
 
     //Carregar Polígonos
     this->polygonCount = mesh->mNumFaces;
+
+    //calcular_pontos_3D();
     
     // Alocando memória para o array de objetos Polygon
     /*if (polygons) delete[] polygons; // Se já existia algo, limpa antes
@@ -76,62 +77,6 @@ void Model::loadModel(string path)
         // Se a sua classe Polygon tiver um método 'setIndices' ou similar:
         polygons[j] = Ponto3(face.mIndices[0], face.mIndices[1], face.mIndices[2]);
     }*/
-}
-
-/**
- * @brief Calcular os pontos de uma esfera no R3
- * 
- * @param posicao posição do centro no R3
- * @param tamanho Raio da esfera
- * @param lod Quantidade de pontos, para distorção
- *
- * @authors Jose Mateus Amaral, Monique
- */
-void Model::calcular_pontos_base()
-{
-    // lista tempontoraria de pontos
-    Ponto3* pontosTemp = (Ponto3*)malloc(sizeof(Ponto3) * quantidadePontos);
-
-    /* lista auxiliar de pontos que armazenara um circulo que ira ser rotacionado 
-    e a cada rotação cada um dos pontos desta lista sera copiado para a lista tempe */
-    Ponto3* paraCalculo = (Ponto3*)malloc(sizeof(Ponto3) * LOD);
-
-    /* raio  do circulo que será rotacionado */
-    int raio = tamanho;
-    int p = 0;
-    double x,y,z;
-    int ps = 0;
-
-    // quantidade de angulo que o circulo será rotacionado
-    int rotacao = 360 / LOD;
-    double seno = sin( rotacao * M_PI / 180 );
-    double cosseno = cos( rotacao * M_PI / 180 );
-
-    // criar os pontos do circulo e armazenalos na lista
-    for( int i = 0 ; i < 360 ; i += 360 / LOD,p++){
-        x = raio * cos( i * M_PI / 180 );
-        y = raio * sin( i * M_PI / 180 );
-        Ponto3 ponto{x,y,0};
-        paraCalculo[p] = ponto;
-    }
-
-    /* rotacionar o circulo e a cada rotação, copiar todos os pontos da
-    lista do circulo para a lista temp que contem os pontos finais da esfera */
-    for( int a = 0; a < faixas; a++){
-        for( int j = 0 ; j < p ; j++, ps++ ){
-            x = paraCalculo[j].x;
-            z = paraCalculo[j].z;
-
-            // rodar o ponto no plano xOz
-            paraCalculo[j].x = x * cosseno - z * seno;
-            paraCalculo[j].z = z * cosseno + x * seno;
-
-            // copiar o ponto da lista do circulo para a lista final
-            pontosTemp[ps] = Ponto3(paraCalculo[j].x,paraCalculo[j].y,paraCalculo[j].z);
-        }
-    }
-
-    pontos_base = pontosTemp;    
 }
 
 /**
@@ -237,66 +182,6 @@ void Model::desenhar(Window &window)
         }
     }
 }
-
-/**
- * @brief configurar o nivel de detalhe da esfera
- * 
- * @param lod nivel de detalhe
- *
- * @authors Jose Mateus Amaral
- */
-void Model::setLOD(int lod){
-
-    /* aumentar o nivel de detalhe de lod == 1.
-    O nivel maximo de lod para uma esfera é 360 oque significa
-    que a esfera é composta por 360 faixas*/
-    if(lod){
-        if(LOD<=360){
-            while(true){
-                LOD++;
-                if(360%LOD==0){
-                    break;
-                }
-            }
-        }
-    }
-
-    /* diminuir nivel de detalher se lod == 0.
-    O nivel minimo de lod para uma esfera é 6, oque signicar 
-    que ela é composta por 6 faixas*/
-    else{
-        if(LOD>=6){
-            while(true){
-                LOD--;
-                if(360%LOD==0){
-                    break;
-                }
-            }        
-        }
-    }
-
-    // recriar os pontos da esfera usando o novo lod
-    faixas = LOD / 2 + 1;
-    quantidadePontos = LOD * faixas;    
-    calcular_pontos_base();
-
-    // configurar o angulo da nova esfera para ter o mesmo angulo da antiga
-    Ponto3 anguloAntigo = Ponto3(angulo.x,angulo.y,angulo.z);
-    angulo.x = 0;
-    angulo.y = 0;
-    angulo.z = 0;
-    girar(anguloAntigo.x,anguloAntigo.y,anguloAntigo.z);
-
-    // calcular os pontos 3d e 2d da esfera
-    calcular_pontos_3D();
-    projecao = camera->projetar(pontos,quantidadePontos);
-    
-}
-int Model::getLOD(){
-    return LOD;
-}
-
-
 
 ostream & operator<< (ostream &out, const Model &p)
 {
