@@ -45,13 +45,6 @@ int main(int argc, char *args[])
 		// Create window
 		Window window = Window(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-		// criar objetos para testes de renderizacao
-		Cubo cuboX{Ponto3(5, 5, 10), 1.0};
-		Cubo cuboZ{Ponto3(0, 5, 10), 1.0};
-		Cubo cuboY{Ponto3(-5, 5, 10), 1.0};
-		Cone cone{Ponto3(5, -1, 10), 20, 1};
-		Cilindro cilindro{Ponto3(-5, -1, 10), 20, 3};
-
 		// struc que guarda os dados do planeta como: modelo3d, velocidade, tamanho da orbita
 		struct Planeta
 		{
@@ -63,14 +56,14 @@ int main(int argc, char *args[])
 		};
 
 		// modelo3d do sol
-		Model sol{Ponto3(8, -10, 60), 1, 1};
+		Model sol{Ponto3(4, -5, 10), 2, 1};
 		sol.girar(10, 10, 10);
 		sol.renderType = 1;
 		sol.corR = 255;
 		sol.corG = 255;
 		sol.corB = 0;
 		sol.comSombra = false;
-		sol.loadModel("samples/planets/esfere.obj");
+		sol.loadModel("samples/planets/cube.obj");
 
 		// modelo 3d de um cubo verde que pode ser interpretado como um satelite
 		Cubo cuboSatelite{Ponto3(5, 5, 10), 1};
@@ -133,6 +126,9 @@ int main(int argc, char *args[])
 		// objetos para renderizar
 		Forma *render[5] = {&terra, &marte, &sol, &lua, &cuboSatelite};
 
+		Forma *renderA[1] = {&sol};
+
+
 		double angulo = 0;
 		double raio = 8;
 		double npx, npz;
@@ -145,30 +141,6 @@ int main(int argc, char *args[])
 		{
 
 			window.limpar();
-
-			// girar cubo do satelite
-			cuboSatelite.girar(1, 1, 1);
-
-			// girar planetas ao redor do sol e atualizar sua iluminacao
-			for (int i = 0; i < 4; i++)
-			{
-				planetas[i].angulo += static_cast<int>(planetas[i].velocidade) % 360;
-
-				// nova posicao do planeta
-				npx = planetas[i].orbitar->posicao.x + (planetas[i].raio * cos((planetas[i].angulo + (100 * i)) * M_PI / 180));
-				npz = planetas[i].orbitar->posicao.z + (planetas[i].raio * sin((planetas[i].angulo + (100 * i)) * M_PI / 180));
-
-				// atualizar posicao do planeta
-				planetas[i].modelo->posicao.x = npx;
-				planetas[i].modelo->posicao.z = npz;
-				planetas[i].modelo->posicao.y = planetas[i].orbitar->posicao.y;
-
-				// atualizar iluminacao do planeta
-				b[0] = planetas[i].modelo->posicao.x;
-				b[1] = planetas[i].modelo->posicao.y;
-				b[2] = planetas[i].modelo->posicao.z;
-				planetas[i].modelo->iluminacao = Vec3(b, a);
-			}
 
 			// ordenar a lista de planetas para começar renderizando de trás para frente
 			Forma *swap;
@@ -187,9 +159,9 @@ int main(int argc, char *args[])
 			}
 
 			// renderizar objetos
-			for (int l = 0; l < 5; l++)
+			for (int l = 0; l < 1; l++)
 			{
-				render[l]->desenhar(window);
+				renderA[l]->desenhar(window);
 			}
 
 			// entradas do teclado

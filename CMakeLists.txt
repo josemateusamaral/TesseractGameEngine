@@ -28,6 +28,7 @@ set(SOURCES
     utils/Vec3.cpp
     utils/model.cpp
     utils/polygon.cpp
+    utils/input.cpp
 
     pontos/ponto.cpp
     pontos/ponto3.cpp

@@ -5,7 +5,6 @@
 #include "../../formas/forma.h"
 #include "janela.h"
 #include "Vec3.h"
-#include "polygon.h"
 
 using namespace std;
 
@@ -17,6 +16,9 @@ class Model : virtual public Forma
 
         int polygonCount;
         Ponto3* polygons;
+
+        unsigned int* indices;
+        unsigned int indexCount;
         
     public:
         

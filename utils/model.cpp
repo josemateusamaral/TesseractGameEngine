@@ -72,8 +72,29 @@ void Model::loadModel(string path)
         );
     }
     
+    printf("chegando aqui...");
+
     // Carregar Polígonos
     this->polygonCount = mesh->mNumFaces;
+
+    
+
+    // Cada face tem 3 índices (triângulos)
+    this->indexCount = mesh->mNumFaces * 3;
+
+    indices = new unsigned int[indexCount];
+
+    unsigned int idx = 0;
+    for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
+        aiFace face = mesh->mFaces[i];
+
+        // Garantia extra (embora Triangulate já faça isso)
+        if (face.mNumIndices != 3) continue;
+
+        indices[idx++] = face.mIndices[0];
+        indices[idx++] = face.mIndices[1];
+        indices[idx++] = face.mIndices[2];
+    }
 
 }
 
@@ -84,7 +105,7 @@ void Model::loadModel(string path)
  */
 void Model::desenhar(Window &window)
 {
-
+    /*
     // calcular pontos do R2 calculando primeiramente os pontos do R3
     calcular_pontos_3D();
     projecao = camera->projetar(pontos,quantidadePontos);
@@ -151,13 +172,11 @@ void Model::desenhar(Window &window)
                 Vec3 objToponto1(a,b);
                 Vec3 objToponto2(a,c);
 
-                /* calcular a cor do poligono usando o angulo entre o vetor normal
-                do poligono e o vetor de iluminação */
+                // calcular a cor do poligono usando o angulo entre o vetor normal do poligono e o vetor de iluminação
                 if(camToObj.angulo_entre_vetores(objToponto1) > 90 && camToObj.angulo_entre_vetores(objToponto2) > 90){
                     if( j > LOD - 1 ){
 
-                        /* calcular a cor do poligono usando o algulo entre o vetor de iluminação 
-                        e o vetor normal do poligono */
+                        // calcular a cor do poligono usando o algulo entre o vetor de iluminação e o vetor normal do poligono
                         if(comSombra){
                             angulo = ( objToponto1.angulo_entre_vetores(iluminacao) + objToponto2.angulo_entre_vetores(iluminacao) ) / 2 ;
                             R = corR - (( 255 / 180 ) * angulo);
@@ -179,7 +198,84 @@ void Model::desenhar(Window &window)
                 }
                 break;       
         }
+    }*/
+
+    calcular_pontos_3D();
+    projecao = camera->projetar(pontos, quantidadePontos);
+
+    int R = 255, G = 255, B = 255;
+    double angulo;
+
+    double origem[3] = {0,0,0};
+    double a[3] = {posicao.x, posicao.y, posicao.z};
+    Vec3 camToObj{origem, a};
+
+    // 🔥 Percorrer TRIÂNGULOS (não vértices)
+    for (int i = 0; i < indexCount; i += 3)
+    {
+        int i0 = indices[i];
+        int i1 = indices[i + 1];
+        int i2 = indices[i + 2];
+
+        // pontos no espaço 3D
+        Ponto3 p0 = pontos[i0];
+        Ponto3 p1 = pontos[i1];
+        Ponto3 p2 = pontos[i2];
+
+        switch(renderType)
+        {
+            // 🟢 WIREFRAME
+            case 1:
+                window.desenha(projecao[i0], projecao[i1]);
+                window.desenha(projecao[i1], projecao[i2]);
+                window.desenha(projecao[i2], projecao[i0]);
+                break;
+
+            // 🔵 SHADED
+            case 2:
+            {
+                double b[3] = {p0.x, p0.y, p0.z};
+                double c[3] = {p1.x, p1.y, p1.z};
+                double d[3] = {p2.x, p2.y, p2.z};
+
+                Vec3 v1(b, c);
+                Vec3 v2(b, d);
+
+                // normal do triângulo
+                Vec3 normal = v1.produto_vetorial(v2);
+
+                // vetor do objeto até o triângulo
+                Vec3 objToTri(a, b);
+
+                // backface culling
+                if (camToObj.angulo_entre_vetores(normal) < 90)
+                {
+                    if (comSombra)
+                    {
+                        angulo = normal.angulo_entre_vetores(iluminacao);
+                        R = corR - ((255.0 / 180.0) * angulo);
+                        G = corG - ((255.0 / 180.0) * angulo);
+                        B = corB - ((255.0 / 180.0) * angulo);
+                    }
+                    else
+                    {
+                        R = corR;
+                        G = corG;
+                        B = corB;
+                    }
+
+                    window.desenhar_poligono(
+                        projecao[i0],
+                        projecao[i1],
+                        projecao[i2],
+                        R, G, B
+                    );
+                }
+                break;
+            }
+        }
     }
+
 }
 
 ostream & operator<< (ostream &out, const Model &p)
