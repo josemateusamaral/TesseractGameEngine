@@ -10,7 +10,7 @@
 
   - The CMakeLists.txt was made to be used with cmake on windows.<br>
   - Install MSYS2 on https://www.msys2.org/.<br>
-  - Using MSYS2 UCRT Terminal install the necessary to compile the project using the command below: <br>
+  - Using MSYS2 UCRT Terminal install the necessary to compile the project using the commands below: <br>
     __> pacman -S --needed base-devel mingw-w64-ucrt-x86_64-toolchain<br>
     __> pacman -S mingw-w64-ucrt-x86_64-cmake<br>
     __> pacman -S mingw-w64-ucrt-x86_64-SDL2<br>
