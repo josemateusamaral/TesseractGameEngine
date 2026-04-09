@@ -34,14 +34,15 @@ int main(int argc, char *args[])
 		Window window = Window(SCREEN_WIDTH, SCREEN_HEIGHT);
 
 		// load model
-		Model model{Ponto3(4, -5, 10), 2, 1};
+		Model model{Ponto3(6, -5, 20), 2, 1};
 		model.girar(10, 10, 10);
 		model.renderType = 1;
 		model.corR = 255;
 		model.corG = 255;
 		model.corB = 0;
 		model.comSombra = false;
-		model.loadModel("samples/planets/cube.obj");
+		model.loadModel("samples/planets/cubo.glb");
+		model.setBackface_Culling(false);
 
 		// scene
 		Forma *render[1] = {&model};

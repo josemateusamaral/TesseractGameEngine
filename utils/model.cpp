@@ -1,8 +1,8 @@
-#include "../formas/forma.h"
-#include "../pontos/ponto3.h"
+//#include "../formas/forma.h"
+//#include "../pontos/ponto3.h"
+//#include "../pontos/ponto.h"
 #include "model.h"
-#include "../../pontos/ponto.h"
-#include "Vec3.h"
+//#include "Vec3.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -38,6 +38,14 @@ void Model::calcular_pontos_base(){
 
 }
 
+void Model::setBackface_Culling(bool value){
+    this->backface_culling = value;
+}
+
+bool Model::getBackface_Culling(){
+    return this->backface_culling;
+}
+
 void Model::loadModel(string path)
 {
 
@@ -61,18 +69,31 @@ void Model::loadModel(string path)
     aiMesh* mesh = scene->mMeshes[0];
     this->quantidadePontos = mesh->mNumVertices;
 
-    pontos_base = new Ponto3[quantidadePontos]; 
+    printf("chegando aqui...");
 
-    // guardar todos os vertices em um array
+    pontos_base = new Ponto3[quantidadePontos]; 
+    //uvs = new Ponto[quantidadePontos];
+
+    // guardar todos os vertices e uvs em um array 
     for (unsigned int i = 0; i < mesh->mNumVertices; i++) {        
         pontos_base[i] = Ponto3(
             mesh->mVertices[i].x * tamanho, 
             mesh->mVertices[i].y * tamanho, 
             mesh->mVertices[i].z * tamanho
         );
+
+        // UV
+        /*if (mesh->mTextureCoords[0]) {
+            uvs[i] = Ponto(
+                mesh->mTextureCoords[0][i].x,
+                mesh->mTextureCoords[0][i].y
+            );
+        } else {
+            uvs[i] = Ponto(0.0f, 0.0f);
+        }*/
     }
     
-    printf("chegando aqui...");
+    
 
     // Carregar Polígonos
     this->polygonCount = mesh->mNumFaces;
@@ -222,33 +243,41 @@ void Model::desenhar(Window &window)
         Ponto3 p1 = pontos[i1];
         Ponto3 p2 = pontos[i2];
 
+        double b[3] = {p0.x, p0.y, p0.z};
+        double c[3] = {p1.x, p1.y, p1.z};
+        double d[3] = {p2.x, p2.y, p2.z};
+
+        Vec3 v1(b, c);
+        Vec3 v2(b, d);
+
+        // normal do triângulo
+        Vec3 normal = v1.produto_vetorial(v2);
+
+        // vetor do objeto até o triângulo
+        Vec3 objToTri(a, b);
+
         switch(renderType)
         {
             // 🟢 WIREFRAME
             case 1:
-                window.desenha(projecao[i0], projecao[i1]);
-                window.desenha(projecao[i1], projecao[i2]);
-                window.desenha(projecao[i2], projecao[i0]);
+
+                // backface culling
+                if (camToObj.angulo_entre_vetores(normal) > 90 || !this->backface_culling)
+                {
+
+                    window.desenha(projecao[i0], projecao[i1]);
+                    window.desenha(projecao[i1], projecao[i2]);
+                    window.desenha(projecao[i2], projecao[i0]);
+                    
+                }
                 break;
 
             // 🔵 SHADED
             case 2:
             {
-                double b[3] = {p0.x, p0.y, p0.z};
-                double c[3] = {p1.x, p1.y, p1.z};
-                double d[3] = {p2.x, p2.y, p2.z};
-
-                Vec3 v1(b, c);
-                Vec3 v2(b, d);
-
-                // normal do triângulo
-                Vec3 normal = v1.produto_vetorial(v2);
-
-                // vetor do objeto até o triângulo
-                Vec3 objToTri(a, b);
 
                 // backface culling
-                if (camToObj.angulo_entre_vetores(normal) < 90)
+                if (camToObj.angulo_entre_vetores(normal) > 90 || !this->backface_culling)
                 {
                     if (comSombra)
                     {

@@ -1,8 +1,9 @@
 #pragma once
 #include<SDL2/SDL.h>
 #include <iostream>
-#include "../../pontos/ponto3.h"
-#include "../../formas/forma.h"
+#include "../pontos/ponto3.h"
+#include "../pontos/ponto.h"
+#include "../formas/forma.h"
 #include "janela.h"
 #include "Vec3.h"
 
@@ -19,6 +20,9 @@ class Model : virtual public Forma
 
         unsigned int* indices;
         unsigned int indexCount;
+
+        bool backface_culling = true;
+        //Ponto* uvs;
         
     public:
         
@@ -31,6 +35,10 @@ class Model : virtual public Forma
 
         void setLOD(int lod);
         int getLOD();
+
+        bool getBackface_Culling();
+        void setBackface_Culling(bool value);
+
 };
 
 ostream & operator<<(ostream &out, const Model &p);
