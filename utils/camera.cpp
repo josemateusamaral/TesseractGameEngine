@@ -6,8 +6,8 @@
  * @param posicao posição do pinhole no r3
  * @param dist_f distancia focal
  */
-Camera::Camera(Ponto3 posicao, int dist_f, Vec3 cima, Vec3 direita, Vec3 normal )
-:posicao{posicao},dist_f{dist_f}
+Camera::Camera()
+:posicao{Ponto3(0,0,0)},dist_f{500}
 {
     angulox = 0;
     anguloy = 0;
