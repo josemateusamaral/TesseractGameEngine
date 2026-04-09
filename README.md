@@ -10,7 +10,7 @@
 
   - The CMakeLists.txt was made to be used with cmake on windows.<br>
   - Install MSYS2 on https://www.msys2.org/.<br>
-  - Using MSYS2 install the necessary to compile the project using __> pacman -S --needed base-devel mingw-w64-ucrt-x86_64-toolchain and __> pacman -S mingw-w64-ucrt-x86_64-SDL2. Then add the path C:\msys64\ucrt64\bin to your envoronment variables, if you installed MSYS2 on the root of the system.<br>
+  - Using MSYS2 install the necessary to compile the project using __> pacman -S --needed base-devel mingw-w64-ucrt-x86_64-toolchain,  __> pacman -S mingw-w64-ucrt-x86_64-cmake, __> pacman -S mingw-w64-ucrt-x86_64-SDL2 and  __> pacman -S mingw-w64-ucrt-x86_64-assimp. Then add the path C:\msys64\ucrt64\bin to your envoronment variables, if you installed MSYS2 on the root of the system.<br>
   - Now you should be able to run ./test.bat to run the teste.cpp example and also use tools like gcc and g++. This is the easiest way to start working on windows without have to set too many things.<br> 
 
 
