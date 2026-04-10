@@ -16,13 +16,13 @@ class Model : virtual public Forma
         int faixas;
 
         int polygonCount;
-        Ponto3* polygons;
+        Ponto3* polygons = nullptr;
 
-        unsigned int* indices;
+        unsigned int* indices = nullptr;
         unsigned int indexCount;
 
         bool backface_culling = true;
-        //Ponto* uvs;
+        Ponto* uvs = nullptr;
         
     public:
         

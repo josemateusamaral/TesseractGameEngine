@@ -35,14 +35,14 @@ int main(int argc, char *args[])
 
 		// load model
 		Model model{Ponto3(6, -5, 20), 2, 1};
+		model.loadModel("samples/planets/cubo.glb");
 		model.girar(10, 10, 10);
 		model.renderType = 1;
 		model.corR = 255;
 		model.corG = 255;
 		model.corB = 0;
 		model.comSombra = false;
-		model.loadModel("samples/planets/cubo.glb");
-		model.setBackface_Culling(false);
+		model.setBackface_Culling(true);
 
 		// scene
 		Forma *render[1] = {&model};
@@ -54,7 +54,6 @@ int main(int argc, char *args[])
 		{
 
 			window.limpar();
-
 			render[0]->desenhar(window);
 
 			// entradas do teclado
