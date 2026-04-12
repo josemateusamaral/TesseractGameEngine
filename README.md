@@ -14,7 +14,6 @@
   __> pacman -S --needed base-devel mingw-w64-ucrt-x86_64-toolchain<br>
   __> pacman -S mingw-w64-ucrt-x86_64-cmake<br>
   __> pacman -S mingw-w64-ucrt-x86_64-SDL2<br>
-  __> pacman -S mingw-w64-ucrt-x86_64-assimp<br>
   - Then add the path C:\msys64\ucrt64\bin to your envoronment variables, if you installed MSYS2 on the root of the system.<br>
   - Now you should be able to run ./test.bat to run the teste.cpp example and also use tools like gcc and g++. This is the easiest way to start working on windows without have to set too many things.<br> 
 
