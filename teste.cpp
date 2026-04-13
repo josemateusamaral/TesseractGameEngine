@@ -155,7 +155,7 @@ int main(int argc, char *args[])
 			// DEMO PLANETARIO - INICIO
 
 			// colocar fundo de estrelas
-			SDL_RenderCopy(window.renderer, textura, NULL, NULL);
+			//SDL_RenderCopy(window.renderer, textura, NULL, NULL);
 
 			// girar cubo do satelite
 			cuboSatelite.girar(1, 1, 1);
