@@ -3,51 +3,29 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <iostream>
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
-Model::Model(string filePath, Ponto3 posicao, double tamanho, int lod)
-:posicao{posicao}, tamanho{tamanho}, LOD{lod}
+enum RenderType {
+    WIREFRAME = 1,
+    SHADED = 2,
+    TEXTURED = 3
+};
+
+Model::Model(string filePath, Ponto3 posicao, double tamanho)
+:posicao{posicao}, tamanho{tamanho}
 {
     iluminacao = Vec3(1,1,0);
     loadModel(filePath);
 
 }
 
-/**
- * @brief Construtor do sólido geométrico Esfera
- * 
- * @param posicao posição do centro no R3
- * @param tamanho Raio da esfera
- * @param lod Quantidade de pontos, para distorção
- *
- * @authors Jose Mateus Amaral
- */
-Model::Model(Ponto3 posicao, double tamanho, int lod)
-:posicao{posicao}, tamanho{tamanho}, LOD{lod}
-{
-    iluminacao = Vec3(1,1,0);
-    faixas = LOD / 2 + 1;
-    quantidadePontos = LOD * faixas;
-    
+void Model::setBackfaceCulling(bool value){
+    this->backfaceCulling = value;
 }
 
-Model::Model(Ponto3 posicao,int lod)
-:posicao{posicao}, LOD{lod}
-{
-    iluminacao = Vec3(1,1,0);
-    faixas = LOD / 2 + 1;
-    quantidadePontos = LOD * faixas;
-}
-
-void Model::calcular_pontos_base(){
-
-}
-
-void Model::setBackface_Culling(bool value){
-    this->backface_culling = value;
-}
-
-bool Model::getBackface_Culling(){
-    return this->backface_culling;
+bool Model::getBackfaceCulling(){
+    return this->backfaceCulling;
 }
 
 void Model::loadModel(string path)
@@ -75,6 +53,48 @@ void Model::loadModel(string path)
     pontos_base = new Ponto3[quantidadePontos]; 
     uvs = new Ponto[quantidadePontos];
     this->polygonCount = mesh->mNumFaces;
+
+
+
+    if(scene->mNumMaterials > 0) {
+        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+        aiString str;
+
+        if(material->GetTexture(aiTextureType_DIFFUSE, 0, &str) == AI_SUCCESS) {
+            int width, height, nrChannels;
+            unsigned char* data = nullptr;
+
+            // Verifica se é uma textura embutida (embedded)
+            const aiTexture* embeddedTexture = scene->GetEmbeddedTexture(str.C_Str());
+
+            if (embeddedTexture) {
+                // Textura comprimida (png/jpg) dentro do arquivo
+                if (embeddedTexture->mHeight == 0) {
+                    data = stbi_load_from_memory(
+                        reinterpret_cast<unsigned char*>(embeddedTexture->pcData),
+                        embeddedTexture->mWidth, // mWidth aqui é o tamanho em bytes
+                        &width, &height, &nrChannels, 3
+                    );
+                }
+            } else {
+                // Textura externa
+                string directory = path.substr(0, path.find_last_of('/'));
+                string texPath = directory + "/" + string(str.C_Str());
+                data = stbi_load(texPath.c_str(), &width, &height, &nrChannels, 3);
+            }
+
+            if (data) {
+                this->texture = new Texture((char*)data, width, height);
+                printf("Sucesso: Textura carregada (%dx%d)\n", width, height);
+            } else {
+                printf("Erro ao carregar textura: %s\n", stbi_failure_reason());
+            }
+        } else {
+            printf("Aviso: Nenhuma textura encontrada para esta mesh.\n");
+        }
+    }
+
+
 
     // guardar todos os vertices e uvs em um array 
     for (unsigned int i = 0; i < mesh->mNumVertices; i++) {        
@@ -105,13 +125,14 @@ void Model::loadModel(string path)
     for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
         
         aiFace face = mesh->mFaces[i];
-
         if (face.mNumIndices != 3) continue;
 
         indices[idx++] = face.mIndices[0];
         indices[idx++] = face.mIndices[1];
         indices[idx++] = face.mIndices[2];
     }
+
+    printf("Modelo carregado: %d vertices, %d faces\n", mesh->mNumVertices, mesh->mNumFaces);
 
 }
 
@@ -120,7 +141,7 @@ void Model::loadModel(string path)
  *
  * @authors Jose Mateus Amaral, Monique
  */
-void Model::desenhar(Window &window)
+void Model::draw(Window &window)
 {
 
     calcular_pontos_3D();
@@ -136,6 +157,7 @@ void Model::desenhar(Window &window)
     // Percorrer TRIÂNGULOS
     for (int i = 0; i < indexCount; i += 3)
     {
+
         int i0 = indices[i];
         int i1 = indices[i + 1];
         int i2 = indices[i + 2];
@@ -161,10 +183,10 @@ void Model::desenhar(Window &window)
         switch(renderType)
         {
             // WIREFRAME
-            case 1:
+            case RenderType::WIREFRAME:
 
                 // backface culling
-                if (camToObj.angulo_entre_vetores(normal) > 90 || !this->backface_culling)
+                if (camToObj.angulo_entre_vetores(normal) > 90 || !this->backfaceCulling)
                 {
 
                     window.desenha(projecao[i0], projecao[i1]);
@@ -175,11 +197,11 @@ void Model::desenhar(Window &window)
                 break;
 
             // SHADED
-            case 2:
+            case RenderType::SHADED:
             {
 
                 // backface culling
-                if (camToObj.angulo_entre_vetores(normal) > 90 || !this->backface_culling)
+                if (camToObj.angulo_entre_vetores(normal) > 90 || !this->backfaceCulling)
                 {
                     if (comSombra)
                     {
@@ -204,11 +226,33 @@ void Model::desenhar(Window &window)
                 }
                 break;
             }
+
+            // TEXTURED
+            case RenderType::TEXTURED:
+            {
+
+                // backface culling
+                if (camToObj.angulo_entre_vetores(normal) > 90 || !this->backfaceCulling)
+                {
+
+                    window.desenhar_poligono_texturizado(
+                        projecao[i0],
+                        projecao[i1],
+                        projecao[i2],
+                        uvs[i0],
+                        uvs[i1],
+                        uvs[i2],
+                        (unsigned char*)texture->data,
+                        texture->width,
+                        texture->height
+                    );
+                }
+                break;
+            }
         }
     }
 
 }
-
 
 /**
  * @brief A partir do centro e do tamanho do sólido, calcula a posição dos pontos restantes.
@@ -232,7 +276,6 @@ void Model::calcular_pontos_3D()
     pontos = pontosTemp;
 }
 
-
 /**
  * @brief Rotacionar os pontos do sólido utilizando matriz de rotação
  * @authors Jose Mateus Amaral, Gustavo Mittelmann, Henrique Heiderscheidt
@@ -241,7 +284,7 @@ void Model::calcular_pontos_3D()
  * @param rotacaoY Ângulo de rotação em relação ao eixo Y
  * @param rotacaoZ Ângulo de rotação em relação ao eixo Z
  */
-void Model::girar(int rotacaoX, int rotacaoY, int rotacaoZ){
+void Model::rotate(int rotacaoX, int rotacaoY, int rotacaoZ){
 
     angulo.x += rotacaoX;
     angulo.y += rotacaoY;
@@ -274,7 +317,6 @@ void Model::girar(int rotacaoX, int rotacaoY, int rotacaoZ){
     }
 }
 
-
 void Model::setPos(double x, double y, double z){
     this->posicao.x = x;
     this->posicao.y = y;
@@ -297,11 +339,15 @@ void Model::setZ(double z){
     this->posicao.z = z;
 }
 
-void Model::setTamanho(double tamanho){
+Ponto3 Model::getPos(){
+    return this->posicao;
+}
+
+void Model::setScale(double tamanho){
     this->tamanho = tamanho;
 }
 
-double Model::getTamanho(){
+double Model::getScale(){
     return this->tamanho;
 }
 

@@ -1,5 +1,5 @@
 #include "window.h"
-#include "vec3.h"
+#include "Vec3.h"
 #include <bits/stdc++.h>
 
 /**
@@ -28,7 +28,7 @@ void Window::atualiza()
  * @brief Função para limpar a janela para o proximo desenho.
  * 
  */
-void Window::limpar()
+void Window::clean()
 {
     SDL_RenderClear(renderer);
 
@@ -190,6 +190,130 @@ bool Window::estaDentro(int x1, int y1, int x2, int y2, int x3, int y3, int x, i
 
     // retornar se a area do poligono é igual a soma das areas dos triangulos formados com o ponto sendo testado
     return ( areaPoligono == triangulo1 + triangulo2 + triangulo3 );
+}
+
+void Window::desenhar_poligono_texturizado(Ponto &p1, Ponto &p2, Ponto &p3, Ponto &uv1, Ponto &uv2, Ponto &uv3, unsigned char* data, int texW, int texH) 
+{
+    // meio do poligono
+    //double middleX = (((p1.x + p2.x + p3.x) - (400 * 3))/3);
+    //double middleY = (((p1.y + p2.y + p3.y) - (400 * 3))/3);
+    //Ponto meio{middleX,middleY};
+
+    // quadrado ao redor do poligono
+    double topY,bottomY,maxLeft,maxRight;
+
+    //Encontra o ponto mais acima do triangulo
+    if(p1.y > p2.y && p1.y > p3.y){
+        topY = p1.y;
+    }
+    else if(p2.y > p1.y && p2.y > p3.y){
+        topY = p2.y;
+    }
+    else{
+        topY = p3.y;
+    }
+
+    //Encontra o ponto mais abaixo do triangulo
+    if(p1.y < p2.y && p1.y < p3.y){
+        bottomY = p1.y;
+    }
+    else if(p2.y < p1.y && p2.y < p3.y){
+        bottomY = p2.y;
+    }
+    else{
+        bottomY = p3.y;
+    }
+
+    //Encontra o ponto mais a esquerda do triangulo
+    if(p1.x < p2.x && p1.x < p3.x){
+        maxLeft = p1.x;
+    }
+    else if(p2.x < p1.x && p2.x < p3.x){
+        maxLeft = p2.x;
+    }
+    else{
+        maxLeft = p3.x;
+    }
+
+    //Encontra o ponto mais a esquerda do triangulo
+    if(p1.x > p2.x && p1.x > p3.x){
+        maxRight = p1.x;
+    }
+    else if(p2.x > p1.x && p2.x > p3.x){
+        maxRight = p2.x;
+    }
+    else{
+        maxRight = p3.x;
+    }
+
+    // inicios do desenho do poligono
+    double px = maxLeft; //pixel inicial do poligono no eixo x
+    double py = topY; //pixel inicial do poligono no eixo y
+
+    // dimensoes do poligono
+    double sizeX = maxRight - maxLeft;//Largura do poligono
+    double sizeY = topY - bottomY;//Altura do poligono
+
+    float areaTotal = area(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+    if (areaTotal == 0) return;
+
+    for(int x = 0; x < sizeX; x++) {
+        for(int y = 0; y < sizeY; y++) {
+            int px_atual = px + x;
+            int py_atual = py - y;
+
+            // Suas áreas já calculadas!
+            float a1 = area(px_atual, py_atual, p2.x, p2.y, p3.x, p3.y);
+            float a2 = area(p1.x, p1.y, px_atual, py_atual, p3.x, p3.y);
+            float a3 = area(p1.x, p1.y, p2.x, p2.y, px_atual, py_atual);
+
+            if (abs(areaTotal - (a1 + a2 + a3)) < 0.01) { // Ponto está dentro
+                
+                // Coordenadas baricêntricas (pesos de 0.0 a 1.0)
+                float w1 = a1 / areaTotal;
+                float w2 = a2 / areaTotal;
+                float w3 = a3 / areaTotal;
+
+                // Interpola o UV para este pixel exato
+                float u = w1 * uv1.x + w2 * uv2.x + w3 * uv3.x;
+                float v = w1 * uv1.y + w2 * uv2.y + w3 * uv3.y;
+
+                /*
+                // Converte UV para coordenada de pixel na imagem (Texel)
+                int tx = (int)(u * (texW - 1));
+                int ty = (int)(v * (texH - 1));
+
+                // Pega a cor no array da STB (assumindo 3 canais RGB)
+                int idx = (ty * texW + tx) * 3;
+                SDL_SetRenderDrawColor(renderer, data[idx], data[idx+1], data[idx+2], 255);
+                SDL_RenderDrawPoint(renderer, px_atual, py_atual);
+                */
+
+
+                // 1. Enrola o UV para sempre ficar entre 0.0 e 1.0 (permite textura repetida)
+                u = u - floor(u);
+                v = v - floor(v);
+
+                // 2. Converte UV para coordenada de pixel na imagem
+                int tx = (int)(u * (texW - 1));
+                int ty = (int)(v * (texH - 1));
+
+                // 3. Clamping de segurança extra contra problemas de arredondamento de float
+                if (tx < 0) tx = 0;
+                if (tx >= texW) tx = texW - 1;
+                if (ty < 0) ty = 0;
+                if (ty >= texH) ty = texH - 1;
+
+                // Agora é seguro calcular o índice!
+                int idx = (ty * texW + tx) * 3;
+
+                SDL_SetRenderDrawColor(renderer, data[idx], data[idx+1], data[idx+2], 255);
+                SDL_RenderDrawPoint(renderer, px_atual, py_atual);
+
+
+            }
+        }
+    }
 }
 
 Window::~Window()

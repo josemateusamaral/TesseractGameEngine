@@ -34,29 +34,22 @@ int main(int argc, char *args[])
 		Camera *camera = new Camera();
 
 		// load model
-		Model model{"samples/planets/cubo.glb"};
-		model.setPos(6, -5, 14);
-		model.setTamanho(2);
-		model.renderType = 1;
-		model.corR = 255;
-		model.corG = 255;
-		model.corB = 0;
-		model.comSombra = false;
-		model.setBackface_Culling(true);
+		Model model{"samples/model_loading/cubo.glb"};
+		model.setPos(2, -2, 14);
+		model.setScale(3);
+		model.setBackfaceCulling(true);
+		model.renderType = 3;
 
 		// scene
 		Model *render[1] = {&model};
 
 		// pointlight
-		Ponto3 light = Ponto3(model.posicao.x, model.posicao.y, model.posicao.z);
+		Ponto3 light = Ponto3(model.getPos().x, model.getPos().y, model.getPos().z);
 
 		while (!quit)
 		{
 
-			model.girar(1,1,1);
-
-			window.limpar();
-			render[0]->desenhar(window);
+			model.rotate(1,1,1);
 
 			// entradas do teclado
 			while (SDL_PollEvent(&ev) != 0)
@@ -97,21 +90,25 @@ int main(int argc, char *args[])
 
 					if (ev.key.keysym.sym == SDLK_e)
 					{
-						camera->rodarx(0.34, model.posicao);
+						camera->rodarx(0.34, model.getPos());
 					}
 					if (ev.key.keysym.sym == SDLK_q)
 					{
-						camera->rodary(0.34, model.posicao);
+						camera->rodary(0.34, model.getPos());
 					}
 					if (ev.key.keysym.sym == SDLK_z)
 					{
-						camera->rodarz(0.34, model.posicao);
+						camera->rodarz(0.34, model.getPos());
 					}
 				}
 			}
 
+			//render
+			window.clean();
+			render[0]->draw(window);
 			window.atualiza();
 			SDL_Delay(32);
+
 		}
 		SDL_Quit();
 	}

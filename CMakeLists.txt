@@ -10,8 +10,7 @@ find_package(SDL2 REQUIRED)
 include_directories(
     ${SDL2_INCLUDE_DIRS}
     ${ASSIMP_INCLUDE_DIRS}
-    utils
-    pontos
+    core
 )
 
 # Lista de arquivos fonte
@@ -22,7 +21,7 @@ set(SOURCES
     core/camera.cpp
     core/vec3.cpp
     core/model.cpp
-    core/polygon.cpp
+    core/texture.cpp
     core/input.cpp
     core/ponto.cpp
     core/ponto3.cpp
