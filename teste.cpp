@@ -1,13 +1,10 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
-#include "utils/janela.h"
-#include "pontos/ponto.h"
-#include "pontos/ponto3.h"
-#include "formas/forma.h"
-#include "utils/Vec3.h"
-#include "utils/model.h"
+#include "core/window.h"
+#include "core/ponto3.h"
+#include "core/model.h"
 #include <iostream>
-#include "utils/camera.h"
+#include "core/camera.h"
 
 using namespace std;
 
@@ -17,11 +14,6 @@ const int SCREEN_HEIGHT = 480;
 
 int main(int argc, char *args[])
 {
-	// Eventos e loop principal
-	bool quit = false;
-	SDL_Event ev;
-
-	Camera *camera = new Camera();
 
 	// Initialize SDL
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
@@ -30,13 +22,21 @@ int main(int argc, char *args[])
 	}
 	else
 	{
+
+		// Events
+		bool quit = false;
+		SDL_Event ev;
+
 		// Create window
 		Window window = Window(SCREEN_WIDTH, SCREEN_HEIGHT);
 
+		// Create camera
+		Camera *camera = new Camera();
+
 		// load model
-		Model model{Ponto3(6, -5, 20), 2, 1};
-		model.loadModel("samples/planets/cubo.glb");
-		model.girar(10, 10, 10);
+		Model model{"samples/planets/cubo.glb"};
+		model.setPos(6, -5, 14);
+		model.setTamanho(2);
 		model.renderType = 1;
 		model.corR = 255;
 		model.corG = 255;
@@ -45,13 +45,15 @@ int main(int argc, char *args[])
 		model.setBackface_Culling(true);
 
 		// scene
-		Forma *render[1] = {&model};
+		Model *render[1] = {&model};
 
 		// pointlight
 		Ponto3 light = Ponto3(model.posicao.x, model.posicao.y, model.posicao.z);
 
 		while (!quit)
 		{
+
+			model.girar(1,1,1);
 
 			window.limpar();
 			render[0]->desenhar(window);

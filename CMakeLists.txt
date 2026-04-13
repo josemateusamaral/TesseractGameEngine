@@ -12,32 +12,20 @@ include_directories(
     ${ASSIMP_INCLUDE_DIRS}
     utils
     pontos
-    formas
-    formas/cubo
-    formas/esfera
-    formas/cilindro
-    formas/cone
 )
 
 # Lista de arquivos fonte
 set(SOURCES
     teste.cpp
 
-    utils/janela.cpp
-    utils/camera.cpp
-    utils/Vec3.cpp
-    utils/model.cpp
-    utils/polygon.cpp
-    utils/input.cpp
-
-    pontos/ponto.cpp
-    pontos/ponto3.cpp
-
-    formas/forma.cpp
-    formas/cubo/cubo.cpp
-    formas/esfera/esfera.cpp
-    formas/cilindro/cilindro.cpp
-    formas/cone/cone.cpp
+    core/window.cpp
+    core/camera.cpp
+    core/vec3.cpp
+    core/model.cpp
+    core/polygon.cpp
+    core/input.cpp
+    core/ponto.cpp
+    core/ponto3.cpp
 )
 
 # Criar executável
