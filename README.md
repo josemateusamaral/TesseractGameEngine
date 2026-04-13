@@ -5,10 +5,6 @@
   RUN TESTE SAMPLE<br>
  ./test.bat<br>
 
-  <video src="https://drive.google.com/file/d/1aLPpXzN54Vi1J7_5zMhwwL5-e3bVoVs-/view?usp=drive_link" width="600" controls>
-    Seu navegador não suporta vídeos.
-  </video>
-
   <br><br><br>
   COMPILING TIPS FOR WINDOWS<br>
 
