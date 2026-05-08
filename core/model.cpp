@@ -51,6 +51,8 @@ void Model::loadModel(string path)
     // iniciate class control variables
     this->quantidadePontos = mesh->mNumVertices;
     pontos_base = new Ponto3[quantidadePontos]; 
+    projecao = new Ponto[quantidadePontos];
+    pontos = new Ponto3[quantidadePontos];
     uvs = new Ponto[quantidadePontos];
     this->polygonCount = mesh->mNumFaces;
 
@@ -101,10 +103,13 @@ void Model::loadModel(string path)
         
         // vertice
         pontos_base[i] = Ponto3(
-            mesh->mVertices[i].x * tamanho, 
-            mesh->mVertices[i].y * tamanho, 
-            mesh->mVertices[i].z * tamanho
+            mesh->mVertices[i].x,// * tamanho, 
+            mesh->mVertices[i].y,// * tamanho, 
+            mesh->mVertices[i].z// * tamanho
         );
+
+        //projecao
+        projecao[i] = Ponto(0.0f, 0.0f);
 
         // uv
         if (mesh->mTextureCoords[0]) {
@@ -145,7 +150,12 @@ void Model::draw(Window &window)
 {
 
     calcular_pontos_3D();
-    projecao = camera->projetar(pontos, quantidadePontos);
+
+    //printf("ANTES: %p\n", this->projecao);
+
+    camera->projetar(this->pontos, this->projecao, quantidadePontos);
+
+    //printf("DEPOIS: %p\n", this->projecao);
 
     int R = 255, G = 255, B = 255;
     double angulo;
@@ -260,20 +270,20 @@ void Model::draw(Window &window)
  */
 void Model::calcular_pontos_3D()
 {
-    double px = posicao.x-camera->posicao.x;
-    double py = posicao.y-camera->posicao.y;
-    double pz = posicao.z-camera->posicao.z;
+    double px = posicao.x - camera->posicao.x;
+    double py = posicao.y - camera->posicao.y;
+    double pz = posicao.z - camera->posicao.z;
     double t = tamanho;
 
-    Ponto3* pontosTemp = (Ponto3*)malloc(sizeof(Ponto3) * quantidadePontos);
+    //Ponto3* pontosTemp = (Ponto3*)malloc(sizeof(Ponto3) * quantidadePontos);
     for(int i = 0 ; i < quantidadePontos ; i++ ){
-        pontosTemp[i] = pontos_base[i];
-        pontosTemp[i].x = px + pontosTemp[i].x * t;
-        pontosTemp[i].y = py + pontosTemp[i].y * t;
-        pontosTemp[i].z = pz + pontosTemp[i].z * t;
+        pontos[i] = pontos_base[i];
+        pontos[i].x = px + pontos[i].x * t;
+        pontos[i].y = py + pontos[i].y * t;
+        pontos[i].z = pz + pontos[i].z * t;
     }
 
-    pontos = pontosTemp;
+    //pontos = pontosTemp;
 }
 
 /**

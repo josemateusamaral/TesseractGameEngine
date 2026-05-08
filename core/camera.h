@@ -21,7 +21,7 @@ public:
     void rodary(double angulo, Ponto3 base);
     void rodarz(double angulo, Ponto3 base);
 
-    Ponto* projetar(Ponto3* pontos, int quantidadePontos);
+    Ponto* projetar(Ponto3* pontos, Ponto* projecao, int quantidadePontos);
 
     ~Camera();
 };

@@ -1,5 +1,8 @@
 #include "camera.h"
 
+//Definicao do ponteiro para a classe Singleton.
+Camera *Camera::camera = nullptr;
+
 /**
  * @brief Construtor da Camera, posição do Pinhole
  * @authors Gustavo Mittelmann, Henrique Heiderscheidt
@@ -78,20 +81,16 @@ void Camera::mover(double x,double y,double z){
  * @return Ponto* Array de pontos 2d para serem desenhados
  */
 
-Ponto* Camera::projetar(Ponto3* pontos, int quantidadePontos){
+Ponto* Camera::projetar(Ponto3* pontos, Ponto* projecao, int quantidadePontos){
     double y1,y2;
-    Ponto* projecaoTemp = (Ponto*)malloc(sizeof(Ponto) * quantidadePontos);
     for( int i = 0 ; i < quantidadePontos ; i++ ){
         y1 = ( ( dist_f*-1 / (pontos[i].z-camera->posicao.z) ) * (pontos[i].x-camera->posicao.x) );
 	    y2 = ( ( dist_f*-1 / (pontos[i].z-camera->posicao.z) ) * (pontos[i].y-camera->posicao.y) );
-        projecaoTemp[i] = Ponto(y1,y2-240);
+        projecao[i].x = y1 + 320;
+        projecao[i].y = y2 + 240;
     }
-	return projecaoTemp;
+	return projecao;
 }
-
-//Definicao do ponteiro para a classe Singleton.
-Camera *Camera::camera = nullptr;
-
 
 /**
  * @brief Singleton da classe camera, só permite uma instacia da classe.
