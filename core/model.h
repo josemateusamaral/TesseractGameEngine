@@ -46,6 +46,7 @@ class Model
         Ponto3* pontos;
         Ponto* projecao;
 
+        Model();
         Model(string filePath, Ponto3 posicao = Ponto3(0, 0, 0), double tamanho = 1);
         void loadModel(string path);
         void draw(Window &window);

@@ -12,6 +12,11 @@ enum RenderType {
     TEXTURED = 3
 };
 
+Model::Model()
+{
+    
+}
+
 Model::Model(string filePath, Ponto3 posicao, double tamanho)
 :posicao{posicao}, tamanho{tamanho}
 {

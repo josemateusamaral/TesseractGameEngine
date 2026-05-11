@@ -26,6 +26,7 @@ set(SOURCES
     core/input.cpp
     core/ponto.cpp
     core/ponto3.cpp
+    core/scene.cpp
 )
 
 # Criar executável
