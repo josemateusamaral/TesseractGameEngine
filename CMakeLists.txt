@@ -17,6 +17,7 @@ include_directories(
 set(SOURCES
     teste.cpp
 
+    core/tesseract.cpp
     core/window.cpp
     core/camera.cpp
     core/vec3.cpp

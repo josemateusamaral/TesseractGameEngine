@@ -7,15 +7,17 @@ class Window
     private:
         int width;
         int height;
-        SDL_Window* window = NULL;
-
-
-    public:
-        Window(int width,int height);
-        ~Window();
+        SDL_Window* window = NULL;    
         SDL_Renderer *renderer;
 
-        
+    public:
+    
+        float* zBuffer;
+        float* colorBuffer;
+
+        Window(int width,int height);
+        ~Window();
+
         void atualiza();
         void clean();
 

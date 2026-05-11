@@ -109,16 +109,17 @@ void Model::loadModel(string path)
         );
 
         //projecao
-        projecao[i] = Ponto(0.0f, 0.0f);
+        projecao[i] = Ponto(0.0f, 0.0f, 0.0f);
 
         // uv
         if (mesh->mTextureCoords[0]) {
             uvs[i] = Ponto(
                 mesh->mTextureCoords[0][i].x,
-                mesh->mTextureCoords[0][i].y
+                mesh->mTextureCoords[0][i].y,
+                0.0f
             );
         } else {
-            uvs[i] = Ponto(0.0f, 0.0f);
+            uvs[i] = Ponto(0.0f, 0.0f, 0.0f);
         }
     }
 

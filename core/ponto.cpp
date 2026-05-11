@@ -8,8 +8,8 @@
  * 
  * @author Henrique Heiderscheidt
  */
-Ponto::Ponto(double x, double y)
-:x{x+400},y{y+400}
+Ponto::Ponto(double x, double y, double z)
+:x{x+400},y{y+400},z{z}
 {
 }
 
@@ -28,12 +28,13 @@ Ponto::Ponto()
 Ponto::Ponto(const Ponto & p){
     x = p.x;
     y = p.y;
+    z = p.z;
 }
 
 
 ostream & operator<< (ostream &out, const Ponto &p)
 {
-    out << "(" << p.x << "," << p.y << ")";
+    out << "(" << p.x << "," << p.y << "," << p.z << ")";
     return out;
 }
 

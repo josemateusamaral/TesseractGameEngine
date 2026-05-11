@@ -1,10 +1,9 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
-#include "core/window.h"
 #include "core/ponto3.h"
 #include "core/model.h"
 #include <iostream>
-#include "core/camera.h"
+#include "core/tesseract.h"
 
 using namespace std;
 
@@ -23,15 +22,11 @@ int main(int argc, char *args[])
 	else
 	{
 
+		Tesseract tesseract = Tesseract(SCREEN_WIDTH, SCREEN_HEIGHT);
+
 		// Events
 		bool quit = false;
 		SDL_Event ev;
-
-		// Create window
-		Window window = Window(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-		// Create camera
-		Camera *camera = new Camera();
 
 		// load model
 		Model model{"samples/model_loading/cubo.glb"};
@@ -40,14 +35,10 @@ int main(int argc, char *args[])
 		model.setBackfaceCulling(true);
 		model.renderType = 3;
 
-		// scene
-		Model *render[1] = {&model};
-
 		// pointlight
 		Ponto3 light = Ponto3(model.getPos().x, model.getPos().y, model.getPos().z);
 
-		while (!quit)
-		{
+		while (!quit){
 
 			model.rotate(1,1,1);
 
@@ -61,52 +52,14 @@ int main(int argc, char *args[])
 					{
 						quit = true;
 					}
-					if (ev.key.keysym.sym == SDLK_a)
-					{
-						camera->mover(1);
-					}
-					if (ev.key.keysym.sym == SDLK_d)
-					{
-						camera->mover(-1);
-						// mover para direita
-					}
-					if (ev.key.keysym.sym == SDLK_w)
-					{
-						camera->mover(0, 0, 1);
-						// mover para tras
-					}
-					if (ev.key.keysym.sym == SDLK_s)
-					{
-						camera->mover(0, 0, -1);
-					}
-					if (ev.key.keysym.sym == SDLK_0)
-					{
-						camera->mover(0, -1, 0);
-					}
-					if (ev.key.keysym.sym == SDLK_1)
-					{
-						camera->mover(0, 1, 0);
-					}
-
-					if (ev.key.keysym.sym == SDLK_e)
-					{
-						camera->rodarx(0.34, model.getPos());
-					}
-					if (ev.key.keysym.sym == SDLK_q)
-					{
-						camera->rodary(0.34, model.getPos());
-					}
-					if (ev.key.keysym.sym == SDLK_z)
-					{
-						camera->rodarz(0.34, model.getPos());
-					}
 				}
 			}
 
 			//render
-			window.clean();
-			render[0]->draw(window);
-			window.atualiza();
+			tesseract.window->clean();
+			model.draw(*tesseract.window);
+			tesseract.window->atualiza();
+			
 			SDL_Delay(32);
 
 		}

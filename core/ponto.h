@@ -7,7 +7,8 @@ class Ponto
     public:
         double x;
         double y;
-        Ponto(double x,double y);
+        double z;
+        Ponto(double x,double y,double z);
         Ponto(const Ponto & p);
         Ponto();
 };

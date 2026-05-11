@@ -9,9 +9,14 @@
  * @param height Altura em pixel
  */
 Window::Window(int width,int height)
+:width{width}, height{height}
 {
-    window = SDL_CreateWindow( "Window(s)", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN );
+
+    window = SDL_CreateWindow( "Tesseract Game Engine", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN );
     renderer = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED);
+    zBuffer = new float[width*height];
+    colorBuffer = new float[width*height*3];
+
 }
 
 /**
@@ -30,7 +35,11 @@ void Window::atualiza()
  */
 void Window::clean()
 {
+    //clean renderer
     SDL_RenderClear(renderer);
+
+    //clean zBuffer
+    std::fill(this->zBuffer, this->zBuffer + (this->width * this->height), std::numeric_limits<float>::infinity());
 
 }
 
@@ -194,6 +203,7 @@ bool Window::estaDentro(int x1, int y1, int x2, int y2, int x3, int y3, int x, i
 
 void Window::desenhar_poligono_texturizado(Ponto &p1, Ponto &p2, Ponto &p3, Ponto &uv1, Ponto &uv2, Ponto &uv3, unsigned char* data, int texW, int texH) 
 {
+
     // meio do poligono
     //double middleX = (((p1.x + p2.x + p3.x) - (400 * 3))/3);
     //double middleY = (((p1.y + p2.y + p3.y) - (400 * 3))/3);
@@ -255,6 +265,7 @@ void Window::desenhar_poligono_texturizado(Ponto &p1, Ponto &p2, Ponto &p3, Pont
     double sizeY = topY - bottomY;//Altura do poligono
 
     float areaTotal = area(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+
     if (areaTotal == 0) return;
 
     for(int x = 0; x < sizeX; x++) {
@@ -262,54 +273,50 @@ void Window::desenhar_poligono_texturizado(Ponto &p1, Ponto &p2, Ponto &p3, Pont
             int px_atual = px + x;
             int py_atual = py - y;
 
-            // Suas áreas já calculadas!
+            // areas dos triangulos
             float a1 = area(px_atual, py_atual, p2.x, p2.y, p3.x, p3.y);
             float a2 = area(p1.x, p1.y, px_atual, py_atual, p3.x, p3.y);
             float a3 = area(p1.x, p1.y, p2.x, p2.y, px_atual, py_atual);
 
-            if (abs(areaTotal - (a1 + a2 + a3)) < 0.01) { // Ponto está dentro
+            if (abs(areaTotal - (a1 + a2 + a3)) < 0.01) {
                 
                 // Coordenadas baricêntricas (pesos de 0.0 a 1.0)
                 float w1 = a1 / areaTotal;
                 float w2 = a2 / areaTotal;
                 float w3 = a3 / areaTotal;
 
+                // test zbuffer
+                float z = w1 * p1.z + w2 * p2.z + w3 * p3.z;
+                int bufferIndex = ( py_atual * this->width ) + px_atual;
+                if (z < this->zBuffer[bufferIndex]) {
+                    this->zBuffer[bufferIndex] = z;
+                } else {
+                    continue;
+                }
+
                 // Interpola o UV para este pixel exato
                 float u = w1 * uv1.x + w2 * uv2.x + w3 * uv3.x;
                 float v = w1 * uv1.y + w2 * uv2.y + w3 * uv3.y;
 
-                /*
-                // Converte UV para coordenada de pixel na imagem (Texel)
-                int tx = (int)(u * (texW - 1));
-                int ty = (int)(v * (texH - 1));
-
-                // Pega a cor no array da STB (assumindo 3 canais RGB)
-                int idx = (ty * texW + tx) * 3;
-                SDL_SetRenderDrawColor(renderer, data[idx], data[idx+1], data[idx+2], 255);
-                SDL_RenderDrawPoint(renderer, px_atual, py_atual);
-                */
-
-
-                // 1. Enrola o UV para sempre ficar entre 0.0 e 1.0 (permite textura repetida)
+                // Enrola o UV para sempre ficar entre 0.0 e 1.0 (permite textura repetida)
                 u = u - floor(u);
                 v = v - floor(v);
 
-                // 2. Converte UV para coordenada de pixel na imagem
+                // Converte UV para coordenada de pixel na imagem
                 int tx = (int)(u * (texW - 1));
                 int ty = (int)(v * (texH - 1));
 
-                // 3. Clamping de segurança extra contra problemas de arredondamento de float
+                // Clamping de segurança extra contra problemas de arredondamento de float
                 if (tx < 0) tx = 0;
                 if (tx >= texW) tx = texW - 1;
                 if (ty < 0) ty = 0;
                 if (ty >= texH) ty = texH - 1;
 
-                // Agora é seguro calcular o índice!
+                // Texture index (assumindo formato RGB, 3 bytes por pixel)
                 int idx = (ty * texW + tx) * 3;
 
                 SDL_SetRenderDrawColor(renderer, data[idx], data[idx+1], data[idx+2], 255);
                 SDL_RenderDrawPoint(renderer, px_atual, py_atual);
-
 
             }
         }
