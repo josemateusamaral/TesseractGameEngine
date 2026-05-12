@@ -24,8 +24,6 @@ set(SOURCES
     core/model.cpp
     core/texture.cpp
     core/input.cpp
-    core/ponto.cpp
-    core/ponto3.cpp
     core/scene.cpp
 )
 

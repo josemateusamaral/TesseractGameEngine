@@ -1,4 +1,5 @@
 #include "camera.h"
+#include <cmath>
 
 //Definicao do ponteiro para a classe Singleton.
 Camera *Camera::camera = nullptr;
@@ -10,7 +11,7 @@ Camera *Camera::camera = nullptr;
  * @param dist_f distancia focal
  */
 Camera::Camera()
-:posicao{Ponto3(0,0,0)},dist_f{500}
+:posicao{Vec3(0,0,0)},dist_f{500}
 {
     angulox = 0;
     anguloy = 0;
@@ -24,7 +25,7 @@ Camera::Camera()
  * 
  * @todo Talvez mudar a forma de visualizar a camera.
  */
-void Camera::rodarx(double angulo, Ponto3 base){
+void Camera::rodarx(double angulo, Vec3 base){
     posicao.y = posicao.y*cos(angulo)+posicao.z*-sin(angulo);
     posicao.z = posicao.y*sin(angulo) + posicao.z*cos(angulo);
 }
@@ -37,7 +38,7 @@ void Camera::rodarx(double angulo, Ponto3 base){
  * 
  * @todo Talvez mudar a forma de visualizar a camera.
  */
-void Camera::rodary(double angulo,Ponto3 base){
+void Camera::rodary(double angulo,Vec3 base){
     posicao.x = ((posicao.x - base.x)*cos(angulo) + (posicao.z-base.z)*-sin(angulo)) + base.x;
     posicao.z = ((posicao.x - base.z)*sin(angulo) + (posicao.z-base.z)*cos(angulo)) + base.z;
     cout << posicao <<endl;
@@ -51,7 +52,7 @@ void Camera::rodary(double angulo,Ponto3 base){
  * 
  * @todo Talvez mudar a forma de visualizar a camera.
  */
-void Camera::rodarz(double angulo, Ponto3 base){
+void Camera::rodarz(double angulo, Vec3 base){
     posicao.x = ((posicao.x - base.x)*cos(angulo)  + (posicao.y - base.y)*-sin(angulo)) + base.x;
     posicao.y = ((posicao.x - base.x)*sin(angulo)  + (posicao.y - base.y)*cos(angulo)) + base.y;
 
@@ -78,10 +79,10 @@ void Camera::mover(double x,double y,double z){
  * @authors Jose Mateus Amaral, Gustavo Mittelmann, Henrique Heiderscheidt, Fernanda Martins, Eduardo Brandt, Monique Ellen
  * @param pontos Array de pontos 3D para serem transformados em 2D
  * @param quantidadePontos quantidade de pontos
- * @return Ponto* Array de pontos 2d para serem desenhados
+ * @return Vec3* Array de pontos 2d para serem desenhados
  */
 
-Ponto* Camera::projetar(Ponto3* pontos, Ponto* projecao, int quantidadePontos){
+Vec3* Camera::projetar(Vec3* pontos, Vec3* projecao, int quantidadePontos){
     double y1,y2;
     for( int i = 0 ; i < quantidadePontos ; i++ ){
         y1 = ( ( dist_f*-1 / (pontos[i].z-camera->posicao.z) ) * (pontos[i].x-camera->posicao.x) );

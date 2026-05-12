@@ -4,7 +4,7 @@
 #include <assimp/postprocess.h>
 #include <iostream>
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "vendor/stb_image.h"
 
 enum RenderType {
     WIREFRAME = 1,
@@ -17,7 +17,7 @@ Model::Model()
     
 }
 
-Model::Model(string filePath, Ponto3 posicao, double tamanho)
+Model::Model(string filePath, Vec3 posicao, double tamanho)
 :posicao{posicao}, tamanho{tamanho}
 {
     iluminacao = Vec3(1,1,0);
@@ -55,10 +55,10 @@ void Model::loadModel(string path)
 
     // iniciate class control variables
     this->quantidadePontos = mesh->mNumVertices;
-    pontos_base = new Ponto3[quantidadePontos]; 
-    projecao = new Ponto[quantidadePontos];
-    pontos = new Ponto3[quantidadePontos];
-    uvs = new Ponto[quantidadePontos];
+    pontos_base = new Vec3[quantidadePontos]; 
+    projecao = new Vec3[quantidadePontos];
+    pontos = new Vec3[quantidadePontos];
+    uvs = new Vec3[quantidadePontos];
     this->polygonCount = mesh->mNumFaces;
 
 
@@ -107,24 +107,24 @@ void Model::loadModel(string path)
     for (unsigned int i = 0; i < mesh->mNumVertices; i++) {        
         
         // vertice
-        pontos_base[i] = Ponto3(
+        pontos_base[i] = Vec3(
             mesh->mVertices[i].x,// * tamanho, 
             mesh->mVertices[i].y,// * tamanho, 
             mesh->mVertices[i].z// * tamanho
         );
 
         //projecao
-        projecao[i] = Ponto(0.0f, 0.0f, 0.0f);
+        projecao[i] = Vec3(0.0f, 0.0f, 0.0f);
 
         // uv
         if (mesh->mTextureCoords[0]) {
-            uvs[i] = Ponto(
+            uvs[i] = Vec3(
                 mesh->mTextureCoords[0][i].x,
                 mesh->mTextureCoords[0][i].y,
                 0.0f
             );
         } else {
-            uvs[i] = Ponto(0.0f, 0.0f, 0.0f);
+            uvs[i] = Vec3(0.0f, 0.0f, 0.0f);
         }
     }
 
@@ -179,9 +179,9 @@ void Model::draw(Window &window)
         int i2 = indices[i + 2];
 
         // pontos no espaço 3D
-        Ponto3 p0 = pontos[i0];
-        Ponto3 p1 = pontos[i1];
-        Ponto3 p2 = pontos[i2];
+        Vec3 p0 = pontos[i0];
+        Vec3 p1 = pontos[i1];
+        Vec3 p2 = pontos[i2];
 
         double b[3] = {p0.x, p0.y, p0.z};
         double c[3] = {p1.x, p1.y, p1.z};
@@ -281,7 +281,6 @@ void Model::calcular_pontos_3D()
     double pz = posicao.z - camera->posicao.z;
     double t = tamanho;
 
-    //Ponto3* pontosTemp = (Ponto3*)malloc(sizeof(Ponto3) * quantidadePontos);
     for(int i = 0 ; i < quantidadePontos ; i++ ){
         pontos[i] = pontos_base[i];
         pontos[i].x = px + pontos[i].x * t;
@@ -289,7 +288,6 @@ void Model::calcular_pontos_3D()
         pontos[i].z = pz + pontos[i].z * t;
     }
 
-    //pontos = pontosTemp;
 }
 
 /**
@@ -339,7 +337,7 @@ void Model::setPos(double x, double y, double z){
     this->posicao.z = z;
 }
 
-void Model::setPos(Ponto3 posicao){
+void Model::setPos(Vec3 posicao){
     this->posicao = posicao;
 }
 
@@ -355,7 +353,7 @@ void Model::setZ(double z){
     this->posicao.z = z;
 }
 
-Ponto3 Model::getPos(){
+Vec3 Model::getPos(){
     return this->posicao;
 }
 

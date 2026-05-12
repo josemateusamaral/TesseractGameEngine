@@ -51,13 +51,13 @@ void Window::clean()
  * 
  * @author Henrique Heiderscheidt
  */
-void Window::desenha(Ponto &p1, Ponto &p2, int r, int g, int b)
+void Window::desenha(Vec3 &p1, Vec3 &p2, int r, int g, int b)
 {
     SDL_SetRenderDrawColor(renderer,r,g,b,SDL_ALPHA_OPAQUE);
     SDL_RenderDrawLine(renderer, p1.x,p1.y,p2.x,p2.y);
 }
 
-void Window::desenha(Ponto &p1, Ponto &p2)
+void Window::desenha(Vec3 &p1, Vec3 &p2)
 {
     SDL_SetRenderDrawColor(renderer,255,255,255,SDL_ALPHA_OPAQUE);
     SDL_RenderDrawLine(renderer, p1.x,p1.y,p2.x,p2.y);
@@ -75,12 +75,12 @@ void Window::desenha(Ponto &p1, Ponto &p2)
  * 
  * @author Jose Mateus Amaral
  */
-void Window::desenhar_poligono(Ponto &p1, Ponto &p2, Ponto &p3,int r, int g, int b){
+void Window::desenhar_poligono(Vec3 &p1, Vec3 &p2, Vec3 &p3,int r, int g, int b){
 
     // meio do poligono
     //double middleX = (((p1.x + p2.x + p3.x) - (400 * 3))/3);
     //double middleY = (((p1.y + p2.y + p3.y) - (400 * 3))/3);
-    //Ponto meio{middleX,middleY};
+    //Vec3 meio{middleX,middleY};
 
     // quadrado ao redor do poligono
     double topY,bottomY,maxLeft,maxRight;
@@ -201,9 +201,9 @@ bool Window::estaDentro(int x1, int y1, int x2, int y2, int x3, int y3, int x, i
     return ( areaPoligono == triangulo1 + triangulo2 + triangulo3 );
 }
 
-void Window::desenhar_poligono_texturizado(Ponto &p1, Ponto &p2, Ponto &p3, Ponto &uv1, Ponto &uv2, Ponto &uv3, unsigned char* data, int texW, int texH) 
+void Window::desenhar_poligono_texturizado(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, unsigned char* data, int texW, int texH) 
 {
-
+    
     // meio do poligono
     //double middleX = (((p1.x + p2.x + p3.x) - (400 * 3))/3);
     //double middleY = (((p1.y + p2.y + p3.y) - (400 * 3))/3);

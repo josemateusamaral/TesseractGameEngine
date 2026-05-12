@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "core/ponto3.h"
+#include "core/vec3.h"
 #include "core/model.h"
 #include <iostream>
 #include "core/tesseract.h"
@@ -29,15 +29,13 @@ int main(int argc, char *args[])
 	tesseract.scene->addModel(&model);
 
 	// create light point
-	Ponto3 light = Ponto3(model.getPos().x, model.getPos().y, model.getPos().z);
+	Vec3 light = Vec3(model.getPos().x, model.getPos().y, model.getPos().z);
 
-	while (!tesseract.quit){
+	tesseract.run([&]() {
 
-		model.rotate(1,1,1);
-		tesseract.update();
-
-	}
-	SDL_Quit();
+        model.rotate(1, 1, 1);
+        
+    });
 	
 	return 0;
 }

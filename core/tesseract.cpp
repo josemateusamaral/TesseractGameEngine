@@ -1,4 +1,6 @@
 #include "tesseract.h"
+#include <stdio.h>
+#include <functional>
 
 Tesseract::Tesseract(int width, int height)
 {
@@ -28,36 +30,45 @@ Tesseract::~Tesseract()
 
 }
 
-void Tesseract::update()
-{
-
-    // update keymap
-	while (SDL_PollEvent(&ev) != 0)
-	{
-        // pressed keys
-    	if (ev.type == SDL_KEYDOWN)
-		{
-			if (ev.key.keysym.sym == SDLK_ESCAPE)
-			{
-				this->quit = true;
-			}
-		}
-	}
-
-
-    //render
-    this->window->clean();
-    for(int i = 0; i < this->scene->qtdModels; i++){
-        Model model = this->scene->models[i];
-        model.draw(*window);
-    }
-	this->window->atualiza();
-
-    //delay -> 32ms = 60fps
-    SDL_Delay(this->delay);
-
-}
-
 bool Tesseract::isRunning(){
     return this->initialized;
+}
+
+void Tesseract::run(function<void()> userUpdate) {
+    
+    while (!this->quit) {
+        
+        // 1. Processa inputs da engine (teclado, mouse, fechar janela)
+        // update keymap
+        while (SDL_PollEvent(&ev) != 0)
+        {
+            // pressed keys
+            if (ev.type == SDL_KEYDOWN)
+            {
+                if (ev.key.keysym.sym == SDLK_ESCAPE)
+                {
+                    this->quit = true;
+                }
+            }
+        }
+
+        // scripts
+        if (userUpdate) {
+            userUpdate();
+        }
+
+        //render
+        this->window->clean();
+        for(int i = 0; i < this->scene->qtdModels; i++){
+            Model &model = this->scene->models[i];
+            model.draw(*window);
+        }
+        this->window->atualiza();
+
+        // 4. Delay para manter os FPS
+        SDL_Delay(this->delay);
+    }
+
+    SDL_Quit();
+
 }

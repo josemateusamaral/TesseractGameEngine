@@ -2,6 +2,8 @@
 #include "window.h"
 #include "camera.h"
 #include "scene.h"
+#include <stdio.h>
+#include <functional>
 
 class Tesseract
 {
@@ -20,7 +22,7 @@ class Tesseract
         Tesseract(int width = 640, int height = 480);
         ~Tesseract();
 
-        void update();
         bool isRunning();
+        void run(function<void()> userUpdate);
 
 };
