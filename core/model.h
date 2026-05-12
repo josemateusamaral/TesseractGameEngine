@@ -5,6 +5,7 @@
 #include "vec3.h"
 #include "camera.h"
 #include "texture.h"
+#include "light.h"
 
 using namespace std;
 
@@ -42,6 +43,12 @@ class Model
         Vec3* projecao;
         Vec3* uvs = nullptr;
 
+
+        int qtdLights;
+        int maxQtdLight;
+        Light* lights;
+
+
         Model();
         Model(string filePath, Vec3 posicao = Vec3(0, 0, 0), double tamanho = 1);
         void loadModel(string path);
@@ -66,6 +73,9 @@ class Model
         //backface culling
         bool getBackfaceCulling();
         void setBackfaceCulling(bool value);
+
+        //light
+        void setLight(Light *light);
 
 };
 

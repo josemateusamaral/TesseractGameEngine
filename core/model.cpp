@@ -20,6 +20,11 @@ Model::Model()
 Model::Model(string filePath, Vec3 posicao, double tamanho)
 :posicao{posicao}, tamanho{tamanho}
 {
+
+    qtdLights = 0;
+    maxQtdLight = 10;
+    //lights = new Light[maxQtdLight];
+
     iluminacao = Vec3(1,1,0);
     loadModel(filePath);
 
@@ -363,6 +368,10 @@ void Model::setScale(double tamanho){
 
 double Model::getScale(){
     return this->tamanho;
+}
+
+void Model::setLight(Light *light){
+    this->lights[this->qtdLights] = *light;
 }
 
 ostream & operator<< (ostream &out, const Model &p)

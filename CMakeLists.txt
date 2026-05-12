@@ -25,6 +25,8 @@ set(SOURCES
     core/texture.cpp
     core/input.cpp
     core/scene.cpp
+    core/light.cpp
+
 )
 
 # Criar executável
