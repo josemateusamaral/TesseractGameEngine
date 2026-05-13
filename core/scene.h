@@ -9,7 +9,7 @@ class Scene
         int qtdModels;
         int bufferSize;
 
-        Model *models;
+        Model **models;
 
         Scene();
         ~Scene();

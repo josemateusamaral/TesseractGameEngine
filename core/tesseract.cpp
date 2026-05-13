@@ -60,8 +60,8 @@ void Tesseract::run(function<void()> userUpdate) {
         //render
         this->window->clean();
         for(int i = 0; i < this->scene->qtdModels; i++){
-            Model &model = this->scene->models[i];
-            model.draw(*window);
+            Model* model = this->scene->models[i];
+            model->draw(*window);
         }
         this->window->atualiza();
 

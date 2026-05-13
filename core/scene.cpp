@@ -5,7 +5,7 @@ Scene::Scene()
 
     bufferSize = 100;
     qtdModels = 0;
-    models = new Model[bufferSize]; 
+    models = new Model*[bufferSize]; 
 
 }
 
@@ -20,7 +20,7 @@ Scene::~Scene()
 
 void Scene::addModel(Model *model){
 
-    models[qtdModels] = *model;
+    models[qtdModels] = model;
     qtdModels++;
 
 }

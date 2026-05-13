@@ -11,9 +11,8 @@ public:
     Light(float r, float g, float b);
     virtual ~Light();
 
-    virtual float applyR(Vec3 p1, Vec3 p2, Vec3 p3) = 0;
-    virtual float applyG(Vec3 p1, Vec3 p2, Vec3 p3) = 0;
-    virtual float applyB(Vec3 p1, Vec3 p2, Vec3 p3) = 0;
+    virtual void apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB) = 0;
+
 };
 
 
@@ -24,9 +23,8 @@ class AmbientLight : public Light
 public:
 
     AmbientLight(float r, float g, float b);
-    float applyR(Vec3 p1, Vec3 p2, Vec3 p3) override;
-    float applyG(Vec3 p1, Vec3 p2, Vec3 p3) override;
-    float applyB(Vec3 p1, Vec3 p2, Vec3 p3) override;
+
+    void apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB) override;
 
 };
 
@@ -40,9 +38,7 @@ public:
 
     DirectionalLight(float r, float g, float b, float dirX, float dirY, float dirZ);
 
-    float applyR(Vec3 p1, Vec3 p2, Vec3 p3) override;
-    float applyG(Vec3 p1, Vec3 p2, Vec3 p3) override;
-    float applyB(Vec3 p1, Vec3 p2, Vec3 p3) override;
+    void apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB) override;
 };
 
 
@@ -55,7 +51,5 @@ public:
 
     PointLight(float r, float g, float b, float x, float y, float z);
 
-    float applyR(Vec3 p1, Vec3 p2, Vec3 p3) override;
-    float applyG(Vec3 p1, Vec3 p2, Vec3 p3) override;
-    float applyB(Vec3 p1, Vec3 p2, Vec3 p3) override;
+    void apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB) override;
 };

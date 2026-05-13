@@ -5,38 +5,14 @@
 Light::Light(){
     
 }
-
 Light::Light(float r, float g, float b)
 : r{r}, g{g}, b{b}
 {
 
 }
-
 Light::~Light()
 {
     
-}
-
-
-
-
-DirectionalLight::DirectionalLight(float r, float g, float b, float dirX, float dirY, float dirZ)
-: Light(r, g ,b), dirX{dirX}, dirY{dirY}, dirZ{dirZ}
-{
-
-}
-
-float DirectionalLight::applyR(Vec3 p1, Vec3 p2, Vec3 p3)
-{
-    return this->r;
-}
-float DirectionalLight::applyG(Vec3 p1, Vec3 p2, Vec3 p3)
-{
-    return this->g;
-}
-float DirectionalLight::applyB(Vec3 p1, Vec3 p2, Vec3 p3)
-{
-    return this->b;
 }
 
 
@@ -47,22 +23,49 @@ AmbientLight::AmbientLight(float r, float g, float b)
 {
     
 }
+void AmbientLight::apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB)
+{
+    outR += this->r;
+    outG += this->g;
+    outB += this->b;
+}
 
-float AmbientLight::applyR(Vec3 p1, Vec3 p2, Vec3 p3)
+
+
+
+DirectionalLight::DirectionalLight(float r, float g, float b, float dirX, float dirY, float dirZ)
+: Light(r, g ,b), dirX{dirX}, dirY{dirY}, dirZ{dirZ}
 {
-    //printf("APPLY R: %f\n", this->r);
-    return this->r;
+
 }
-float AmbientLight::applyG(Vec3 p1, Vec3 p2, Vec3 p3)
+void DirectionalLight::apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB)
 {
-    //printf("APPLY G: %f\n", this->g);
-    return this->g;
+    // edges do triangulo
+    Vec3 v1 = p2 - p1;
+    Vec3 v2 = p3 - p1;
+
+    // normal da face
+    Vec3 normal = v1.produto_vetorial(v2).versor();
+
+    // direção da luz
+    Vec3 lightDir(dirX, dirY, dirZ);
+
+    lightDir = lightDir.versor();
+
+    // intensidade Lambert
+    float intensity = normal.produto_escalar(lightDir);
+
+    // clamp
+    intensity = std::max(0.0f, intensity);
+
+    // aplica cor
+    outR += r * intensity;
+    outG += g * intensity;
+    outB += b * intensity;
 }
-float AmbientLight::applyB(Vec3 p1, Vec3 p2, Vec3 p3)
-{    
-    //printf("APPLY B: %f\n", this->b);
-    return this->b;
-}
+
+
+
 
 
 
@@ -73,15 +76,9 @@ PointLight::PointLight(float r, float g, float b, float x, float y, float z)
 
 }
 
-float PointLight::applyR(Vec3 p1, Vec3 p2, Vec3 p3)
+void PointLight::apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB)
 {
-    return 0.0f;    
-}
-float PointLight::applyG(Vec3 p1, Vec3 p2, Vec3 p3)
-{
-    return 0.0f;
-}
-float PointLight::applyB(Vec3 p1, Vec3 p2, Vec3 p3)
-{
-    return 0.0f;
+    outR += this->r;
+    outG += this->g;
+    outB += this->b;
 }

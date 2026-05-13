@@ -257,8 +257,6 @@ void Model::draw(Window &window)
                 if (camToObj.angulo_entre_vetores(normal) > 90 || !this->backfaceCulling)
                 {
 
-                    printf("qtdLights: %d\n", this->qtdLights);
-
                     window.desenhar_poligono_texturizado(
                         projecao[i0],
                         projecao[i1],

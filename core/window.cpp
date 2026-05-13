@@ -269,6 +269,20 @@ void Window::desenhar_poligono_texturizado(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &u
 
     if (areaTotal == 0) return;
 
+
+    // calculate light effect
+    float lightEffetR = 0.0f;
+    float lightEffetG = 0.0f;
+    float lightEffetB = 0.0f;
+    for (int i = 0; i < qtdLights; i++) { 
+        Light* light = lights[i];
+        light->apply(p1, p2, p3, lightEffetR, lightEffetG, lightEffetB);
+        //lightEffetR += light->applyR(p1, p2, p3);
+        //lightEffetG += light->applyG(p1, p2, p3);
+        //lightEffetB += light->applyB(p1, p2, p3);
+        //printf("luz aplicada");
+    }
+
     for(int x = 0; x < sizeX; x++) {
         for(int y = 0; y < sizeY; y++) {
             int px_atual = px + x;
@@ -313,25 +327,13 @@ void Window::desenhar_poligono_texturizado(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &u
                 if (ty < 0) ty = 0;
                 if (ty >= texH) ty = texH - 1;
 
-                // calculate light effect
-                float lightEffetR = 0.0f;
-                float lightEffetG = 0.0f;
-                float lightEffetB = 0.0f;
-                for (int i = 0; i < qtdLights; i++) { 
-                    Light* light = lights[i];
-                    lightEffetR += light->applyR(p1, p2, p3);
-                    lightEffetG += light->applyG(p1, p2, p3);
-                    lightEffetB += light->applyB(p1, p2, p3);
-                    //printf("luz aplicada");
-                }
-
                 //printf("Light Effect: R=%f, G=%f, B=%f\n", lightEffetR, lightEffetG, lightEffetB);
 
                 // Texture index (assumindo formato RGB, 3 bytes por pixel)
                 int idx = (ty * texW + tx) * 3;
-                char r = data[idx];// * lightEffetR;
-                char g = data[idx + 1];// * lightEffetG;
-                char b = data[idx + 2];// * lightEffetB;
+                char r = data[idx] * lightEffetR;
+                char g = data[idx + 1] * lightEffetG;
+                char b = data[idx + 2] * lightEffetB;
 
                 SDL_SetRenderDrawColor(renderer, r, g, b, 255);
                 SDL_RenderDrawPoint(renderer, px_atual, py_atual);

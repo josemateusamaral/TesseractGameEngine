@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "core/vec3.h"
 #include "core/model.h"
 #include "core/light.h"
 #include <iostream>
@@ -14,7 +13,7 @@ const int SCREEN_HEIGHT = 480;
 int main(int argc, char *args[])
 {
 
-	//initialize engine
+	// initialize engine
 	Tesseract tesseract = Tesseract(SCREEN_WIDTH, SCREEN_HEIGHT);
 	if(!tesseract.isRunning()){
 		printf("Fail to start Tesseract Game Engine !");
@@ -30,8 +29,10 @@ int main(int argc, char *args[])
 	tesseract.scene->addModel(model);
 
 	// create ambient light
-	AmbientLight* ambientLight = new AmbientLight(1,1,1);
+	DirectionalLight* ambientLight = new DirectionalLight( 1, 1, 1, 1.0, 1.0, 0.0);
 	model->setLight(ambientLight);
+	AmbientLight* directionalLight = new AmbientLight( 0.1, 0.1, 0.1);
+	model->setLight(directionalLight);
 
 	tesseract.run([&]() {
 
