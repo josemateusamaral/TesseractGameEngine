@@ -22,20 +22,20 @@ int main(int argc, char *args[])
 	}
 
 	// load model
-	Model model{"samples/model_loading/cubo.glb"};
-	model.setPos(0, 0, 14);
-	model.setScale(3);
-	model.setBackfaceCulling(true);
-	model.renderType = 3;
-	tesseract.scene->addModel(&model);
+	Model* model = new Model("samples/model_loading/cubo.glb");
+	model->setPos(0, 0, 14);
+	model->setScale(3);
+	model->setBackfaceCulling(true);
+	model->renderType = 3;
+	tesseract.scene->addModel(model);
 
 	// create ambient light
-	AmbientLight ambientLight(0.5,0.5,0.5);
-	//model.setLight(&ambientLight);
+	AmbientLight* ambientLight = new AmbientLight(1,1,1);
+	model->setLight(ambientLight);
 
 	tesseract.run([&]() {
 
-        model.rotate(1, 1, 1);
+        model->rotate(1, 1, 1);
         
     });
 	
