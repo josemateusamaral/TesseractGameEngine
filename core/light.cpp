@@ -1,4 +1,5 @@
 #include "light.h"
+#include "vec3.h"
 
 
 Light::Light(){
@@ -25,17 +26,17 @@ DirectionalLight::DirectionalLight(float r, float g, float b, float dirX, float 
 
 }
 
-void DirectionalLight::applyR()
+float DirectionalLight::applyR(Vec3 p1, Vec3 p2, Vec3 p3)
 {
-
+    return this->r;
 }
-void DirectionalLight::applyG()
+float DirectionalLight::applyG(Vec3 p1, Vec3 p2, Vec3 p3)
 {
-
+    return this->g;
 }
-void DirectionalLight::applyB()
+float DirectionalLight::applyB(Vec3 p1, Vec3 p2, Vec3 p3)
 {
-
+    return this->b;
 }
 
 
@@ -44,20 +45,23 @@ void DirectionalLight::applyB()
 AmbientLight::AmbientLight(float r, float g, float b)
 : Light(r, g ,b)
 {
-
+    
 }
 
-void AmbientLight::applyR()
+float AmbientLight::applyR(Vec3 p1, Vec3 p2, Vec3 p3)
 {
-
+    //printf("APPLY R: %f\n", this->r);
+    return this->r;
 }
-void AmbientLight::applyG()
+float AmbientLight::applyG(Vec3 p1, Vec3 p2, Vec3 p3)
 {
-
+    //printf("APPLY G: %f\n", this->g);
+    return this->g;
 }
-void AmbientLight::applyB()
-{
-
+float AmbientLight::applyB(Vec3 p1, Vec3 p2, Vec3 p3)
+{    
+    //printf("APPLY B: %f\n", this->b);
+    return this->b;
 }
 
 
@@ -69,15 +73,15 @@ PointLight::PointLight(float r, float g, float b, float x, float y, float z)
 
 }
 
-void PointLight::applyR()
+float PointLight::applyR(Vec3 p1, Vec3 p2, Vec3 p3)
 {
-
+    return 0.0f;    
 }
-void PointLight::applyG()
+float PointLight::applyG(Vec3 p1, Vec3 p2, Vec3 p3)
 {
-
+    return 0.0f;
 }
-void PointLight::applyB()
+float PointLight::applyB(Vec3 p1, Vec3 p2, Vec3 p3)
 {
-
+    return 0.0f;
 }

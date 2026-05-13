@@ -23,7 +23,8 @@ Model::Model(string filePath, Vec3 posicao, double tamanho)
 
     qtdLights = 0;
     maxQtdLight = 10;
-    //lights = new Light[maxQtdLight];
+
+    lights = new Light*[maxQtdLight];
 
     iluminacao = Vec3(1,1,0);
     loadModel(filePath);
@@ -256,6 +257,8 @@ void Model::draw(Window &window)
                 if (camToObj.angulo_entre_vetores(normal) > 90 || !this->backfaceCulling)
                 {
 
+                    printf("qtdLights: %d\n", this->qtdLights);
+
                     window.desenhar_poligono_texturizado(
                         projecao[i0],
                         projecao[i1],
@@ -265,7 +268,9 @@ void Model::draw(Window &window)
                         uvs[i2],
                         (unsigned char*)texture->data,
                         texture->width,
-                        texture->height
+                        texture->height,
+                        this->lights,
+                        this->qtdLights
                     );
                 }
                 break;
@@ -371,7 +376,9 @@ double Model::getScale(){
 }
 
 void Model::setLight(Light *light){
-    this->lights[this->qtdLights] = *light;
+    this->lights[this->qtdLights] = light;
+    this->qtdLights += 1;
+    printf("Light added. Total lights: %d\n", this->qtdLights);
 }
 
 ostream & operator<< (ostream &out, const Model &p)

@@ -46,7 +46,7 @@ class Model
 
         int qtdLights;
         int maxQtdLight;
-        Light* lights;
+        Light** lights;
 
 
         Model();

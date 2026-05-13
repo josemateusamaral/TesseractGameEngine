@@ -1,6 +1,7 @@
 #include "window.h"
 #include "Vec3.h"
 #include <bits/stdc++.h>
+#include "light.h"
 
 /**
  * @brief Construtor de uma janela SDL2
@@ -201,7 +202,7 @@ bool Window::estaDentro(int x1, int y1, int x2, int y2, int x3, int y3, int x, i
     return ( areaPoligono == triangulo1 + triangulo2 + triangulo3 );
 }
 
-void Window::desenhar_poligono_texturizado(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, unsigned char* data, int texW, int texH) 
+void Window::desenhar_poligono_texturizado(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, unsigned char* data, int texW, int texH, Light** lights, int qtdLights) 
 {
     
     // meio do poligono
@@ -312,10 +313,27 @@ void Window::desenhar_poligono_texturizado(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &u
                 if (ty < 0) ty = 0;
                 if (ty >= texH) ty = texH - 1;
 
+                // calculate light effect
+                float lightEffetR = 0.0f;
+                float lightEffetG = 0.0f;
+                float lightEffetB = 0.0f;
+                for (int i = 0; i < qtdLights; i++) { 
+                    Light* light = lights[i];
+                    lightEffetR += light->applyR(p1, p2, p3);
+                    lightEffetG += light->applyG(p1, p2, p3);
+                    lightEffetB += light->applyB(p1, p2, p3);
+                    //printf("luz aplicada");
+                }
+
+                //printf("Light Effect: R=%f, G=%f, B=%f\n", lightEffetR, lightEffetG, lightEffetB);
+
                 // Texture index (assumindo formato RGB, 3 bytes por pixel)
                 int idx = (ty * texW + tx) * 3;
+                char r = data[idx];// * lightEffetR;
+                char g = data[idx + 1];// * lightEffetG;
+                char b = data[idx + 2];// * lightEffetB;
 
-                SDL_SetRenderDrawColor(renderer, data[idx], data[idx+1], data[idx+2], 255);
+                SDL_SetRenderDrawColor(renderer, r, g, b, 255);
                 SDL_RenderDrawPoint(renderer, px_atual, py_atual);
 
             }
