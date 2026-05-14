@@ -2,6 +2,7 @@
 #include "window.h"
 #include "camera.h"
 #include "scene.h"
+#include "input.h"
 #include <stdio.h>
 #include <functional>
 
@@ -13,6 +14,7 @@ class Tesseract
         Window *window;
         Camera *camera;
         Scene *scene;
+        Input *input;
         SDL_Event ev;
 
         bool initialized;

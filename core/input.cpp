@@ -1,31 +1,45 @@
 #include "input.h"
+#include <stdio.h>
+#include <string>
 
-void Input::bindKey(SDL_Keycode key, std::function<void()> func)
+void Input::bindKey(std::string key, std::function<void()> func)
 {
-    keyDownBindings[key] = func;
+    SDL_Keycode sdlKey = SDL_GetKeyFromName(key.c_str());
+    if(sdlKey != SDLK_UNKNOWN)
+    {
+        keyDownBindings[sdlKey] = func;
+    }
 }
 
-void Input::processar(bool &quit)
+void Input::processar(bool &quit, SDL_Event ev)
 {
-    SDL_Event ev;
 
     while (SDL_PollEvent(&ev) != 0)
     {
-        if (ev.type == SDL_QUIT)
-        {
-            quit = true;
-        }
 
         if (ev.type == SDL_KEYDOWN)
         {
             auto it = keyDownBindings.find(ev.key.keysym.sym);
-
             if (it != keyDownBindings.end())
             {
-                it->second(); // 🔥 executa a função associada
+                it->second();
             }
         }
+
     }
+}
+
+SDL_Keycode Input::stringToKey(std::string key)
+{
+
+    auto it = this->keyMap.find(key);
+
+    if(it != keyMap.end())
+    {
+        return it->second;
+    }
+
+    return SDLK_UNKNOWN;
 }
 
 

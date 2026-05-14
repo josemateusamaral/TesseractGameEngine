@@ -21,7 +21,8 @@ Tesseract::Tesseract(int width, int height)
     delay = 32;
     window = new Window(width, height);
     scene = new Scene();
-    Camera *camera = new Camera();
+    camera = new Camera();
+    input = new Input();
 
 }
 
@@ -40,7 +41,7 @@ void Tesseract::run(function<void()> userUpdate) {
         
         // 1. Processa inputs da engine (teclado, mouse, fechar janela)
         // update keymap
-        while (SDL_PollEvent(&ev) != 0)
+        /*while (SDL_PollEvent(&ev) != 0)
         {
             // pressed keys
             if (ev.type == SDL_KEYDOWN)
@@ -50,7 +51,9 @@ void Tesseract::run(function<void()> userUpdate) {
                     this->quit = true;
                 }
             }
-        }
+        }*/
+
+        this->input->processar(this->quit, this->ev);
 
         // scripts
         if (userUpdate) {

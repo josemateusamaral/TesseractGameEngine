@@ -67,9 +67,6 @@ void DirectionalLight::apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG
 
 
 
-
-
-
 PointLight::PointLight(float r, float g, float b, float x, float y, float z) 
 : Light(r, g, b), x{x}, y{y}, z{z}
 {
@@ -78,7 +75,42 @@ PointLight::PointLight(float r, float g, float b, float x, float y, float z)
 
 void PointLight::apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB)
 {
-    outR += this->r;
-    outG += this->g;
-    outB += this->b;
+    // edges
+    Vec3 v1 = p2 - p1;
+    Vec3 v2 = p3 - p1;
+
+    // normal
+    Vec3 normal =
+        v1.produto_vetorial(v2).versor();
+
+    // centro do triangulo
+    Vec3 center(
+        (p1.x + p2.x + p3.x) / 3.0,
+        (p1.y + p2.y + p3.y) / 3.0,
+        (p1.z + p2.z + p3.z) / 3.0
+    );
+
+    // vetor do triangulo ate a luz
+    Vec3 lightDir(
+        x - center.x,
+        y - center.y,
+        z - center.z
+    );
+
+    // distancia
+    double distance = lightDir.modulo();
+
+    // normaliza
+    lightDir = lightDir.versor();
+
+    // Lambert
+    float intensity =
+        normal.produto_escalar(lightDir);
+
+    intensity = std::max(0.0f, intensity);
+
+    // aplica cor
+    outR += this->r * intensity;
+    outG += this->g * intensity;
+    outB += this->b * intensity;
 }

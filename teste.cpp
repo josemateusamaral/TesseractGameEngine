@@ -29,13 +29,18 @@ int main(int argc, char *args[])
 	tesseract.scene->addModel(model);
 
 	// create ambient light
-	DirectionalLight* ambientLight = new DirectionalLight( 1, 1, 1, -1.0, 0.0, 0.0);
+	AmbientLight* ambientLight = new AmbientLight( 1, 1, 1);
 	model->setLight(ambientLight);
-	AmbientLight* directionalLight = new AmbientLight( 0.5,0.5,0.5);
-	model->setLight(directionalLight);
+	
+	// bind key
+	tesseract.input->bindKey("escape", [&tesseract]() {
+		tesseract.quit = true;
+	});
 
+	// game loop
 	tesseract.run([&]() {
 
+		// rotate model
         model->rotate(1, 0, 0);
         
     });
