@@ -17,8 +17,8 @@ Model::Model()
     
 }
 
-Model::Model(string filePath, Vec3 posicao, double tamanho)
-:posicao{posicao}, tamanho{tamanho}
+Model::Model(string filePath, Vec3 position, double scale)
+:position{position}, scale{scale}
 {
 
     qtdLights = 0;
@@ -68,7 +68,6 @@ void Model::loadModel(string path)
     this->polygonCount = mesh->mNumFaces;
 
 
-
     if(scene->mNumMaterials > 0) {
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
         aiString str;
@@ -76,21 +75,22 @@ void Model::loadModel(string path)
         if(material->GetTexture(aiTextureType_DIFFUSE, 0, &str) == AI_SUCCESS) {
             int width, height, nrChannels;
             unsigned char* data = nullptr;
-
-            // Verifica se é uma textura embutida (embedded)
             const aiTexture* embeddedTexture = scene->GetEmbeddedTexture(str.C_Str());
 
+            // Textura embutida
             if (embeddedTexture) {
-                // Textura comprimida (png/jpg) dentro do arquivo
+                
                 if (embeddedTexture->mHeight == 0) {
                     data = stbi_load_from_memory(
                         reinterpret_cast<unsigned char*>(embeddedTexture->pcData),
-                        embeddedTexture->mWidth, // mWidth aqui é o tamanho em bytes
+                        embeddedTexture->mWidth,
                         &width, &height, &nrChannels, 3
                     );
                 }
+
+            // Textura externa
             } else {
-                // Textura externa
+                
                 string directory = path.substr(0, path.find_last_of('/'));
                 string texPath = directory + "/" + string(str.C_Str());
                 data = stbi_load(texPath.c_str(), &width, &height, &nrChannels, 3);
@@ -173,7 +173,7 @@ void Model::draw(Window &window)
     double angulo;
 
     double origem[3] = {0,0,0};
-    double a[3] = {posicao.x, posicao.y, posicao.z};
+    double a[3] = {position.x, position.y, position.z};
     Vec3 camToObj{origem, a};
 
     // Percorrer TRIÂNGULOS
@@ -284,10 +284,10 @@ void Model::draw(Window &window)
  */
 void Model::calcular_pontos_3D()
 {
-    double px = posicao.x - camera->posicao.x;
-    double py = posicao.y - camera->posicao.y;
-    double pz = posicao.z - camera->posicao.z;
-    double t = tamanho;
+    double px = position.x - camera->posicao.x;
+    double py = position.y - camera->posicao.y;
+    double pz = position.z - camera->posicao.z;
+    double t = scale;
 
     for(int i = 0 ; i < quantidadePontos ; i++ ){
         pontos[i] = pontos_base[i];
@@ -340,37 +340,49 @@ void Model::rotate(int rotacaoX, int rotacaoY, int rotacaoZ){
 }
 
 void Model::setPos(double x, double y, double z){
-    this->posicao.x = x;
-    this->posicao.y = y;
-    this->posicao.z = z;
+    this->position.x = x;
+    this->position.y = y;
+    this->position.z = z;
 }
 
 void Model::setPos(Vec3 posicao){
-    this->posicao = posicao;
+    this->position = posicao;
 }
 
 void Model::setX(double x){
-    this->posicao.x = x;
+    this->position.x = x;
 }
 
 void Model::setY(double y){
-    this->posicao.y = y;
+    this->position.y = y;
 }
 
 void Model::setZ(double z){
-    this->posicao.z = z;
+    this->position.z = z;
 }
 
 Vec3 Model::getPos(){
-    return this->posicao;
+    return this->position;
+}
+
+double Model::getX(){
+    return this->position.x;
+}
+
+double Model::getY(){
+    return this->position.y;
+}
+
+double Model::getZ(){
+    return this->position.z;
 }
 
 void Model::setScale(double tamanho){
-    this->tamanho = tamanho;
+    this->scale = tamanho;
 }
 
 double Model::getScale(){
-    return this->tamanho;
+    return this->scale;
 }
 
 void Model::setLight(Light *light){

@@ -8,11 +8,12 @@ class Window
     private:
         int width;
         int height;
-        SDL_Window* window = NULL;    
+        
         SDL_Renderer *renderer;
+        SDL_Window* window = NULL;   
 
     public:
-    
+
         float* zBuffer;
         float* colorBuffer;
 
@@ -21,6 +22,8 @@ class Window
 
         void atualiza();
         void clean();
+
+        SDL_Window* getWindow();
 
         void desenha(Vec3 &p1, Vec3 &p2);
         void desenha(Vec3 &p1, Vec3 &p2,int r, int g, int b);

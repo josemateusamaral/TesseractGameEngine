@@ -104,8 +104,7 @@ Camera *Camera::criar(){
         camera = new Camera();
     };
     return camera;
-    }
-
+}
 
 Camera::~Camera()
 {

@@ -343,6 +343,10 @@ void Window::desenhar_poligono_texturizado(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &u
     }
 }
 
+SDL_Window* Window::getWindow(){
+    return this->window;
+}
+
 Window::~Window()
 {
     SDL_DestroyWindow(window);

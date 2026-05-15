@@ -13,10 +13,9 @@ class Model
 {
     private:
 
-        double tamanho = 1;
-        Vec3 posicao;
+        double scale = 1;
+        Vec3 position;
         bool backfaceCulling = true;
-
     
         int polygonCount;
         unsigned int* indices = nullptr;
@@ -28,6 +27,7 @@ class Model
 
         Texture* texture = nullptr;
 
+
         int renderType = 1;
         int corR = 255;
         int corG = 255;
@@ -37,20 +37,21 @@ class Model
 
         int quantidadePontos;
         Vec3 angulo;
-        
+
+        // vertices / projection
         Vec3* pontos_base;
         Vec3* pontos;
         Vec3* projecao;
         Vec3* uvs = nullptr;
 
-
+        // lights
         int qtdLights;
         int maxQtdLight;
         Light** lights;
 
 
         Model();
-        Model(string filePath, Vec3 posicao = Vec3(0, 0, 0), double tamanho = 1);
+        Model(string filePath, Vec3 position = Vec3(0, 0, 0), double scale = 1);
         void loadModel(string path);
         void draw(Window &window);
         void calcular_pontos_3D();
@@ -65,6 +66,9 @@ class Model
         void setY(double y);
         void setZ(double z);
         Vec3 getPos();
+        double getX();
+        double getY();
+        double getZ();
 
         //scale
         void setScale(double tamanho);

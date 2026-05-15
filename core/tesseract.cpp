@@ -9,26 +9,50 @@ Tesseract::Tesseract(int width, int height)
     if (SDL_Init(SDL_INIT_VIDEO) > 0)
     {
         std::cout << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
-        quit = true;
-        initialized = false;
+        this->quit = true;
+        this->initialized = false;
         return;
 
     }else{
-        quit = false;
-        initialized = true;
+        this->quit = false;
+        this->initialized = true;
     }
 
-    delay = 32;
-    window = new Window(width, height);
-    scene = new Scene();
-    camera = new Camera();
-    input = new Input();
+    this->delay = 32;
+    this->window = new Window(width, height);
+    this->scene = new Scene();
+    this->camera = new Camera();
+    this->input = new Input();
 
 }
 
 Tesseract::~Tesseract()
 {
 
+}
+
+void Tesseract::setCaptureMouse(bool state){
+    if(state){
+        this->isCaptureMouse = true;
+        SDL_SetWindowGrab(window->getWindow(), SDL_TRUE);
+    }else{
+        this->isCaptureMouse = false;
+        SDL_SetWindowGrab(window->getWindow(), SDL_FALSE);
+    }
+}
+
+bool Tesseract::getCaptureMouseState(){
+    return this->isCaptureMouse;
+}
+
+void Tesseract::setMapMouse(bool state){
+    if(state){
+        this->isMapMouse = true;
+        SDL_SetRelativeMouseMode(SDL_TRUE);
+    }else{
+        this->isMapMouse = false;
+        SDL_SetRelativeMouseMode(SDL_FALSE);
+    }
 }
 
 bool Tesseract::isRunning(){
@@ -38,29 +62,16 @@ bool Tesseract::isRunning(){
 void Tesseract::run(function<void()> userUpdate) {
     
     while (!this->quit) {
-        
-        // 1. Processa inputs da engine (teclado, mouse, fechar janela)
-        // update keymap
-        /*while (SDL_PollEvent(&ev) != 0)
-        {
-            // pressed keys
-            if (ev.type == SDL_KEYDOWN)
-            {
-                if (ev.key.keysym.sym == SDLK_ESCAPE)
-                {
-                    this->quit = true;
-                }
-            }
-        }*/
 
-        this->input->processar(this->quit, this->ev);
+        // process inputs
+        this->input->process(this->quit, this->ev);
 
         // scripts
         if (userUpdate) {
             userUpdate();
         }
 
-        //render
+        // render
         this->window->clean();
         for(int i = 0; i < this->scene->qtdModels; i++){
             Model* model = this->scene->models[i];
@@ -68,10 +79,14 @@ void Tesseract::run(function<void()> userUpdate) {
         }
         this->window->atualiza();
 
-        // 4. Delay para manter os FPS
+        // Delay para manter os FPS
         SDL_Delay(this->delay);
     }
 
     SDL_Quit();
 
+}
+
+void Tesseract::exit(){
+    this->quit = true;
 }

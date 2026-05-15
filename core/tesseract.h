@@ -9,6 +9,13 @@
 class Tesseract
 {
 
+    private:
+        bool quit;
+        bool isCaptureMouse;
+        bool isMapMouse;
+        bool initialized;
+        int delay;
+
     public:
 
         Window *window;
@@ -17,14 +24,16 @@ class Tesseract
         Input *input;
         SDL_Event ev;
 
-        bool initialized;
-        bool quit;
-        int delay;
-
         Tesseract(int width = 640, int height = 480);
         ~Tesseract();
 
+        void setCaptureMouse(bool state);
+        bool getCaptureMouseState();
+        void setMapMouse(bool state);
+        bool getMapMouseState();
+
         bool isRunning();
         void run(function<void()> userUpdate);
+        void exit();
 
 };

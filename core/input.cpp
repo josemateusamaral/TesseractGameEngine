@@ -2,16 +2,20 @@
 #include <stdio.h>
 #include <string>
 
-void Input::bindKey(std::string key, std::function<void()> func)
+void Input::bindKey(std::string key, std::string event, std::function<void()> func)
 {
-    SDL_Keycode sdlKey = SDL_GetKeyFromName(key.c_str());
-    if(sdlKey != SDLK_UNKNOWN)
-    {
-        keyDownBindings[sdlKey] = func;
+    auto sdl2_key = this->keyMap.find(key.c_str());
+    if(sdl2_key != keyMap.end()){
+        if(event == "press"){
+            keyDownBindings[sdl2_key->second] = func;
+        }
+        else if(event == "release"){
+            keyUpBindings[sdl2_key->second] = func;
+        }
     }
 }
 
-void Input::processar(bool &quit, SDL_Event ev)
+void Input::process(bool &quit, SDL_Event ev)
 {
 
     while (SDL_PollEvent(&ev) != 0)
@@ -26,51 +30,57 @@ void Input::processar(bool &quit, SDL_Event ev)
             }
         }
 
+        if (ev.type == SDL_KEYUP)
+        {
+            auto it = keyUpBindings.find(ev.key.keysym.sym);
+            if (it != keyUpBindings.end())
+            {
+                it->second();
+            }
+        }
+
+        if (ev.type == SDL_MOUSEMOTION)
+        {
+            int dx = ev.motion.xrel;
+            int dy = ev.motion.yrel;
+            //printf(dx + " - " + dy);
+        }
+
+        if (ev.type == SDL_MOUSEBUTTONDOWN)
+        {
+            if(ev.button.button == SDL_BUTTON_LEFT)
+            {
+                printf("Down Botao esquerdo\n");
+            }
+
+            if(ev.button.button == SDL_BUTTON_RIGHT)
+            {
+                printf("Down Botao direito\n");
+            }
+
+            if(ev.button.button == SDL_BUTTON_MIDDLE)
+            {
+                printf("Down Botao do meio\n");
+            }
+        }
+
+        if (ev.type == SDL_MOUSEBUTTONUP)
+        {
+            if(ev.button.button == SDL_BUTTON_LEFT)
+            {
+                printf("Botao esquerdo\n");
+            }
+
+            if(ev.button.button == SDL_BUTTON_RIGHT)
+            {
+                printf("Botao direito\n");
+            }
+
+            if(ev.button.button == SDL_BUTTON_MIDDLE)
+            {
+                printf("Botao do meio\n");
+            }
+        }
+
     }
 }
-
-SDL_Keycode Input::stringToKey(std::string key)
-{
-
-    auto it = this->keyMap.find(key);
-
-    if(it != keyMap.end())
-    {
-        return it->second;
-    }
-
-    return SDLK_UNKNOWN;
-}
-
-
-/*
-EXEMPLO USO
-
-Input input;
-
-input.bindKey(SDLK_ESCAPE, [&quit]() {
-    quit = true;
-});
-
-input.bindKey(SDLK_w, [camera]() {
-    camera->mover(0, 0, 1);
-});
-
-input.bindKey(SDLK_s, [camera]() {
-    camera->mover(0, 0, -1);
-});
-
-input.bindKey(SDLK_a, [camera]() {
-    camera->mover(1);
-});
-
-input.bindKey(SDLK_d, [camera]() {
-    camera->mover(-1);
-});
-
-input.bindKey(SDLK_e, [camera, &sol]() {
-    camera->rodarx(0.34, sol.posicao);
-});
-
-input.processar(quit);
-*/

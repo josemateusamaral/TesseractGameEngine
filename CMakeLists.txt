@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(teste_projecao)
+project(test)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Encontrar SDL2
 find_package(SDL2 REQUIRED)
 
 include_directories(
@@ -14,9 +13,9 @@ include_directories(
     core
 )
 
-# Lista de arquivos fonte
+# implementation files
 set(SOURCES
-    teste.cpp
+    test.cpp
 
     core/tesseract.cpp
     core/window.cpp
@@ -30,8 +29,8 @@ set(SOURCES
 
 )
 
-# Criar executável
-add_executable(teste ${SOURCES})
+# create executable
+add_executable(test ${SOURCES})
 
-# Linkar SDL2
-target_link_libraries(teste ${SDL2_LIBRARIES} assimp)
+# Link SDL2
+target_link_libraries(test ${SDL2_LIBRARIES} assimp)
