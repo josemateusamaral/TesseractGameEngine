@@ -45,9 +45,18 @@ int main(int argc, char *args[])
 	});
 
 	// bind mouse
-	//engine.setCaptureMouse(true);
-	engine.setMapMouse(true);
+	engine.setCaptureMouse(true);
+	engine.input->bindMouseButton("left", "release", [&model]() {
+		printf("soltando botão esquerdo do mouse");
+	});
+	engine.input->bindMouseButton("right", "press", [&model]() {
+		printf("pressionando botao direito do mouse");
+	});
+	engine.input->bindMouseMotion([&engine]() {
+	
+		//printf("x: %d - y: %d", engine.input->mousePositionVector->x, engine.input->mousePositionVector->y);
 
+	});
 
 	// game loop
 	engine.run([&]() {

@@ -12,7 +12,6 @@ class Tesseract
     private:
         bool quit;
         bool isCaptureMouse;
-        bool isMapMouse;
         bool initialized;
         int delay;
 
@@ -29,8 +28,6 @@ class Tesseract
 
         void setCaptureMouse(bool state);
         bool getCaptureMouseState();
-        void setMapMouse(bool state);
-        bool getMapMouseState();
 
         bool isRunning();
         void run(function<void()> userUpdate);

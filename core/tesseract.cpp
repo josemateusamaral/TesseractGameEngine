@@ -34,25 +34,17 @@ Tesseract::~Tesseract()
 void Tesseract::setCaptureMouse(bool state){
     if(state){
         this->isCaptureMouse = true;
-        SDL_SetWindowGrab(window->getWindow(), SDL_TRUE);
+        SDL_SetRelativeMouseMode(SDL_TRUE);
+        this->input->setMapMouseMotion(true);
     }else{
         this->isCaptureMouse = false;
-        SDL_SetWindowGrab(window->getWindow(), SDL_FALSE);
+        SDL_SetRelativeMouseMode(SDL_FALSE);
+        this->input->setMapMouseMotion(false);
     }
 }
 
 bool Tesseract::getCaptureMouseState(){
     return this->isCaptureMouse;
-}
-
-void Tesseract::setMapMouse(bool state){
-    if(state){
-        this->isMapMouse = true;
-        SDL_SetRelativeMouseMode(SDL_TRUE);
-    }else{
-        this->isMapMouse = false;
-        SDL_SetRelativeMouseMode(SDL_FALSE);
-    }
 }
 
 bool Tesseract::isRunning(){
