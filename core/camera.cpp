@@ -31,9 +31,6 @@ Camera::Camera()
 
 void Camera::project(Vec3* vertices, Vec3* projection, int nVertices){
 
-    //printf("Projetando %d vertices\n", nVertices);
-
-    double y1,y2;
     for( int i = 0 ; i < nVertices ; i++ ){
         
         // transform to camera space
@@ -70,21 +67,11 @@ void Camera::project(Vec3* vertices, Vec3* projection, int nVertices){
         // project perpective
         double px = (this->dist_f * x) / z;
         double py = (this->dist_f * y) / z;
-        projection[i].x = px + 320;
-        projection[i].y = py + 240;
+        projection[i].x = px * -1 + 320;
+        projection[i].y = py * -1 + 240;
         projection[i].z = z;
-
-        /*
-        y1 = ( ( this->dist_f * -1 / (vertices[i].z - this->posicao.z) ) * ( vertices[i].x - this->posicao.x ) );
-	    y2 = ( ( this->dist_f * -1 / (vertices[i].z - this->posicao.z) ) * ( vertices[i].y - this->posicao.y ) );
-        projection[i].x = y1 + 320;
-        projection[i].y = y2 + 240;
-        projection[i].z = vertices[i].z;
-        */
     
     }
-
-    //printf("Projecao concluida\n");
 
 }
 

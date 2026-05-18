@@ -17,16 +17,30 @@ int main(int argc, char *args[])
 		return -1;
 	}
 
+	// create ambient light
+	AmbientLight* ambientLight = new AmbientLight( 1, 1, 1);
+	AmbientLight* ambientLight2 = new AmbientLight( 0.1, 0.1, 0.1);
+	// create point light
+	PointLight* pointLight = new PointLight( 1, 1, 1, 0, 0, 30);
+
+
 	// load model
 	Model* model = new Model("samples/model_loading/esfere.glb");
 	model->setPos( 0, 0, 14);
 	model->setScale(3);
 	model->renderType = 3;
 	engine.scene->addModel(model);
+	model->setLight(pointLight);
+	//model->setLight(ambientLight2);
 
-	// create ambient light
-	AmbientLight* ambientLight = new AmbientLight( 1, 1, 1);
-	model->setLight(ambientLight);
+	// point light place holder
+	Model* modelLight = new Model("samples/model_loading/cubo.glb");
+	modelLight->setPos( 0, 0, 30);
+	modelLight->setScale(3);
+	modelLight->renderType = 3;
+	engine.scene->addModel(modelLight);
+	modelLight->setLight(ambientLight);
+
 	
 	// bind keys
 	engine.input->bindKey("escape", "release", [&engine]() {
@@ -43,6 +57,12 @@ int main(int argc, char *args[])
 	});
 	engine.input->bindKey("d", "press", [&engine]() {
 		engine.camera->posicao.x -= 1;
+	});
+	engine.input->bindKey("q", "press", [&engine]() {
+		engine.camera->posicao.y -= 1;
+	});
+	engine.input->bindKey("e", "press", [&engine]() {
+		engine.camera->posicao.y += 1;
 	});
 
 	// bind mouse

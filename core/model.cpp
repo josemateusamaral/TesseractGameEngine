@@ -109,7 +109,7 @@ void Model::loadModel(string path)
 
 
 
-    // guardar todos os vertices e uvs em um array 
+    // loop vertices and uvs 
     for (unsigned int i = 0; i < mesh->mNumVertices; i++) {        
         
         // vertice
@@ -119,7 +119,7 @@ void Model::loadModel(string path)
             mesh->mVertices[i].z// * tamanho
         );
 
-        //projection
+        // projection
         this->projection[i] = Vec3(0.0f, 0.0f, 0.0f);
 
         // uv
@@ -149,22 +149,21 @@ void Model::loadModel(string path)
         this->indices[idx++] = face.mIndices[2];
     }
 
-    printf("Modelo carregado: %d vertices, %d faces\n", mesh->mNumVertices, mesh->mNumFaces);
+    printf("Model '%s' loaded - %d vertices, %d faces\n", path.c_str(), mesh->mNumVertices, mesh->mNumFaces);
 
 }
 
 /**
- * @brief rendericar a esfera nos formatos Wireframe ou Shaded
+ * @brief draw model on a window using a specific camera
  *
  * @authors Jose Mateus Amaral
  */
 void Model::draw(Window &window, Camera *camera)
 {
 
-    //printf("Desenhando modelo\n");
-
     calcular_pontos_3D();
 
+    // project vertices
     camera->project(this->pontos, this->projection, this->nVertices);
 
     int R = 255, G = 255, B = 255;
@@ -196,9 +195,6 @@ void Model::draw(Window &window, Camera *camera)
 
         // normal do triângulo
         Vec3 normal = v1.produto_vetorial(v2);
-
-        
-        
 
         // vetor do objeto até o triângulo
         Vec3 objToTri(a, b);

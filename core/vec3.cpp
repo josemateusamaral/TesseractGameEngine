@@ -36,11 +36,9 @@ double Vec3::modulo()
 
 Vec3 Vec3::versor()
 {
-    Vec3 tmp(*this);
-    tmp.x /= this->modulo();
-    tmp.y /= this->modulo();
-    tmp.z /= this->modulo();
-    return tmp;
+    double m = this->modulo();
+    if(m == 0.0) return Vec3(0,0,0);
+    return Vec3( x / m, y / m, z / m);
 }
 
 Vec3 Vec3::projetar(Vec3 &v)
