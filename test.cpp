@@ -44,11 +44,6 @@ int main(int argc, char *args[])
 	engine.input->bindKey("d", "press", [&engine]() {
 		engine.camera->posicao.x -= 1;
 	});
-	
-	engine.input->bindKey("e", "release", [&model]() {
-		model->setY(model->getY() - 1);
-		printf("model y: %f\n", model->getY());
-	});
 
 	// bind mouse
 	engine.setCaptureMouse(true);

@@ -45,27 +45,41 @@ void Window::clean()
 }
 
 /**
- * @brief Método para desenhar uma linha do ponto p1 até p2
+ * @brief Draw line between two points with a specific color
  * 
- * @param p1 ponto p1
- * @param p2 ponto p2
+ * @param v1 ponto v1 
+ * @param v2 ponto v2
+ * @param r componente vermelho da cor
+ * @param g componente verde da cor
+ * @param b componente azul da cor
  * 
- * @author Henrique Heiderscheidt
+ * @author Henrique Heiderscheidt, Jose Mateus Amaral
  */
-void Window::drawLine(Vec3 &p1, Vec3 &p2, int r, int g, int b)
+void Window::drawLine(Vec3 &v1, Vec3 &v2, int r, int g, int b)
 {
     SDL_SetRenderDrawColor(renderer,r,g,b,SDL_ALPHA_OPAQUE);
-    SDL_RenderDrawLine(renderer, p1.x,p1.y,p2.x,p2.y);
-}
-    
-void Window::drawLine(Vec3 &p1, Vec3 &p2)
-{
-    SDL_SetRenderDrawColor(renderer,255,255,255,SDL_ALPHA_OPAQUE);
-    SDL_RenderDrawLine(renderer, p1.x,p1.y,p2.x,p2.y);
+    SDL_RenderDrawLine(renderer, v1.x,v1.y,v2.x,v2.y);
 }
 
 /**
- * @brief Desenhar os poligonos de um solido geometrico
+ * @brief Draw line between two points
+ * 
+ * @param v1 ponto v1 
+ * @param v2 ponto v2
+ * @param r componente vermelho da cor
+ * @param g componente verde da cor
+ * @param b componente azul da cor
+ * 
+ * @author Henrique Heiderscheidt
+ */
+void Window::drawLine(Vec3 &v1, Vec3 &v2)
+{
+    SDL_SetRenderDrawColor(renderer,255,255,255,SDL_ALPHA_OPAQUE);
+    SDL_RenderDrawLine(renderer, v1.x,v1.y,v2.x,v2.y);
+}
+
+/**
+ * @brief Draw polygon between three points with a specific color
  * 
  * @param p1 Ponto 1
  * @param p2 Ponto 2
@@ -78,15 +92,9 @@ void Window::drawLine(Vec3 &p1, Vec3 &p2)
  */
 void Window::drawBlankPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3,int r, int g, int b){
 
-    // meio do poligono
-    //double middleX = (((p1.x + p2.x + p3.x) - (400 * 3))/3);
-    //double middleY = (((p1.y + p2.y + p3.y) - (400 * 3))/3);
-    //Vec3 meio{middleX,middleY};
-
-    // quadrado ao redor do poligono
+    // polygon boundbox
     double topY,bottomY,maxLeft,maxRight;
-
-    //Encontra o ponto mais acima do triangulo
+    //top
     if(p1.y > p2.y && p1.y > p3.y){
         topY = p1.y;
     }
@@ -96,8 +104,7 @@ void Window::drawBlankPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3,int r, int g, int b){
     else{
         topY = p3.y;
     }
-
-    //Encontra o ponto mais abaixo do triangulo
+    //bottom
     if(p1.y < p2.y && p1.y < p3.y){
         bottomY = p1.y;
     }
@@ -107,8 +114,7 @@ void Window::drawBlankPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3,int r, int g, int b){
     else{
         bottomY = p3.y;
     }
-
-    //Encontra o ponto mais a esquerda do triangulo
+    //left
     if(p1.x < p2.x && p1.x < p3.x){
         maxLeft = p1.x;
     }
@@ -118,8 +124,7 @@ void Window::drawBlankPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3,int r, int g, int b){
     else{
         maxLeft = p3.x;
     }
-
-    //Encontra o ponto mais a esquerda do triangulo
+    //right
     if(p1.x > p2.x && p1.x > p3.x){
         maxRight = p1.x;
     }
@@ -130,20 +135,18 @@ void Window::drawBlankPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3,int r, int g, int b){
         maxRight = p3.x;
     }
 
-    // inicios do desenho do poligono
-    double px = maxLeft; //pixel inicial do poligono no eixo x
-    double py = topY; //pixel inicial do poligono no eixo y
+    // top left corner of the boundbox
+    double px = maxLeft; 
+    double py = topY;
+    double sizeX = maxRight - maxLeft;
+    double sizeY = topY - bottomY;
 
-    // dimensoes do poligono
-    double sizeX = maxRight - maxLeft;//Largura do poligono
-    double sizeY = topY - bottomY;//Altura do poligono
-
+    // set polygon color
     SDL_SetRenderDrawColor(renderer,r,g,b,255);
 
-    //Percorre todo quadrado em volta do poligono, pensando na otimização 
+    // loop through the pixels of the boundbox and check if they are inside the polygon
     for( int x = 0 ; x < sizeX ; x++ ){
         for( int y = 0 ; y < sizeY ; y++ ){
-            //Se o ponto está dentro do poligono, então ele é desenhado
             if(isPixelInsidePolygon(p1.x,p1.y,p2.x,p2.y,p3.x,p3.y,px+x,py-y)){
                 SDL_RenderDrawPoint(renderer,px + x,py - y);
             }
@@ -205,11 +208,9 @@ bool Window::isPixelInsidePolygon(int x1, int y1, int x2, int y2, int x3, int y3
 void Window::drawTexturedPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, unsigned char* data, int texW, int texH, Light** lights, int nLights) 
 {
 
-    // quadrado ao redor do poligono
+    // polygon boundbox
     double topY,bottomY,maxLeft,maxRight;
-    //createBoundBox(p1, p2, p3, maxLeft, maxRight, topY, bottomY);
-
-    //Encontra o ponto mais acima do triangulo
+    // top
     if(p1.y > p2.y && p1.y > p3.y){
         topY = p1.y;
     }
@@ -220,8 +221,7 @@ void Window::drawTexturedPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &uv1, Vec3 &
         topY = p3.y;
     }
     if(topY >= this->height) topY = this->height - 1;
-
-    //Encontra o ponto mais abaixo do triangulo
+    // bottom
     if(p1.y < p2.y && p1.y < p3.y){
         bottomY = p1.y;
     }
@@ -232,8 +232,7 @@ void Window::drawTexturedPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &uv1, Vec3 &
         bottomY = p3.y;
     }
     if(bottomY < 0) bottomY = 0;
-
-    //Encontra o ponto mais a esquerda do triangulo
+    // left
     if(p1.x < p2.x && p1.x < p3.x){
         maxLeft = p1.x;
     }
@@ -245,7 +244,7 @@ void Window::drawTexturedPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &uv1, Vec3 &
     }
     if(maxLeft < 0) maxLeft = 0;
 
-    //Encontra o ponto mais a esquerda do triangulo
+    // right
     if(p1.x > p2.x && p1.x > p3.x){
         maxRight = p1.x;
     }
@@ -257,19 +256,18 @@ void Window::drawTexturedPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &uv1, Vec3 &
     }
     if(maxRight >= this->width) maxRight = this->width - 1;
 
-    // inicios do desenho do poligono
-    double px = maxLeft; //pixel inicial do poligono no eixo x
-    double py = topY; //pixel inicial do poligono no eixo y
+    // top left corner of the boundbox
+    double px = maxLeft; 
+    double py = topY; 
+    double sizeX = maxRight - maxLeft;
+    double sizeY = topY - bottomY;
 
-    // dimensoes do poligono
-    double sizeX = maxRight - maxLeft;//Largura do poligono
-    double sizeY = topY - bottomY;//Altura do poligono
-
+    // calculate the area of the polygon
     float areaTotal = area(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
 
     if (areaTotal == 0) return;
 
-    // calculate light effect
+    // calculate lights effect
     float lightEffetR = 0.0f;
     float lightEffetG = 0.0f;
     float lightEffetB = 0.0f;
@@ -293,7 +291,7 @@ void Window::drawTexturedPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &uv1, Vec3 &
             // verify if the the pixel is inside the polygon
             if (abs(areaTotal - (a1 + a2 + a3)) < 0.01) {
                 
-                // Coordenadas baricêntricas (pesos de 0.0 a 1.0)
+                // baricentric weights
                 float w1 = a1 / areaTotal;
                 float w2 = a2 / areaTotal;
                 float w3 = a3 / areaTotal;
@@ -301,7 +299,6 @@ void Window::drawTexturedPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &uv1, Vec3 &
                 // test zbuffer
                 float z = w1 * p1.z + w2 * p2.z + w3 * p3.z;
                 int bufferIndex = ( py_atual * this->width ) + px_atual;
-
                 if (z < this->zBuffer[bufferIndex]) {
                     this->zBuffer[bufferIndex] = z;
                 } else {
@@ -332,6 +329,7 @@ void Window::drawTexturedPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &uv1, Vec3 &
                 char g = data[idx + 1] * lightEffetG;
                 char b = data[idx + 2] * lightEffetB;
 
+                // draw point
                 SDL_SetRenderDrawColor(renderer, r, g, b, 255);
                 SDL_RenderDrawPoint(renderer, px_atual, py_atual);
 

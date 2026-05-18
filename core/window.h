@@ -9,7 +9,7 @@ class Window
         int width;
         int height;
         
-        SDL_Renderer *renderer;
+        SDL_Renderer* renderer;
         SDL_Window* window = NULL;   
 
     public:
