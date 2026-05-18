@@ -11,11 +11,12 @@ class Window
         
         SDL_Renderer* renderer;
         SDL_Window* window = NULL;   
+        SDL_Texture* texture;
 
     public:
 
         float* zBuffer;
-        float* colorBuffer;
+        uint32_t* colorBuffer;
 
         Window(int width,int height);
         ~Window();
@@ -32,6 +33,8 @@ class Window
         void createBoundBox(Vec3 &p1, Vec3 &p2, Vec3 &p3, double &minX, double &maxX, double &minY, double &maxY);
         float area(int x1, int y1, int x2, int y2, int x3, int y3); 
         bool isPixelInsidePolygon(int x1, int y1, int x2, int y2, int x3, int y3, int x, int y);
+        float edge(float ax, float ay,float bx, float by,float px, float py);
+
 };
 
 

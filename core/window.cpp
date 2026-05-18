@@ -4,7 +4,7 @@
 #include "light.h"
 
 /**
- * @brief Construtor de uma janela SDL2
+ * @brief Generate a window with a specific width and height
  * 
  * @param width Largura em pixel
  * @param height Altura em pixel
@@ -16,17 +16,30 @@ Window::Window(int width,int height)
     window = SDL_CreateWindow( "Tesseract Game Engine", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN );
     renderer = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED);
     zBuffer = new float[width*height];
-    colorBuffer = new float[width*height*3];
+    colorBuffer = new uint32_t[width*height*3];
+    texture = SDL_CreateTexture(
+        renderer,
+        SDL_PIXELFORMAT_ARGB8888,
+        SDL_TEXTUREACCESS_STREAMING,
+        width,
+        height
+    );
 
 }
 
 /**
- * @brief Função para atualizar a janela
+ * @brief Refresh the window with the current color buffer
  * 
  */
 void Window::refresh()
 {
-    SDL_SetRenderDrawColor(renderer,0,0,0,255);
+    // copy color buffer to texture
+    SDL_UpdateTexture(texture,NULL,colorBuffer,width * sizeof(uint32_t));
+
+    // render texture to screen
+    SDL_RenderCopy(renderer,texture,NULL,NULL);
+
+    // present renderer to screen
     SDL_RenderPresent(renderer);
 }
 
@@ -36,11 +49,14 @@ void Window::refresh()
  */
 void Window::clean()
 {
-    //clean renderer
+    // clean renderer
     SDL_RenderClear(renderer);
 
-    //clean zBuffer
+    // clean zBuffer
     std::fill(this->zBuffer, this->zBuffer + (this->width * this->height), std::numeric_limits<float>::infinity());
+
+    // clear color buffer
+    std::fill(colorBuffer,colorBuffer + (width * height),0x00000000);
 
 }
 
@@ -209,7 +225,7 @@ void Window::drawTexturedPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &uv1, Vec3 &
 {
 
     // polygon boundbox
-    double topY,bottomY,maxLeft,maxRight;
+    int topY,bottomY,maxLeft,maxRight;
     // top
     if(p1.y > p2.y && p1.y > p3.y){
         topY = p1.y;
@@ -288,6 +304,11 @@ void Window::drawTexturedPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &uv1, Vec3 &
             float a2 = area(p1.x, p1.y, px_atual, py_atual, p3.x, p3.y);
             float a3 = area(p1.x, p1.y, p2.x, p2.y, px_atual, py_atual);
 
+            //float w1 = edge(p2.x,p2.y,p3.x,p3.y,x,y);
+            //float w2 = edge(p3.x,p3.y,p1.x,p1.y,x,y);
+            //float w3 = edge(p1.x,p1.y,p2.x,p2.y,x,y);
+            //if(w1 >= 0 && w2 >= 0 && w3 >= 0)
+
             // verify if the the pixel is inside the polygon
             if (abs(areaTotal - (a1 + a2 + a3)) < 0.01) {
                 
@@ -323,15 +344,14 @@ void Window::drawTexturedPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &uv1, Vec3 &
                 if (ty < 0) ty = 0;
                 if (ty >= texH) ty = texH - 1;
 
-                // Texture index (assumindo formato RGB, 3 bytes por pixel)
+                // Texture index (assuming format RGB, 3 bytes per pixel)
                 int idx = (ty * texW + tx) * 3;
-                char r = data[idx] * lightEffetR;
-                char g = data[idx + 1] * lightEffetG;
-                char b = data[idx + 2] * lightEffetB;
 
-                // draw point
-                SDL_SetRenderDrawColor(renderer, r, g, b, 255);
-                SDL_RenderDrawPoint(renderer, px_atual, py_atual);
+                // fill color buffer
+                Uint32 rt = data[idx] * lightEffetR;
+                Uint32  gt = data[idx + 1] * lightEffetG;
+                Uint32 bt = data[idx + 2] * lightEffetB;
+                colorBuffer[bufferIndex] = (255 << 24) | (rt << 16) | (gt << 8) | bt;
 
             }
         }
@@ -343,6 +363,10 @@ void Window::createBoundBox(Vec3 &p1, Vec3 &p2, Vec3 &p3, double &minX, double &
     maxX = std::max({p1.x, p2.x, p3.x});
     minY = std::min({p1.y, p2.y, p3.y});
     maxY = std::max({p1.y, p2.y, p3.y});
+}
+
+float Window::edge( float ax, float ay, float bx, float by, float px, float py){
+    return ( px - ax ) * ( by - ay ) - ( py - ay ) * ( bx - ax );
 }
 
 SDL_Window* Window::getWindow(){
