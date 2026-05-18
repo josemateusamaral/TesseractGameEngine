@@ -15,60 +15,7 @@ Camera::Camera()
 {
     angulox = 0;
     anguloy = 0;
-}
-
-/**
- * @brief Rodar a camera no eixo x baseado em um ponto de foco no R3.
- * @author Henrique Heiderscheidt
- * @param angulo angulo de rotacao
- * @param base Ponto de foco
- * 
- * @todo Talvez mudar a forma de visualizar a camera.
- */
-void Camera::rodarx(double angulo, Vec3 base){
-    posicao.y = posicao.y*cos(angulo)+posicao.z*-sin(angulo);
-    posicao.z = posicao.y*sin(angulo) + posicao.z*cos(angulo);
-}
-
-/**
- * @brief Rodar a camera no eixo y baseado em um ponto de foco no R3.
- * @author Henrique Heiderscheidt
- * @param angulo angulo de rotacao
- * @param base Ponto de foco
- * 
- * @todo Talvez mudar a forma de visualizar a camera.
- */
-void Camera::rodary(double angulo,Vec3 base){
-    posicao.x = ((posicao.x - base.x)*cos(angulo) + (posicao.z-base.z)*-sin(angulo)) + base.x;
-    posicao.z = ((posicao.x - base.z)*sin(angulo) + (posicao.z-base.z)*cos(angulo)) + base.z;
-    cout << posicao <<endl;
-}
-
-/**
- * @brief Rodar a camera no eixo z baseado em um ponto de foco no R3.
- * @author Henrique Heiderscheidt
- * @param angulo Angulo de rotacao
- * @param base Ponto de foco
- * 
- * @todo Talvez mudar a forma de visualizar a camera.
- */
-void Camera::rodarz(double angulo, Vec3 base){
-    posicao.x = ((posicao.x - base.x)*cos(angulo)  + (posicao.y - base.y)*-sin(angulo)) + base.x;
-    posicao.y = ((posicao.x - base.x)*sin(angulo)  + (posicao.y - base.y)*cos(angulo)) + base.y;
-
-    cout << posicao <<endl;
-}
-
-/**
- * @brief Mover a camera no espaco, no momento muda todos os pontos baseados na posicao da camera
- * @authors Gustavo Mittelmann, Henrique Heiderscheidt
- * @param posicao posição do pinhole no r3
- * @param dist_f distancia focal
- */
-void Camera::mover(double x,double y,double z){
-    posicao.x += x;
-    posicao.y += y;
-    posicao.z += z;
+    hpr = Vec3(0,0,0);
 }
 
 /**
@@ -76,22 +23,69 @@ void Camera::mover(double x,double y,double z){
  * @brief Transformação pontos do 3d para o 2d utilizando o modelo PinHole:
  *        x = ((distância focal * -1) / z ) * x
  *        y = ((distância focal * -1) / z ) * y
- * @authors Jose Mateus Amaral, Gustavo Mittelmann, Henrique Heiderscheidt, Fernanda Martins, Eduardo Brandt, Monique Ellen
- * @param pontos Array de pontos 3D para serem transformados em 2D
- * @param quantidadePontos quantidade de pontos
+ * @authors Jose Mateus Amaral
+ * @param vertices Array de pontos 3D para serem transformados em 2D
+ * @param nVertices quantidade de pontos
  * @return Vec3* Array de pontos 2d para serem desenhados
  */
 
-Vec3* Camera::projetar(Vec3* pontos, Vec3* projecao, int quantidadePontos){
+void Camera::project(Vec3* vertices, Vec3* projection, int nVertices){
+
+    //printf("Projetando %d vertices\n", nVertices);
+
     double y1,y2;
-    for( int i = 0 ; i < quantidadePontos ; i++ ){
-        y1 = ( ( dist_f*-1 / (pontos[i].z-camera->posicao.z) ) * (pontos[i].x-camera->posicao.x) );
-	    y2 = ( ( dist_f*-1 / (pontos[i].z-camera->posicao.z) ) * (pontos[i].y-camera->posicao.y) );
-        projecao[i].x = y1 + 320;
-        projecao[i].y = y2 + 240;
-        projecao[i].z = pontos[i].z;
+    for( int i = 0 ; i < nVertices ; i++ ){
+        
+        // transform to camera space
+        double x = vertices[i].x - this->posicao.x;
+        double y = vertices[i].y - this->posicao.y;
+        double z = vertices[i].z - this->posicao.z;
+
+        // apply camera inverse rotation
+        double pitch = -this->hpr.x * M_PI / 180.0;
+        double yaw   = -this->hpr.y * M_PI / 180.0;
+        double roll  = -this->hpr.z * M_PI / 180.0;
+        // yaw - y
+        double cosY = cos(yaw);
+        double sinY = sin(yaw);
+        double dx = x * cosY - z * sinY;
+        double dz = x * sinY + z * cosY;
+        x = dx;
+        z = dz;
+        // pitch - x
+        double cosP = cos(pitch);
+        double sinP = sin(pitch);
+        double dy = y * cosP - z * sinP;
+        dz = y * sinP + z * cosP;
+        y = dy;
+        z = dz;
+        // roll - z
+        double cosR = cos(roll);
+        double sinR = sin(roll);
+        dx = x * cosR - y * sinR;
+        dy = x * sinR + y * cosR;
+        x = dx;
+        y = dy;
+
+        // project perpective
+        double px = (this->dist_f * x) / z;
+        double py = (this->dist_f * y) / z;
+        projection[i].x = px + 320;
+        projection[i].y = py + 240;
+        projection[i].z = z;
+
+        /*
+        y1 = ( ( this->dist_f * -1 / (vertices[i].z - this->posicao.z) ) * ( vertices[i].x - this->posicao.x ) );
+	    y2 = ( ( this->dist_f * -1 / (vertices[i].z - this->posicao.z) ) * ( vertices[i].y - this->posicao.y ) );
+        projection[i].x = y1 + 320;
+        projection[i].y = y2 + 240;
+        projection[i].z = vertices[i].z;
+        */
+    
     }
-	return projecao;
+
+    //printf("Projecao concluida\n");
+
 }
 
 /**

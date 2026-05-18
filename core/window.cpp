@@ -24,7 +24,7 @@ Window::Window(int width,int height)
  * @brief Função para atualizar a janela
  * 
  */
-void Window::atualiza()
+void Window::refresh()
 {
     SDL_SetRenderDrawColor(renderer,0,0,0,255);
     SDL_RenderPresent(renderer);
@@ -52,13 +52,13 @@ void Window::clean()
  * 
  * @author Henrique Heiderscheidt
  */
-void Window::desenha(Vec3 &p1, Vec3 &p2, int r, int g, int b)
+void Window::drawLine(Vec3 &p1, Vec3 &p2, int r, int g, int b)
 {
     SDL_SetRenderDrawColor(renderer,r,g,b,SDL_ALPHA_OPAQUE);
     SDL_RenderDrawLine(renderer, p1.x,p1.y,p2.x,p2.y);
 }
-
-void Window::desenha(Vec3 &p1, Vec3 &p2)
+    
+void Window::drawLine(Vec3 &p1, Vec3 &p2)
 {
     SDL_SetRenderDrawColor(renderer,255,255,255,SDL_ALPHA_OPAQUE);
     SDL_RenderDrawLine(renderer, p1.x,p1.y,p2.x,p2.y);
@@ -76,7 +76,7 @@ void Window::desenha(Vec3 &p1, Vec3 &p2)
  * 
  * @author Jose Mateus Amaral
  */
-void Window::desenhar_poligono(Vec3 &p1, Vec3 &p2, Vec3 &p3,int r, int g, int b){
+void Window::drawBlankPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3,int r, int g, int b){
 
     // meio do poligono
     //double middleX = (((p1.x + p2.x + p3.x) - (400 * 3))/3);
@@ -144,7 +144,7 @@ void Window::desenhar_poligono(Vec3 &p1, Vec3 &p2, Vec3 &p3,int r, int g, int b)
     for( int x = 0 ; x < sizeX ; x++ ){
         for( int y = 0 ; y < sizeY ; y++ ){
             //Se o ponto está dentro do poligono, então ele é desenhado
-            if(estaDentro(p1.x,p1.y,p2.x,p2.y,p3.x,p3.y,px+x,py-y)){
+            if(isPixelInsidePolygon(p1.x,p1.y,p2.x,p2.y,p3.x,p3.y,px+x,py-y)){
                 SDL_RenderDrawPoint(renderer,px + x,py - y);
             }
         }
@@ -184,7 +184,7 @@ float Window::area(int x1, int y1, int x2, int y2, int x3, int y3)
  * 
  * @author Jose Mateus Amaral
  */
-bool Window::estaDentro(int x1, int y1, int x2, int y2, int x3, int y3, int x, int y)
+bool Window::isPixelInsidePolygon(int x1, int y1, int x2, int y2, int x3, int y3, int x, int y)
 {  
     // calcular area do poligono
     float areaPoligono = area(x1, y1, x2, y2, x3, y3);
@@ -202,16 +202,12 @@ bool Window::estaDentro(int x1, int y1, int x2, int y2, int x3, int y3, int x, i
     return ( areaPoligono == triangulo1 + triangulo2 + triangulo3 );
 }
 
-void Window::desenhar_poligono_texturizado(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, unsigned char* data, int texW, int texH, Light** lights, int qtdLights) 
+void Window::drawTexturedPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, unsigned char* data, int texW, int texH, Light** lights, int nLights) 
 {
-    
-    // meio do poligono
-    //double middleX = (((p1.x + p2.x + p3.x) - (400 * 3))/3);
-    //double middleY = (((p1.y + p2.y + p3.y) - (400 * 3))/3);
-    //Ponto meio{middleX,middleY};
 
     // quadrado ao redor do poligono
     double topY,bottomY,maxLeft,maxRight;
+    //createBoundBox(p1, p2, p3, maxLeft, maxRight, topY, bottomY);
 
     //Encontra o ponto mais acima do triangulo
     if(p1.y > p2.y && p1.y > p3.y){
@@ -223,6 +219,7 @@ void Window::desenhar_poligono_texturizado(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &u
     else{
         topY = p3.y;
     }
+    if(topY >= this->height) topY = this->height - 1;
 
     //Encontra o ponto mais abaixo do triangulo
     if(p1.y < p2.y && p1.y < p3.y){
@@ -234,6 +231,7 @@ void Window::desenhar_poligono_texturizado(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &u
     else{
         bottomY = p3.y;
     }
+    if(bottomY < 0) bottomY = 0;
 
     //Encontra o ponto mais a esquerda do triangulo
     if(p1.x < p2.x && p1.x < p3.x){
@@ -245,6 +243,7 @@ void Window::desenhar_poligono_texturizado(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &u
     else{
         maxLeft = p3.x;
     }
+    if(maxLeft < 0) maxLeft = 0;
 
     //Encontra o ponto mais a esquerda do triangulo
     if(p1.x > p2.x && p1.x > p3.x){
@@ -256,6 +255,7 @@ void Window::desenhar_poligono_texturizado(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &u
     else{
         maxRight = p3.x;
     }
+    if(maxRight >= this->width) maxRight = this->width - 1;
 
     // inicios do desenho do poligono
     double px = maxLeft; //pixel inicial do poligono no eixo x
@@ -269,30 +269,28 @@ void Window::desenhar_poligono_texturizado(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &u
 
     if (areaTotal == 0) return;
 
-
     // calculate light effect
     float lightEffetR = 0.0f;
     float lightEffetG = 0.0f;
     float lightEffetB = 0.0f;
-    for (int i = 0; i < qtdLights; i++) { 
-        Light* light = lights[i];
-        light->apply(p1, p2, p3, lightEffetR, lightEffetG, lightEffetB);
-        //lightEffetR += light->applyR(p1, p2, p3);
-        //lightEffetG += light->applyG(p1, p2, p3);
-        //lightEffetB += light->applyB(p1, p2, p3);
-        //printf("luz aplicada");
+    for (int i = 0; i < nLights; i++) { 
+        lights[i]->apply( p1, p2, p3, lightEffetR, lightEffetG, lightEffetB);
     }
 
+    // loop through the bounding box of the triangle
     for(int x = 0; x < sizeX; x++) {
         for(int y = 0; y < sizeY; y++) {
+
+            // pixel screen space position
             int px_atual = px + x;
             int py_atual = py - y;
 
-            // areas dos triangulos
+            // test area
             float a1 = area(px_atual, py_atual, p2.x, p2.y, p3.x, p3.y);
             float a2 = area(p1.x, p1.y, px_atual, py_atual, p3.x, p3.y);
             float a3 = area(p1.x, p1.y, p2.x, p2.y, px_atual, py_atual);
 
+            // verify if the the pixel is inside the polygon
             if (abs(areaTotal - (a1 + a2 + a3)) < 0.01) {
                 
                 // Coordenadas baricêntricas (pesos de 0.0 a 1.0)
@@ -303,6 +301,7 @@ void Window::desenhar_poligono_texturizado(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &u
                 // test zbuffer
                 float z = w1 * p1.z + w2 * p2.z + w3 * p3.z;
                 int bufferIndex = ( py_atual * this->width ) + px_atual;
+
                 if (z < this->zBuffer[bufferIndex]) {
                     this->zBuffer[bufferIndex] = z;
                 } else {
@@ -327,8 +326,6 @@ void Window::desenhar_poligono_texturizado(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &u
                 if (ty < 0) ty = 0;
                 if (ty >= texH) ty = texH - 1;
 
-                //printf("Light Effect: R=%f, G=%f, B=%f\n", lightEffetR, lightEffetG, lightEffetB);
-
                 // Texture index (assumindo formato RGB, 3 bytes por pixel)
                 int idx = (ty * texW + tx) * 3;
                 char r = data[idx] * lightEffetR;
@@ -341,6 +338,13 @@ void Window::desenhar_poligono_texturizado(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &u
             }
         }
     }
+}
+
+void Window::createBoundBox(Vec3 &p1, Vec3 &p2, Vec3 &p3, double &minX, double &maxX, double &minY, double &maxY) {
+    minX = std::min({p1.x, p2.x, p3.x});
+    maxX = std::max({p1.x, p2.x, p3.x});
+    minY = std::min({p1.y, p2.y, p3.y});
+    maxY = std::max({p1.y, p2.y, p3.y});
 }
 
 SDL_Window* Window::getWindow(){

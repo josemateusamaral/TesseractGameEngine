@@ -72,13 +72,6 @@ void Input::process(bool &quit, SDL_Event ev)
                 this->mousePositionVector->x = ev.motion.x;
                 this->mousePositionVector->y = ev.motion.y;
                 this->mouseMotionBind();
-
-                printf("\n%d - %d", ev.motion.xrel, ev.motion.yrel);
-
-                this->mouseMotionVector->x = 0;
-                this->mouseMotionVector->y = 0;
-                this->mousePositionVector->x = 0;
-                this->mousePositionVector->y = 0;
             }
         }
 

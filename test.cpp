@@ -1,6 +1,7 @@
 #include "core/model.h"
 #include "core/light.h"
 #include "core/tesseract.h"
+#include "core/camera.h"
 
 // Screen dimension
 const int SCREEN_WIDTH = 640;
@@ -31,17 +32,22 @@ int main(int argc, char *args[])
 	engine.input->bindKey("escape", "release", [&engine]() {
 		engine.exit();
 	});
-	engine.input->bindKey("w", "release", [&model]() {
-		model->setZ(model->getPos().z + 1);
+	engine.input->bindKey("w", "press", [&engine]() {
+		engine.camera->posicao.z += 1;
 	});
-	engine.input->bindKey("a", "release", [&model]() {
-		model->setX(model->getPos().x + 1);
+	engine.input->bindKey("a", "press", [&engine]() {
+		engine.camera->posicao.x += 1;
 	});
-	engine.input->bindKey("s", "release", [&model]() {
-		model->setZ(model->getPos().z - 1);
+	engine.input->bindKey("s", "press", [&engine]() {
+		engine.camera->posicao.z -= 1;
 	});
-	engine.input->bindKey("d", "release", [&model]() {
-		model->setX(model->getPos().x - 1);
+	engine.input->bindKey("d", "press", [&engine]() {
+		engine.camera->posicao.x -= 1;
+	});
+	
+	engine.input->bindKey("e", "release", [&model]() {
+		model->setY(model->getY() - 1);
+		printf("model y: %f\n", model->getY());
 	});
 
 	// bind mouse
@@ -53,9 +59,12 @@ int main(int argc, char *args[])
 		printf("pressionando botao direito do mouse");
 	});
 	engine.input->bindMouseMotion([&engine]() {
-	
-		//printf("x: %d - y: %d", engine.input->mousePositionVector->x, engine.input->mousePositionVector->y);
-
+		engine.camera->hpr.x += engine.input->mouseMotionVector->y * 0.1;
+		if(engine.camera->hpr.x < 0) 
+			engine.camera->hpr.x = 359;
+		engine.camera->hpr.y += engine.input->mouseMotionVector->x * 0.1;
+		if(engine.camera->hpr.y < 0) 
+			engine.camera->hpr.y = 359;
 	});
 
 	// game loop

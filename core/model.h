@@ -25,35 +25,34 @@ class Model
 
         Camera* camera = Camera::criar();
 
-        Texture* texture = nullptr;
-
+        //diffuse texture
+        Texture* diffuseTexture = nullptr;
 
         int renderType = 1;
         int corR = 255;
         int corG = 255;
         int corB = 255;
-        int comSombra = false;
+        bool shadowCast = false;
         Vec3 iluminacao;
 
-        int quantidadePontos;
+        int nVertices;
         Vec3 angulo;
 
         // vertices / projection
-        Vec3* pontos_base;
+        Vec3* vertices;
         Vec3* pontos;
-        Vec3* projecao;
+        Vec3* projection;
         Vec3* uvs = nullptr;
 
         // lights
-        int qtdLights;
-        int maxQtdLight;
+        int nLights;
+        int maxNLight;
         Light** lights;
-
 
         Model();
         Model(string filePath, Vec3 position = Vec3(0, 0, 0), double scale = 1);
         void loadModel(string path);
-        void draw(Window &window);
+        void draw(Window &window, Camera *camera);
         void calcular_pontos_3D();
 
         //rotation

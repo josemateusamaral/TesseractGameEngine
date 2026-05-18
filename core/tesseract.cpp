@@ -43,12 +43,12 @@ void Tesseract::setCaptureMouse(bool state){
     }
 }
 
-bool Tesseract::getCaptureMouseState(){
+bool Tesseract::getCaptureMouse(){
     return this->isCaptureMouse;
 }
 
 bool Tesseract::isRunning(){
-    return this->initialized;
+    return this->initialized && !this->quit;
 }
 
 void Tesseract::run(function<void()> userUpdate) {
@@ -67,12 +67,13 @@ void Tesseract::run(function<void()> userUpdate) {
         this->window->clean();
         for(int i = 0; i < this->scene->qtdModels; i++){
             Model* model = this->scene->models[i];
-            model->draw(*window);
+            model->draw(*window, this->camera);
         }
-        this->window->atualiza();
+        this->window->refresh();
 
-        // Delay para manter os FPS
+        // refresh rate delay
         SDL_Delay(this->delay);
+
     }
 
     SDL_Quit();

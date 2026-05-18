@@ -27,7 +27,7 @@ class Tesseract
         ~Tesseract();
 
         void setCaptureMouse(bool state);
-        bool getCaptureMouseState();
+        bool getCaptureMouse();
 
         bool isRunning();
         void run(function<void()> userUpdate);

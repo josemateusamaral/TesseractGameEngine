@@ -21,10 +21,10 @@ Model::Model(string filePath, Vec3 position, double scale)
 :position{position}, scale{scale}
 {
 
-    qtdLights = 0;
-    maxQtdLight = 10;
+    nLights = 0;
+    maxNLight = 10;
 
-    lights = new Light*[maxQtdLight];
+    lights = new Light*[maxNLight];
 
     iluminacao = Vec3(1,1,0);
     loadModel(filePath);
@@ -60,11 +60,11 @@ void Model::loadModel(string path)
     aiMesh* mesh = scene->mMeshes[0];
 
     // iniciate class control variables
-    this->quantidadePontos = mesh->mNumVertices;
-    pontos_base = new Vec3[quantidadePontos]; 
-    projecao = new Vec3[quantidadePontos];
-    pontos = new Vec3[quantidadePontos];
-    uvs = new Vec3[quantidadePontos];
+    this->nVertices = mesh->mNumVertices;
+    this->vertices = new Vec3[nVertices]; 
+    this->projection = new Vec3[nVertices];
+    this->pontos = new Vec3[nVertices];
+    this->uvs = new Vec3[nVertices];
     this->polygonCount = mesh->mNumFaces;
 
 
@@ -97,7 +97,7 @@ void Model::loadModel(string path)
             }
 
             if (data) {
-                this->texture = new Texture((char*)data, width, height);
+                this->diffuseTexture = new Texture((char*)data, width, height);
                 printf("Sucesso: Textura carregada (%dx%d)\n", width, height);
             } else {
                 printf("Erro ao carregar textura: %s\n", stbi_failure_reason());
@@ -113,30 +113,30 @@ void Model::loadModel(string path)
     for (unsigned int i = 0; i < mesh->mNumVertices; i++) {        
         
         // vertice
-        pontos_base[i] = Vec3(
+        this->vertices[i] = Vec3(
             mesh->mVertices[i].x,// * tamanho, 
             mesh->mVertices[i].y,// * tamanho, 
             mesh->mVertices[i].z// * tamanho
         );
 
-        //projecao
-        projecao[i] = Vec3(0.0f, 0.0f, 0.0f);
+        //projection
+        this->projection[i] = Vec3(0.0f, 0.0f, 0.0f);
 
         // uv
         if (mesh->mTextureCoords[0]) {
-            uvs[i] = Vec3(
+            this->uvs[i] = Vec3(
                 mesh->mTextureCoords[0][i].x,
                 mesh->mTextureCoords[0][i].y,
                 0.0f
             );
         } else {
-            uvs[i] = Vec3(0.0f, 0.0f, 0.0f);
+            this->uvs[i] = Vec3(0.0f, 0.0f, 0.0f);
         }
     }
 
     // load indixes
     this->indexCount = mesh->mNumFaces * 3;
-    indices = new unsigned int[indexCount];
+    this->indices = new unsigned int[indexCount];
 
     unsigned int idx = 0;
     for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
@@ -144,9 +144,9 @@ void Model::loadModel(string path)
         aiFace face = mesh->mFaces[i];
         if (face.mNumIndices != 3) continue;
 
-        indices[idx++] = face.mIndices[0];
-        indices[idx++] = face.mIndices[1];
-        indices[idx++] = face.mIndices[2];
+        this->indices[idx++] = face.mIndices[0];
+        this->indices[idx++] = face.mIndices[1];
+        this->indices[idx++] = face.mIndices[2];
     }
 
     printf("Modelo carregado: %d vertices, %d faces\n", mesh->mNumVertices, mesh->mNumFaces);
@@ -156,29 +156,29 @@ void Model::loadModel(string path)
 /**
  * @brief rendericar a esfera nos formatos Wireframe ou Shaded
  *
- * @authors Jose Mateus Amaral, Monique
+ * @authors Jose Mateus Amaral
  */
-void Model::draw(Window &window)
+void Model::draw(Window &window, Camera *camera)
 {
+
+    //printf("Desenhando modelo\n");
 
     calcular_pontos_3D();
 
-    //printf("ANTES: %p\n", this->projecao);
-
-    camera->projetar(this->pontos, this->projecao, quantidadePontos);
-
-    //printf("DEPOIS: %p\n", this->projecao);
+    camera->project(this->pontos, this->projection, this->nVertices);
 
     int R = 255, G = 255, B = 255;
     double angulo;
 
-    double origem[3] = {0,0,0};
-    double a[3] = {position.x, position.y, position.z};
+    double origem[3] = {camera->posicao.x, camera->posicao.y, camera->posicao.z};
+    double a[3] = {this->position.x, this->position.y, this->position.z};
     Vec3 camToObj{origem, a};
 
-    // Percorrer TRIÂNGULOS
+    // indexes
     for (int i = 0; i < indexCount; i += 3)
     {
+
+        //printf("Desenhando triangulo %d\n", i / 3);
 
         int i0 = indices[i];
         int i1 = indices[i + 1];
@@ -188,16 +188,17 @@ void Model::draw(Window &window)
         Vec3 p0 = pontos[i0];
         Vec3 p1 = pontos[i1];
         Vec3 p2 = pontos[i2];
-
-        double b[3] = {p0.x, p0.y, p0.z};
-        double c[3] = {p1.x, p1.y, p1.z};
-        double d[3] = {p2.x, p2.y, p2.z};
-
+        double b[3] = {pontos[i0].x, pontos[i0].y, pontos[i0].z};
+        double c[3] = {pontos[i1].x, pontos[i1].y, pontos[i1].z};
+        double d[3] = {pontos[i2].x, pontos[i2].y, pontos[i2].z};
         Vec3 v1(b, c);
         Vec3 v2(b, d);
 
         // normal do triângulo
         Vec3 normal = v1.produto_vetorial(v2);
+
+        
+        
 
         // vetor do objeto até o triângulo
         Vec3 objToTri(a, b);
@@ -211,9 +212,9 @@ void Model::draw(Window &window)
                 if (camToObj.angulo_entre_vetores(normal) > 90 || !this->backfaceCulling)
                 {
 
-                    window.desenha(projecao[i0], projecao[i1]);
-                    window.desenha(projecao[i1], projecao[i2]);
-                    window.desenha(projecao[i2], projecao[i0]);
+                    window.drawLine(projection[i0], projection[i1]);
+                    window.drawLine(projection[i1], projection[i2]);
+                    window.drawLine(projection[i2], projection[i0]);
                     
                 }
                 break;
@@ -225,7 +226,7 @@ void Model::draw(Window &window)
                 // backface culling
                 if (camToObj.angulo_entre_vetores(normal) > 90 || !this->backfaceCulling)
                 {
-                    if (comSombra)
+                    if (shadowCast)
                     {
                         angulo = normal.angulo_entre_vetores(iluminacao);
                         R = corR - ((255.0 / 180.0) * angulo);
@@ -239,10 +240,10 @@ void Model::draw(Window &window)
                         B = corB;
                     }
 
-                    window.desenhar_poligono(
-                        projecao[i0],
-                        projecao[i1],
-                        projecao[i2],
+                    window.drawBlankPolygon(
+                        projection[i0],
+                        projection[i1],
+                        projection[i2],
                         R, G, B
                     );
                 }
@@ -256,44 +257,44 @@ void Model::draw(Window &window)
                 // backface culling
                 if (camToObj.angulo_entre_vetores(normal) > 90 || !this->backfaceCulling)
                 {
-
-                    window.desenhar_poligono_texturizado(
-                        projecao[i0],
-                        projecao[i1],
-                        projecao[i2],
+                    
+                    window.drawTexturedPolygon(
+                        //projections
+                        projection[i0],
+                        projection[i1],
+                        projection[i2],
+                        //uvs
                         uvs[i0],
                         uvs[i1],
                         uvs[i2],
-                        (unsigned char*)texture->data,
-                        texture->width,
-                        texture->height,
+                        //texture
+                        (unsigned char*)diffuseTexture->data,
+                        diffuseTexture->width,
+                        diffuseTexture->height,
+                        //lights
                         this->lights,
-                        this->qtdLights
+                        this->nLights
                     );
                 }
                 break;
             }
         }
     }
-
+    //printf("modelo desenhado\n");
 }
 
 /**
  * @brief A partir do centro e do tamanho do sólido, calcula a posição dos pontos restantes.
- * @author Jose Mateus Amaral, Monique
+ * @author Jose Mateus Amaral
  */
 void Model::calcular_pontos_3D()
 {
-    double px = position.x - camera->posicao.x;
-    double py = position.y - camera->posicao.y;
-    double pz = position.z - camera->posicao.z;
-    double t = scale;
 
-    for(int i = 0 ; i < quantidadePontos ; i++ ){
-        pontos[i] = pontos_base[i];
-        pontos[i].x = px + pontos[i].x * t;
-        pontos[i].y = py + pontos[i].y * t;
-        pontos[i].z = pz + pontos[i].z * t;
+    for( int i = 0 ; i < this->nVertices ; i++ ){
+        this->pontos[i] = this->vertices[i];
+        this->pontos[i].x = this->position.x + this->pontos[i].x * this->scale;
+        this->pontos[i].y = this->position.y + this->pontos[i].y * this->scale;
+        this->pontos[i].z = this->position.z + this->pontos[i].z * this->scale;
     }
 
 }
@@ -313,28 +314,26 @@ void Model::rotate(int rotacaoX, int rotacaoY, int rotacaoZ){
     angulo.z += rotacaoZ;
     double x,y,z,seno,cosseno;
 
-    for( int i = 0 ; i < quantidadePontos ; i++ ){
+    for( int i = 0 ; i < nVertices ; i++ ){
         
-        x = pontos_base[i].x;
-        z = pontos_base[i].z;
         seno = sin( rotacaoX * M_PI / 180 );
         cosseno = cos( rotacaoX * M_PI / 180 );
-        pontos_base[i].x = x * cosseno - z * seno;
-        pontos_base[i].z = z * cosseno + x * seno;
+        vertices[i].x = vertices[i].x * cosseno - vertices[i].z * seno;
+        vertices[i].z = vertices[i].z * cosseno + vertices[i].x * seno;
         
-        y = pontos_base[i].y;
-        z = pontos_base[i].z;
+        y = vertices[i].y;
+        z = vertices[i].z;
         seno = sin( rotacaoY * M_PI / 180 );
         cosseno = cos( rotacaoY * M_PI / 180 );
-        pontos_base[i].y = y * cosseno - z * seno;
-        pontos_base[i].z = z * cosseno + y * seno;
+        vertices[i].y = y * cosseno - z * seno;
+        vertices[i].z = z * cosseno + y * seno;
         
-        x = pontos_base[i].x;
-        y = pontos_base[i].y;
+        x = vertices[i].x;
+        y = vertices[i].y;
         seno = sin( rotacaoZ * M_PI / 180 );
         cosseno = cos( rotacaoZ * M_PI / 180 );
-        pontos_base[i].y = y * cosseno - x * seno;
-        pontos_base[i].x = x * cosseno + y * seno;
+        vertices[i].y = y * cosseno - x * seno;
+        vertices[i].x = x * cosseno + y * seno;
     
     }
 }
@@ -386,9 +385,9 @@ double Model::getScale(){
 }
 
 void Model::setLight(Light *light){
-    this->lights[this->qtdLights] = light;
-    this->qtdLights += 1;
-    printf("Light added. Total lights: %d\n", this->qtdLights);
+    this->lights[this->nLights] = light;
+    this->nLights += 1;
+    printf("Light added. Total lights: %d\n", this->nLights);
 }
 
 ostream & operator<< (ostream &out, const Model &p)
