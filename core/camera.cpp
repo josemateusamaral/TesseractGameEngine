@@ -19,13 +19,11 @@ Camera::Camera()
 }
 
 /**
- * 
- * @brief Transformação pontos do 3d para o 2d utilizando o modelo PinHole:
- *        x = ((distância focal * -1) / z ) * x
- *        y = ((distância focal * -1) / z ) * y
+ * @brief Transform vertices from 3D space to 2D screen using perspective projection
  * @authors Jose Mateus Amaral
- * @param vertices Array de pontos 3D para serem transformados em 2D
- * @param nVertices quantidade de pontos
+ * @param vertices model vertices in 3D space
+ * @param nVertices number of vertices in the model
+ * @param projection Array of 2D points to be drawn
  * @return Vec3* Array de pontos 2d para serem desenhados
  */
 
@@ -73,18 +71,6 @@ void Camera::project(Vec3* vertices, Vec3* projection, int nVertices){
     
     }
 
-}
-
-/**
- * @brief Singleton da classe camera, só permite uma instacia da classe.
- * @authors Gustavo Mittelmann, Henrique Heiderscheidt
- * @return Camera* 
- */
-Camera *Camera::criar(){
-    if (camera == nullptr){
-        camera = new Camera();
-    };
-    return camera;
 }
 
 Camera::~Camera()

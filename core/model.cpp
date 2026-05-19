@@ -23,10 +23,7 @@ Model::Model(string filePath, Vec3 position, double scale)
 
     nLights = 0;
     maxNLight = 10;
-
     lights = new Light*[maxNLight];
-
-    iluminacao = Vec3(1,1,0);
     loadModel(filePath);
 
 }
@@ -177,8 +174,6 @@ void Model::draw(Window &window, Camera *camera)
     for (int i = 0; i < indexCount; i += 3)
     {
 
-        //printf("Desenhando triangulo %d\n", i / 3);
-
         int i0 = indices[i];
         int i1 = indices[i + 1];
         int i2 = indices[i + 2];
@@ -224,7 +219,7 @@ void Model::draw(Window &window, Camera *camera)
                 {
                     if (shadowCast)
                     {
-                        angulo = normal.angulo_entre_vetores(iluminacao);
+                        angulo = 90;
                         R = corR - ((255.0 / 180.0) * angulo);
                         G = corG - ((255.0 / 180.0) * angulo);
                         B = corB - ((255.0 / 180.0) * angulo);
@@ -259,6 +254,10 @@ void Model::draw(Window &window, Camera *camera)
                         projection[i0],
                         projection[i1],
                         projection[i2],
+                        //vertices
+                        pontos[i0],
+                        pontos[i1],
+                        pontos[i2],
                         //uvs
                         uvs[i0],
                         uvs[i1],
@@ -276,7 +275,6 @@ void Model::draw(Window &window, Camera *camera)
             }
         }
     }
-    //printf("modelo desenhado\n");
 }
 
 /**

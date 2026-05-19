@@ -38,27 +38,25 @@ DirectionalLight::DirectionalLight(float r, float g, float b, float dirX, float 
 {
 
 }
+
 void DirectionalLight::apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB)
 {
-    // edges do triangulo
+    // polygon edges
     Vec3 v1 = p2 - p1;
     Vec3 v2 = p3 - p1;
 
-    // normal da face
+    // polygon normal
     Vec3 normal = v1.produto_vetorial(v2).versor();
 
-    // direção da luz
+    // light direction
     Vec3 lightDir(dirX, dirY, dirZ);
-
     lightDir = lightDir.versor();
 
-    // intensidade Lambert
+    // Lambert
     float intensity = normal.produto_escalar(lightDir);
-
-    // clamp
     intensity = std::max(0.0f, intensity);
 
-    // aplica cor
+    // apply color
     outR += r * intensity;
     outG += g * intensity;
     outB += b * intensity;
@@ -82,8 +80,7 @@ void PointLight::apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, floa
     Vec3 v2 = p3 - p1;
 
     // normal
-    //Vec3 normal = v1.produto_vetorial(v2).versor();
-    Vec3 normal = v2.produto_vetorial(v1).versor();
+    Vec3 normal = v1.produto_vetorial(v2).versor();
 
     // polygon center
     Vec3 center(
@@ -92,14 +89,12 @@ void PointLight::apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, floa
         (p1.z + p2.z + p3.z) / 3.0
     );
 
-    // vetor do triangulo ate a luz
+    // light direction
     Vec3 lightDir(
         this->x - center.x,
         this->y - center.y,
         this->z - center.z
     );
-
-    // normaliza
     lightDir = lightDir.versor();
 
     // Lambert

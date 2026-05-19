@@ -23,8 +23,6 @@ class Model
         
     public:
 
-        Camera* camera = Camera::criar();
-
         //diffuse texture
         Texture* diffuseTexture = nullptr;
 
@@ -33,7 +31,6 @@ class Model
         int corG = 255;
         int corB = 255;
         bool shadowCast = false;
-        Vec3 iluminacao;
 
         int nVertices;
         Vec3 angulo;

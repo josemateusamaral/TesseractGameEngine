@@ -221,7 +221,7 @@ bool Window::isPixelInsidePolygon(int x1, int y1, int x2, int y2, int x3, int y3
     return ( areaPoligono == triangulo1 + triangulo2 + triangulo3 );
 }
 
-void Window::drawTexturedPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, unsigned char* data, int texW, int texH, Light** lights, int nLights) 
+void Window::drawTexturedPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, Vec3 &v3, Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, unsigned char* data, int texW, int texH, Light** lights, int nLights) 
 {
 
     // polygon boundbox
@@ -288,7 +288,7 @@ void Window::drawTexturedPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &uv1, Vec3 &
     float lightEffetG = 0.0f;
     float lightEffetB = 0.0f;
     for (int i = 0; i < nLights; i++) { 
-        lights[i]->apply( p1, p2, p3, lightEffetR, lightEffetG, lightEffetB);
+        lights[i]->apply( v1, v2, v3, lightEffetR, lightEffetG, lightEffetB);
     }
 
     // loop through the bounding box of the triangle

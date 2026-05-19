@@ -11,8 +11,6 @@ public:
     int dist_f;
     static Camera* camera;
 
-    static Camera* criar();    
-
     Camera();
     ~Camera();
     void project(Vec3* pontos, Vec3* projection, int nVertices);

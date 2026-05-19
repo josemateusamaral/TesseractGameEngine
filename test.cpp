@@ -18,11 +18,11 @@ int main(int argc, char *args[])
 	}
 
 	// create ambient light
-	AmbientLight* ambientLight = new AmbientLight( 1, 1, 1);
-	AmbientLight* ambientLight2 = new AmbientLight( 0.1, 0.1, 0.1);
+	AmbientLight* ambientLight = new AmbientLight( 0.2, 0.2, 0.2);
 	// create point light
-	PointLight* pointLight = new PointLight( 1, 1, 1, 0, 0, 30);
-
+	PointLight* pointLight = new PointLight( 0.8, 0.8, 0.8, 0, 0, 30);
+	// create directional light
+	DirectionalLight* directionalLight = new DirectionalLight( 1, 1, 1, 0, 0, -1);
 
 	// load model
 	Model* model = new Model("samples/model_loading/esfere.glb");
@@ -31,7 +31,7 @@ int main(int argc, char *args[])
 	model->renderType = 3;
 	engine.scene->addModel(model);
 	model->setLight(pointLight);
-	//model->setLight(ambientLight2);
+	model->setLight(ambientLight);
 
 	// point light place holder
 	Model* modelLight = new Model("samples/model_loading/cubo.glb");
@@ -40,7 +40,6 @@ int main(int argc, char *args[])
 	modelLight->renderType = 3;
 	engine.scene->addModel(modelLight);
 	modelLight->setLight(ambientLight);
-
 	
 	// bind keys
 	engine.input->bindKey("escape", "release", [&engine]() {
