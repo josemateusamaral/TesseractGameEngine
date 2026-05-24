@@ -16,7 +16,7 @@
   - Now you should be able to run ./test.bat to run the test.cpp example and also use tools like gcc and g++. This is the easiest way to start working on windows without have to set too many things.<br>
 
 <br><br>
-  RUN TEST SAMPLE ON UBUNTU<br><br>
+  RUN TEST SAMPLE ON UBUNTU<br>
 
   - Run the commands bellow to install the necessary librarys.<br>
       __> sudo apt install cmake<br>
