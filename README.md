@@ -23,7 +23,7 @@
       __> sudo apt install libsdl2-dev<br>
       __> sudo apt install libassimp-dev<br>
   - After install everything, run the commands bellow to run the test<br>
-      __> cmake CmakeLists.txt to create a Makefile.<br>
+      __> cmake CmakeLists.txt<br>
       __> make<br>
       __>./test<br>
 
