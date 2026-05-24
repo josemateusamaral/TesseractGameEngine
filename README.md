@@ -8,7 +8,7 @@
 
   - Install MSYS2 on https://www.msys2.org/.<br>
   - Using MSYS2 UCRT terminal install the necessary to compile the project using the commands bellow: <br>
-      __> <b>pacman -S --needed base-devel mingw-w64-ucrt-x86_64-toolchain<b><br>
+      __> pacman -S --needed base-devel mingw-w64-ucrt-x86_64-toolchain<br>
       __> pacman -S mingw-w64-ucrt-x86_64-cmake<br>
       __> pacman -S mingw-w64-ucrt-x86_64-SDL2<br>
       __> pacman -S mingw-w64-ucrt-x86_64-assimp<br>
@@ -22,8 +22,10 @@
       __> sudo apt install cmake<br>
       __> sudo apt install libsdl2-dev<br>
       __> sudo apt install libassimp-dev<br>
-  - After install everything, run __> cmake CmakeLists.txt create a Makefile. Then run __> Make to complite the the test.<br>
-  - If the test file apper in the folder the compilation was good. The run __>./test to run the test.<br>
+  - After install everything, run the commands bellow to run the test<br>
+      __> cmake CmakeLists.txt to create a Makefile.<br>
+      __> make<br>
+      __>./test<br>
 
 
 
