@@ -6,7 +6,6 @@
   <br><br><br>
   RUN TEST SAMPLE ON WINDOWS<br>
 
-  - The CMakeLists.txt was made to be used with cmake on windows.<br>
   - Install MSYS2 on https://www.msys2.org/.<br>
   - Using MSYS2 UCRT terminal install the necessary to compile the project using the commands bellow: <br>
       __> pacman -S --needed base-devel mingw-w64-ucrt-x86_64-toolchain<br>
@@ -14,7 +13,17 @@
       __> pacman -S mingw-w64-ucrt-x86_64-SDL2<br>
       __> pacman -S mingw-w64-ucrt-x86_64-assimp<br>
   - Then add the path C:\msys64\ucrt64\bin to your environment variables.<br>
-  - Now you should be able to run ./test.bat to run the test.cpp example and also use tools like gcc and g++. This is the easiest way to start working on windows without have to set too many things.<br> 
+  - Now you should be able to run ./test.bat to run the test.cpp example and also use tools like gcc and g++. This is the easiest way to start working on windows without have to set too many things.<br>
+
+<br><br>
+  RUN TEST SAMPLE ON UBUNTU<br><br>
+
+  - Run the commands bellow to install the necessary librarys.<br>
+      __> sudo apt install cmake<br>
+      __> sudo apt install libsdl2-dev<br>
+      __> sudo apt install libassimp-dev<br>
+  - After install everything, run __> cmake CmakeLists.txt create a Makefile. Then run __> Make to complite the the test.<br>
+  - If the test file apper in the folder the compilation was good. The run __>./test to run the test.<br>
 
 
 
