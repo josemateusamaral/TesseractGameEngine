@@ -2,11 +2,9 @@
   The engine is in its beginning state, so it will take some time to be really useful.<br><br>
   The engine was born in the course of computer science at the Intituto Intituto Federal Catarinense on the campus of Blumenau. It was initially intended to be an assessment method for object-oriented programming.<br><br>
 
-  RUN TESTE SAMPLE<br>
- ./test.bat<br>
 
   <br><br><br>
-  COMPILING TIPS FOR WINDOWS<br>
+  RUN TESTE SAMPLE ON WINDOWS<br>
 
   - The CMakeLists.txt was made to be used with cmake on windows.<br>
   - Install MSYS2 on https://www.msys2.org/.<br>
