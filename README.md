@@ -8,7 +8,7 @@
 
   - Install MSYS2 on https://www.msys2.org/.<br>
   - Using MSYS2 UCRT terminal install the necessary to compile the project using the commands bellow: <br>
-      __> pacman -S --needed base-devel mingw-w64-ucrt-x86_64-toolchain<br>
+      __> <b>pacman -S --needed base-devel mingw-w64-ucrt-x86_64-toolchain<b><br>
       __> pacman -S mingw-w64-ucrt-x86_64-cmake<br>
       __> pacman -S mingw-w64-ucrt-x86_64-SDL2<br>
       __> pacman -S mingw-w64-ucrt-x86_64-assimp<br>
