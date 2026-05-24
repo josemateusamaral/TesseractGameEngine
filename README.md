@@ -4,7 +4,7 @@
 
 
   <br><br><br>
-  RUN TESTE SAMPLE ON WINDOWS<br>
+  RUN TEST SAMPLE ON WINDOWS<br>
 
   - The CMakeLists.txt was made to be used with cmake on windows.<br>
   - Install MSYS2 on https://www.msys2.org/.<br>
@@ -14,7 +14,7 @@
       __> pacman -S mingw-w64-ucrt-x86_64-SDL2<br>
       __> pacman -S mingw-w64-ucrt-x86_64-assimp<br>
   - Then add the path C:\msys64\ucrt64\bin to your environment variables.<br>
-  - Now you should be able to run ./test.bat to run the teste.cpp example and also use tools like gcc and g++. This is the easiest way to start working on windows without have to set too many things.<br> 
+  - Now you should be able to run ./test.bat to run the test.cpp example and also use tools like gcc and g++. This is the easiest way to start working on windows without have to set too many things.<br> 
 
 
 
