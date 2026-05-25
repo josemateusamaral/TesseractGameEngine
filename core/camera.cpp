@@ -29,42 +29,46 @@ Camera::Camera()
 
 void Camera::project(Vec3* vertices, Vec3* projection, int nVertices){
 
+    // camera inverse rotation
+    float pitch = -this->hpr.x * M_PI / 180.0;
+    float yaw   = -this->hpr.y * M_PI / 180.0;
+    float roll  = -this->hpr.z * M_PI / 180.0;
+    // yaw - y
+    float cosY = cos(yaw);
+    float sinY = sin(yaw);
+    // pitch - x
+    float cosP = cos(pitch);
+    float sinP = sin(pitch);
+    // roll - z
+    float cosR = cos(roll);
+    float sinR = sin(roll);
+
     for( int i = 0 ; i < nVertices ; i++ ){
         
         // transform to camera space
-        double x = vertices[i].x - this->posicao.x;
-        double y = vertices[i].y - this->posicao.y;
-        double z = vertices[i].z - this->posicao.z;
-
-        // apply camera inverse rotation
-        double pitch = -this->hpr.x * M_PI / 180.0;
-        double yaw   = -this->hpr.y * M_PI / 180.0;
-        double roll  = -this->hpr.z * M_PI / 180.0;
+        float x = vertices[i].x - this->posicao.x;
+        float y = vertices[i].y - this->posicao.y;
+        float z = vertices[i].z - this->posicao.z;
+        
         // yaw - y
-        double cosY = cos(yaw);
-        double sinY = sin(yaw);
-        double dx = x * cosY - z * sinY;
-        double dz = x * sinY + z * cosY;
+        float dx = x * cosY - z * sinY;
+        float dz = x * sinY + z * cosY;
         x = dx;
         z = dz;
         // pitch - x
-        double cosP = cos(pitch);
-        double sinP = sin(pitch);
-        double dy = y * cosP - z * sinP;
+        float dy = y * cosP - z * sinP;
         dz = y * sinP + z * cosP;
         y = dy;
         z = dz;
         // roll - z
-        double cosR = cos(roll);
-        double sinR = sin(roll);
         dx = x * cosR - y * sinR;
         dy = x * sinR + y * cosR;
         x = dx;
         y = dy;
 
         // project perpective
-        double px = (this->dist_f * x) / z;
-        double py = (this->dist_f * y) / z;
+        float px = (this->dist_f * x) / z;
+        float py = (this->dist_f * y) / z;
         projection[i].x = px * -1 + 320;
         projection[i].y = py * -1 + 240;
         projection[i].z = z;

@@ -23,6 +23,7 @@ Tesseract::Tesseract(int width, int height)
     this->scene = new Scene();
     this->camera = new Camera();
     this->input = new Input();
+    this->gui = new GUI();
 
 }
 
@@ -53,6 +54,12 @@ bool Tesseract::isRunning(){
 
 void Tesseract::run(function<void()> userUpdate) {
     
+    Uint32 lastFrameTicktime = SDL_GetTicks();
+    Uint32 deltaTime; 
+    int fps = 0;
+
+    float updateFPSCount = 0.0;
+
     while (!this->quit) {
 
         // process inputs
@@ -63,13 +70,35 @@ void Tesseract::run(function<void()> userUpdate) {
             userUpdate();
         }
 
-        // render
+        // render scene
         this->window->clean();
         for(int i = 0; i < this->scene->qtdModels; i++){
             Model* model = this->scene->models[i];
             model->draw(*window, this->camera);
         }
+
+        // render gui
+        for(int i = 0; i < this->gui->nElements; i++){
+            this->gui->elements[i]->render(this->window->colorBuffer, this->window->getWidth(), this->window->getHeight());
+        }
+
         this->window->refresh();
+
+        // calculate fps and delta time
+        deltaTime = SDL_GetTicks() - lastFrameTicktime;
+        fps = 1000 / deltaTime;
+        lastFrameTicktime = SDL_GetTicks();
+        updateFPSCount += deltaTime;
+        if(updateFPSCount > 1){
+            Text* fpsText = dynamic_cast<Text*>(this->gui->elements[0]);
+            if (fpsText)
+            {
+                char buffer[64];
+                sprintf(buffer, "FPS: %d", fps);
+                fpsText->setText(buffer);
+            }
+            updateFPSCount = 0.0f;
+        }
 
         // refresh rate delay
         SDL_Delay(this->delay);

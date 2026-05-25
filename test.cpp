@@ -2,6 +2,7 @@
 #include "core/light.h"
 #include "core/tesseract.h"
 #include "core/camera.h"
+#include "core/gui.h"
 
 // Screen dimension
 const int SCREEN_WIDTH = 640;
@@ -79,6 +80,24 @@ int main(int argc, char *args[])
 		engine.camera->hpr.y += engine.input->mouseMotionVector->x * 0.1;
 		if(engine.camera->hpr.y < 0) 
 			engine.camera->hpr.y = 359;
+	});
+
+	//create text
+	Text *text = new Text("Testando");
+	text->pos.x = 10;
+	text->pos.y = 4;
+	engine.gui->addElement(text);
+	engine.input->bindKey("l", "press", [&text]() {
+		text->pos.x += 1;
+	});
+	engine.input->bindKey("j", "press", [&text]() {
+		text->pos.x -= 1;
+	});
+	engine.input->bindKey("i", "press", [&text]() {
+		text->pos.y += 1;
+	});
+	engine.input->bindKey("k", "press", [&text]() {
+		text->pos.y -= 1;
 	});
 
 	// game loop

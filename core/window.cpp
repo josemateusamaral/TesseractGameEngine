@@ -109,7 +109,7 @@ void Window::drawLine(Vec3 &v1, Vec3 &v2)
 void Window::drawBlankPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3,int r, int g, int b){
 
     // polygon boundbox
-    double topY,bottomY,maxLeft,maxRight;
+    float topY,bottomY,maxLeft,maxRight;
     //top
     if(p1.y > p2.y && p1.y > p3.y){
         topY = p1.y;
@@ -152,10 +152,10 @@ void Window::drawBlankPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3,int r, int g, int b){
     }
 
     // top left corner of the boundbox
-    double px = maxLeft; 
-    double py = topY;
-    double sizeX = maxRight - maxLeft;
-    double sizeY = topY - bottomY;
+    float px = maxLeft; 
+    float py = topY;
+    float sizeX = maxRight - maxLeft;
+    float sizeY = topY - bottomY;
 
     // set polygon color
     SDL_SetRenderDrawColor(renderer,r,g,b,255);
@@ -273,10 +273,10 @@ void Window::drawTexturedPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v
     if(maxRight >= this->width) maxRight = this->width - 1;
 
     // top left corner of the boundbox
-    double px = maxLeft; 
-    double py = topY; 
-    double sizeX = maxRight - maxLeft;
-    double sizeY = topY - bottomY;
+    float px = maxLeft; 
+    float py = topY; 
+    float sizeX = maxRight - maxLeft;
+    float sizeY = topY - bottomY;
 
     // calculate the area of the polygon
     float areaTotal = area(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
@@ -358,7 +358,7 @@ void Window::drawTexturedPolygon(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v
     }
 }
 
-void Window::createBoundBox(Vec3 &p1, Vec3 &p2, Vec3 &p3, double &minX, double &maxX, double &minY, double &maxY) {
+void Window::createBoundBox(Vec3 &p1, Vec3 &p2, Vec3 &p3, float &minX, float &maxX, float &minY, float &maxY) {
     minX = std::min({p1.x, p2.x, p3.x});
     maxX = std::max({p1.x, p2.x, p3.x});
     minY = std::min({p1.y, p2.y, p3.y});
@@ -367,6 +367,14 @@ void Window::createBoundBox(Vec3 &p1, Vec3 &p2, Vec3 &p3, double &minX, double &
 
 float Window::edge( float ax, float ay, float bx, float by, float px, float py){
     return ( px - ax ) * ( by - ay ) - ( py - ay ) * ( bx - ax );
+}
+
+int Window::getWidth(){
+    return this->width;
+}
+
+int Window::getHeight(){
+    return this->height;
 }
 
 SDL_Window* Window::getWindow(){

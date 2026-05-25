@@ -3,6 +3,7 @@
 #include "camera.h"
 #include "scene.h"
 #include "input.h"
+#include "gui.h"
 #include <stdio.h>
 #include <functional>
 
@@ -21,6 +22,7 @@ class Tesseract
         Camera *camera;
         Scene *scene;
         Input *input;
+        GUI *gui;
         SDL_Event ev;
 
         Tesseract(int width = 640, int height = 480);

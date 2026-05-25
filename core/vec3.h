@@ -16,18 +16,18 @@ class Vec3
 
         /**
          * Construtor com dados do vetor
-         * > param x um double para a coordenada x
-         * > param y um double para a coordenada y
-         * > param z um double para a coordenada z
+         * > param x um float para a coordenada x
+         * > param y um float para a coordenada y
+         * > param z um float para a coordenada z
          **/
-        Vec3(double x, double y, double z);
+        Vec3(float x, float y, float z);
 
         /**
          * Construtor com pontos
          * > a[] é o ponto inicial do vetor
          * > b[] é o ponto final do vetor
          **/
-        Vec3(double a[], double b[]);
+        Vec3(float a[], float b[]);
         
         /**
          * Construtor de cópia
@@ -38,7 +38,7 @@ class Vec3
         /**
          *operação que retorna o modulo do vetor
          **/
-        double modulo();
+        float modulo();
 
         /**
          *operação que retorna o versor do vetor
@@ -55,13 +55,13 @@ class Vec3
          * calcular o produto escalar deste vetor com outro vetor
          * > param v uma referência constante (&) para um vetor
          **/
-        double produto_escalar(const Vec3 &v);
+        float produto_escalar(const Vec3 &v);
 
         /**
          * multiplica vetor por escaçar
          * > param v uma referência (&) para um vetor
          **/
-        Vec3 multiEscalar(double escalar);
+        Vec3 multiEscalar(float escalar);
         
         /**
          * calcular o produto vetorial deste vetor com outro vetor
@@ -74,7 +74,7 @@ class Vec3
          * > param v1 uma referência constante (&) para um vetor
          * > param v1 uma referência constante (&) para um vetor
          **/
-        double produto_misto(const Vec3 &v1, const Vec3 &v2);
+        float produto_misto(const Vec3 &v1, const Vec3 &v2);
 
         /**
          * verificar se dois vetores são proporcionais
@@ -86,7 +86,7 @@ class Vec3
          * calcular o angulo entre este vetor e outro vetor
          * > param v uma referência (&) para um vetor
          **/
-        double angulo_entre_vetores(Vec3 &v);
+        float angulo_entre_vetores(Vec3 &v);
 
         /**
          * Operador de soma e atribuição
@@ -112,9 +112,9 @@ class Vec3
          **/
         Vec3 operator-(const Vec3 &v);
 
-        double x; /**< Valor da coordenada x */
-        double y; /**< Valor da coordenada y */
-        double z; /**< Valor da coordenada z */
+        float x; /**< Valor da coordenada x */
+        float y; /**< Valor da coordenada y */
+        float z; /**< Valor da coordenada z */
 };
 
 /**

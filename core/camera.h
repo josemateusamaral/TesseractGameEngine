@@ -6,8 +6,8 @@ class Camera
 public:
     Vec3 posicao;
     Vec3 hpr;
-    double angulox;
-    double anguloy;
+    float angulox;
+    float anguloy;
     int dist_f;
     static Camera* camera;
 

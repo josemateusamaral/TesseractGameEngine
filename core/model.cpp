@@ -17,7 +17,7 @@ Model::Model()
     
 }
 
-Model::Model(string filePath, Vec3 position, double scale)
+Model::Model(string filePath, Vec3 position, float scale)
 :position{position}, scale{scale}
 {
 
@@ -164,10 +164,10 @@ void Model::draw(Window &window, Camera *camera)
     camera->project(this->pontos, this->projection, this->nVertices);
 
     int R = 255, G = 255, B = 255;
-    double angulo;
+    float angulo;
 
-    double origem[3] = {camera->posicao.x, camera->posicao.y, camera->posicao.z};
-    double a[3] = {this->position.x, this->position.y, this->position.z};
+    float origem[3] = {camera->posicao.x, camera->posicao.y, camera->posicao.z};
+    float a[3] = {this->position.x, this->position.y, this->position.z};
     Vec3 camToObj{origem, a};
 
     // indexes
@@ -182,9 +182,9 @@ void Model::draw(Window &window, Camera *camera)
         Vec3 p0 = pontos[i0];
         Vec3 p1 = pontos[i1];
         Vec3 p2 = pontos[i2];
-        double b[3] = {pontos[i0].x, pontos[i0].y, pontos[i0].z};
-        double c[3] = {pontos[i1].x, pontos[i1].y, pontos[i1].z};
-        double d[3] = {pontos[i2].x, pontos[i2].y, pontos[i2].z};
+        float b[3] = {pontos[i0].x, pontos[i0].y, pontos[i0].z};
+        float c[3] = {pontos[i1].x, pontos[i1].y, pontos[i1].z};
+        float d[3] = {pontos[i2].x, pontos[i2].y, pontos[i2].z};
         Vec3 v1(b, c);
         Vec3 v2(b, d);
 
@@ -306,7 +306,7 @@ void Model::rotate(int rotacaoX, int rotacaoY, int rotacaoZ){
     angulo.x += rotacaoX;
     angulo.y += rotacaoY;
     angulo.z += rotacaoZ;
-    double x,y,z,seno,cosseno;
+    float x,y,z,seno,cosseno;
 
     for( int i = 0 ; i < nVertices ; i++ ){
         
@@ -332,7 +332,7 @@ void Model::rotate(int rotacaoX, int rotacaoY, int rotacaoZ){
     }
 }
 
-void Model::setPos(double x, double y, double z){
+void Model::setPos(float x, float y, float z){
     this->position.x = x;
     this->position.y = y;
     this->position.z = z;
@@ -342,15 +342,15 @@ void Model::setPos(Vec3 posicao){
     this->position = posicao;
 }
 
-void Model::setX(double x){
+void Model::setX(float x){
     this->position.x = x;
 }
 
-void Model::setY(double y){
+void Model::setY(float y){
     this->position.y = y;
 }
 
-void Model::setZ(double z){
+void Model::setZ(float z){
     this->position.z = z;
 }
 
@@ -358,23 +358,23 @@ Vec3 Model::getPos(){
     return this->position;
 }
 
-double Model::getX(){
+float Model::getX(){
     return this->position.x;
 }
 
-double Model::getY(){
+float Model::getY(){
     return this->position.y;
 }
 
-double Model::getZ(){
+float Model::getZ(){
     return this->position.z;
 }
 
-void Model::setScale(double tamanho){
+void Model::setScale(float tamanho){
     this->scale = tamanho;
 }
 
-double Model::getScale(){
+float Model::getScale(){
     return this->scale;
 }
 
