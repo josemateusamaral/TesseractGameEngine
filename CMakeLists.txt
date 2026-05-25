@@ -29,6 +29,7 @@ set(SOURCES
     core/scene.cpp
     core/light.cpp
     core/gui.cpp
+    core/analitycs.cpp
 
 )
 

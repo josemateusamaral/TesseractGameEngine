@@ -51,39 +51,6 @@ Text::Text(const char* text, const char* fontPath)
 
     this->setText(text);
 
-    /*
-    SDL_Color cor = {255,255,255,255};
-
-    surface = TTF_RenderUTF8_Blended(
-        fonte,
-        text,
-        cor
-    );
-
-    if (!surface)
-    {
-        printf("Erro surface texto: %s\n", TTF_GetError());
-        return;
-    }
-
-    // converte para uint32 ARGB8888
-    SDL_Surface* converted =
-        SDL_ConvertSurfaceFormat(
-            surface,
-            SDL_PIXELFORMAT_ARGB8888,
-            0
-        );
-
-    SDL_FreeSurface(surface);
-
-    surface = converted;
-
-    width = surface->w;
-    height = surface->h;
-
-    TTF_CloseFont(fonte);
-    */
-
 }
 
 Text::~Text()

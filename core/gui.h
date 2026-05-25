@@ -7,6 +7,8 @@ class GUIElement
 {
     public:
 
+        bool isVisible = true;
+        bool isSystemControlled = false;
         int width = 50;
         int height = 20;
         Vec3 pos{100,100,0};

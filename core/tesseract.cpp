@@ -24,6 +24,7 @@ Tesseract::Tesseract(int width, int height)
     this->camera = new Camera();
     this->input = new Input();
     this->gui = new GUI();
+    this->analitycs = new Analitycs(this->gui);
 
 }
 
@@ -56,6 +57,7 @@ void Tesseract::run(function<void()> userUpdate) {
     
     Uint32 lastFrameTicktime = SDL_GetTicks();
     Uint32 deltaTime; 
+    Uint32 sdlTick; 
     int fps = 0;
 
     float updateFPSCount = 0.0;
@@ -77,28 +79,34 @@ void Tesseract::run(function<void()> userUpdate) {
             model->draw(*window, this->camera);
         }
 
+        // update fps meter
+        if(this->analitycs->fpsMeter->isVisible){
+            sdlTick = SDL_GetTicks();
+            deltaTime = sdlTick - lastFrameTicktime;
+            fps = 1000 / deltaTime;
+            lastFrameTicktime = sdlTick;
+            updateFPSCount += deltaTime;
+            if(updateFPSCount > 1000){
+                Text* fpsText = dynamic_cast<Text*>(this->gui->elements[0]);
+                if (fpsText)
+                {
+                    char buffer[10];
+                    sprintf(buffer, "FPS: %d", fps);
+                    fpsText->setText(buffer);
+                }
+                updateFPSCount = 0.0f;
+            }
+        }
+
         // render gui
         for(int i = 0; i < this->gui->nElements; i++){
-            this->gui->elements[i]->render(this->window->colorBuffer, this->window->getWidth(), this->window->getHeight());
+            if(this->gui->elements[i]->isVisible){
+                this->gui->elements[i]->render(this->window->colorBuffer, this->window->getWidth(), this->window->getHeight());
+            } 
         }
 
+        // show color buffer
         this->window->refresh();
-
-        // calculate fps and delta time
-        deltaTime = SDL_GetTicks() - lastFrameTicktime;
-        fps = 1000 / deltaTime;
-        lastFrameTicktime = SDL_GetTicks();
-        updateFPSCount += deltaTime;
-        if(updateFPSCount > 1){
-            Text* fpsText = dynamic_cast<Text*>(this->gui->elements[0]);
-            if (fpsText)
-            {
-                char buffer[64];
-                sprintf(buffer, "FPS: %d", fps);
-                fpsText->setText(buffer);
-            }
-            updateFPSCount = 0.0f;
-        }
 
         // refresh rate delay
         SDL_Delay(this->delay);

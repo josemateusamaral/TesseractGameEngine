@@ -12,6 +12,7 @@
       __> pacman -S mingw-w64-ucrt-x86_64-cmake<br>
       __> pacman -S mingw-w64-ucrt-x86_64-SDL2<br>
       __> pacman -S mingw-w64-ucrt-x86_64-assimp<br>
+      __> pacman -S mingw-w64-ucrt-x86_64-SDL2_ttf<br>
   - Then add the path C:\msys64\ucrt64\bin to your environment variables.<br>
   - Now you should be able to run ./test.bat to run the test.cpp example and also use tools like gcc and g++. This is the easiest way to start working on windows without have to set too many things.<br>
 
@@ -22,10 +23,8 @@ RUN TEST SAMPLE ON UBUNTU<br>
       __> sudo apt install cmake<br>
       __> sudo apt install libsdl2-dev<br>
       __> sudo apt install libassimp-dev<br>
-  - After install everything, run the commands bellow to run the test<br>
-      __> cmake CMakeLists.txt<br>
-      __> make<br>
-      __>./test<br>
+      __> sudo apt install libsdl2-ttf-dev<br>
+  - Now you should be able to run sh ./test.sh to run the test.cpp example. This is the easiest way to start working on Ubuntu without have to set too many things.<br>
 
 
 

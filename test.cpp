@@ -68,10 +68,10 @@ int main(int argc, char *args[])
 	// bind mouse
 	engine.setCaptureMouse(true);
 	engine.input->bindMouseButton("left", "release", [&model]() {
-		printf("soltando botão esquerdo do mouse");
+		printf("releasing left mouse button");
 	});
 	engine.input->bindMouseButton("right", "press", [&model]() {
-		printf("pressionando botao direito do mouse");
+		printf("pressing right mouse button");
 	});
 	engine.input->bindMouseMotion([&engine]() {
 		engine.camera->hpr.x += engine.input->mouseMotionVector->y * 0.1;
@@ -82,23 +82,7 @@ int main(int argc, char *args[])
 			engine.camera->hpr.y = 359;
 	});
 
-	//create text
-	Text *text = new Text("Testando");
-	text->pos.x = 10;
-	text->pos.y = 4;
-	engine.gui->addElement(text);
-	engine.input->bindKey("l", "press", [&text]() {
-		text->pos.x += 1;
-	});
-	engine.input->bindKey("j", "press", [&text]() {
-		text->pos.x -= 1;
-	});
-	engine.input->bindKey("i", "press", [&text]() {
-		text->pos.y += 1;
-	});
-	engine.input->bindKey("k", "press", [&text]() {
-		text->pos.y -= 1;
-	});
+	engine.analitycs->fpsMeter->isVisible = true;
 
 	// game loop
 	engine.run([&]() {

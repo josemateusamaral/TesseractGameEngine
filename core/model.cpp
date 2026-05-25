@@ -306,28 +306,29 @@ void Model::rotate(int rotacaoX, int rotacaoY, int rotacaoZ){
     angulo.x += rotacaoX;
     angulo.y += rotacaoY;
     angulo.z += rotacaoZ;
-    float x,y,z,seno,cosseno;
+
+    float senoX = sin( rotacaoX * M_PI / 180 );
+    float cossenoX = cos( rotacaoX * M_PI / 180 );
+    float senoY = sin( rotacaoY * M_PI / 180 );
+    float cossenoY = cos( rotacaoY * M_PI / 180 );
+    float senoZ = sin( rotacaoZ * M_PI / 180 );
+    float cossenoZ = cos( rotacaoZ * M_PI / 180 );
+    float x, y, z;
 
     for( int i = 0 ; i < nVertices ; i++ ){
         
-        seno = sin( rotacaoX * M_PI / 180 );
-        cosseno = cos( rotacaoX * M_PI / 180 );
-        vertices[i].x = vertices[i].x * cosseno - vertices[i].z * seno;
-        vertices[i].z = vertices[i].z * cosseno + vertices[i].x * seno;
+        vertices[i].x = vertices[i].x * cossenoX - vertices[i].z * senoX;
+        vertices[i].z = vertices[i].z * cossenoX + vertices[i].x * senoX;
         
         y = vertices[i].y;
         z = vertices[i].z;
-        seno = sin( rotacaoY * M_PI / 180 );
-        cosseno = cos( rotacaoY * M_PI / 180 );
-        vertices[i].y = y * cosseno - z * seno;
-        vertices[i].z = z * cosseno + y * seno;
+        vertices[i].y = y * cossenoY - z * senoY;
+        vertices[i].z = z * cossenoY + y * senoY;
         
         x = vertices[i].x;
         y = vertices[i].y;
-        seno = sin( rotacaoZ * M_PI / 180 );
-        cosseno = cos( rotacaoZ * M_PI / 180 );
-        vertices[i].y = y * cosseno - x * seno;
-        vertices[i].x = x * cosseno + y * seno;
+        vertices[i].y = y * cossenoZ - x * senoZ;
+        vertices[i].x = x * cossenoZ + y * senoZ;
     
     }
 }
