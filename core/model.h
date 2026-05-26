@@ -39,6 +39,7 @@ class Model
         Vec3* vertices;
         Vec3* pontos;
         Vec3* projection;
+        bool* screenSpaceBuffer;
         Vec3* uvs = nullptr;
 
         // lights

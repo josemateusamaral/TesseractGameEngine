@@ -47,31 +47,33 @@ int main(int argc, char *args[])
 		engine.exit();
 	});
 	engine.input->bindKey("w", "press", [&engine]() {
-		engine.camera->posicao.z += 1;
+		engine.camera->setZ(engine.camera->getZ() + 1);
 	});
 	engine.input->bindKey("a", "press", [&engine]() {
-		engine.camera->posicao.x += 1;
+		engine.camera->setX(engine.camera->getX() + 1);
 	});
 	engine.input->bindKey("s", "press", [&engine]() {
-		engine.camera->posicao.z -= 1;
+		engine.camera->setZ(engine.camera->getZ() - 1);
 	});
 	engine.input->bindKey("d", "press", [&engine]() {
-		engine.camera->posicao.x -= 1;
+		engine.camera->setX(engine.camera->getX() - 1);
 	});
 	engine.input->bindKey("q", "press", [&engine]() {
-		engine.camera->posicao.y -= 1;
+		engine.camera->setY(engine.camera->getY() - 1);
 	});
 	engine.input->bindKey("e", "press", [&engine]() {
-		engine.camera->posicao.y += 1;
+		engine.camera->setY(engine.camera->getY() + 1);
+	});
+	engine.input->bindKey("t", "release", [&engine]() {
+		engine.setCaptureMouse(!engine.getCaptureMouse());
 	});
 
 	// bind mouse
-	engine.setCaptureMouse(true);
 	engine.input->bindMouseButton("left", "release", [&model]() {
-		printf("releasing left mouse button");
+		//printf("releasing left mouse button");
 	});
 	engine.input->bindMouseButton("right", "press", [&model]() {
-		printf("pressing right mouse button");
+		//printf("pressing right mouse button");
 	});
 	engine.input->bindMouseMotion([&engine]() {
 		engine.camera->hpr.x += engine.input->mouseMotionVector->y * 0.1;
@@ -82,7 +84,22 @@ int main(int argc, char *args[])
 			engine.camera->hpr.y = 359;
 	});
 
-	engine.analitycs->fpsMeter->isVisible = true;
+	//create text
+	Text *information = new Text("[ T ] toggle mouse");
+	information->setX(10);
+	information->setY(30);
+	engine.gui->addElement(information);
+
+	//create button
+	Button *button = new Button("analitycs");
+	button->setX(10);
+	button->setY(80);
+	button->onClick = []{
+	};
+	button->onRelease = [&engine]{
+		engine.analitycs->fpsMeter->getIsVisible() ? engine.analitycs->fpsMeter->hide() : engine.analitycs->fpsMeter->show();
+	};
+	engine.gui->addElement(button);
 
 	// game loop
 	engine.run([&]() {

@@ -40,7 +40,7 @@ void Input::bindMouseMotion(std::function<void()> func){
     this->mouseMotionBind = func;
 }
 
-void Input::process(bool &quit, SDL_Event ev)
+void Input::process(bool &quit, SDL_Event ev, GUI *gui)
 {
 
     while (SDL_PollEvent(&ev) != 0)
@@ -82,6 +82,14 @@ void Input::process(bool &quit, SDL_Event ev)
             {
                 func->second();
             }
+
+            if( !this->isMapMouseMotion ){
+                int mouseX = ev.button.x;
+                int mouseY = ev.button.y;
+                gui->processMouseClick( "left", mouseX, mouseY);
+            }
+            
+
         }
 
         if (ev.type == SDL_MOUSEBUTTONUP)
@@ -91,6 +99,13 @@ void Input::process(bool &quit, SDL_Event ev)
             {
                 func->second();
             }
+
+            if( !this->isMapMouseMotion ){
+                int mouseX = ev.button.x;
+                int mouseY = ev.button.y;
+                gui->processMouseRelease( "left", mouseX, mouseY);
+            }
+
         }
 
     }

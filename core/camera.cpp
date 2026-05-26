@@ -27,7 +27,7 @@ Camera::Camera()
  * @return Vec3* Array de pontos 2d para serem desenhados
  */
 
-void Camera::project(Vec3* vertices, Vec3* projection, int nVertices){
+void Camera::project(Vec3* vertices, Vec3* projection, int nVertices, bool* screenSpaceBuffer){
 
     // camera inverse rotation
     float pitch = -this->hpr.x * M_PI / 180.0;
@@ -66,15 +66,54 @@ void Camera::project(Vec3* vertices, Vec3* projection, int nVertices){
         x = dx;
         y = dy;
 
+        if(z<0){
+            screenSpaceBuffer[i] = false;
+            continue;
+        }
+
         // project perpective
         float px = (this->dist_f * x) / z;
         float py = (this->dist_f * y) / z;
         projection[i].x = px * -1 + 320;
         projection[i].y = py * -1 + 240;
         projection[i].z = z;
+
+        screenSpaceBuffer[i] = !((projection[i].x > 640 || projection[i].x < 0 ) && ( projection[i].y > 480 || projection[i].y < 0));
     
     }
 
+}
+
+void Camera::setPos(Vec3 pos){
+    this->posicao = pos;
+}
+        
+void Camera::setX(float x){
+    this->posicao.x = x;
+}
+
+void Camera::setY(float y){
+    this->posicao.y = y;
+}
+
+void Camera::setZ(float z){
+    this->posicao.z = z;
+}
+        
+Vec3 Camera::getPos(){
+    return this->posicao;
+}
+
+float Camera::getX(){
+    return this->posicao.x;
+}
+
+float Camera::getY(){
+    return this->posicao.y;
+}
+
+float Camera::getZ(){
+    return this->posicao.z;
 }
 
 Camera::~Camera()

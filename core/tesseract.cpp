@@ -18,7 +18,7 @@ Tesseract::Tesseract(int width, int height)
         this->initialized = true;
     }
 
-    this->delay = 32;
+    this->delay = 16;
     this->window = new Window(width, height);
     this->scene = new Scene();
     this->camera = new Camera();
@@ -65,7 +65,7 @@ void Tesseract::run(function<void()> userUpdate) {
     while (!this->quit) {
 
         // process inputs
-        this->input->process(this->quit, this->ev);
+        this->input->process(this->quit, this->ev, this->gui);
 
         // scripts
         if (userUpdate) {
@@ -80,7 +80,7 @@ void Tesseract::run(function<void()> userUpdate) {
         }
 
         // update fps meter
-        if(this->analitycs->fpsMeter->isVisible){
+        if(this->analitycs->fpsMeter->getIsVisible()){
             sdlTick = SDL_GetTicks();
             deltaTime = sdlTick - lastFrameTicktime;
             fps = 1000 / deltaTime;
@@ -100,7 +100,7 @@ void Tesseract::run(function<void()> userUpdate) {
 
         // render gui
         for(int i = 0; i < this->gui->nElements; i++){
-            if(this->gui->elements[i]->isVisible){
+            if(this->gui->elements[i]->getIsVisible()){
                 this->gui->elements[i]->render(this->window->colorBuffer, this->window->getWidth(), this->window->getHeight());
             } 
         }

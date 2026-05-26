@@ -7,9 +7,9 @@ Analitycs::Analitycs(GUI *gui){
 
     // fps meter
     fpsMeter = new Text(" ");
-	fpsMeter->pos.x = 10;
-	fpsMeter->pos.y = 4;
-    fpsMeter->isVisible = false;
+	fpsMeter->setX(10);
+	fpsMeter->setY(4);
+    fpsMeter->hide();
     gui->addElement(fpsMeter);
 
 }

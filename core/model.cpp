@@ -60,6 +60,7 @@ void Model::loadModel(string path)
     this->nVertices = mesh->mNumVertices;
     this->vertices = new Vec3[nVertices]; 
     this->projection = new Vec3[nVertices];
+    this->screenSpaceBuffer = new bool[nVertices];
     this->pontos = new Vec3[nVertices];
     this->uvs = new Vec3[nVertices];
     this->polygonCount = mesh->mNumFaces;
@@ -161,14 +162,15 @@ void Model::draw(Window &window, Camera *camera)
     calcular_pontos_3D();
 
     // project vertices
-    camera->project(this->pontos, this->projection, this->nVertices);
+    camera->project(this->pontos, this->projection, this->nVertices, this->screenSpaceBuffer);
 
     int R = 255, G = 255, B = 255;
     float angulo;
 
-    float origem[3] = {camera->posicao.x, camera->posicao.y, camera->posicao.z};
+    // camera vector
+    float origem[3] = {camera->getX(), camera->getY(), camera->getZ()};
     float a[3] = {this->position.x, this->position.y, this->position.z};
-    Vec3 camToObj{origem, a};
+    Vec3 cam{origem, a};
 
     // indexes
     for (int i = 0; i < indexCount; i += 3)
@@ -178,7 +180,10 @@ void Model::draw(Window &window, Camera *camera)
         int i1 = indices[i + 1];
         int i2 = indices[i + 2];
 
-        // pontos no espaço 3D
+        // ignore polygons out off screen space
+        if(!this->screenSpaceBuffer[i0] && !this->screenSpaceBuffer[i1] && !this->screenSpaceBuffer[i2]) continue;
+
+        //polygon
         Vec3 p0 = pontos[i0];
         Vec3 p1 = pontos[i1];
         Vec3 p2 = pontos[i2];
@@ -187,92 +192,69 @@ void Model::draw(Window &window, Camera *camera)
         float d[3] = {pontos[i2].x, pontos[i2].y, pontos[i2].z};
         Vec3 v1(b, c);
         Vec3 v2(b, d);
-
-        // normal do triângulo
         Vec3 normal = v1.produto_vetorial(v2);
 
-        // vetor do objeto até o triângulo
-        Vec3 objToTri(a, b);
+        // backface culling
+        if (!(cam.angulo_entre_vetores(normal) > 90 || !this->backfaceCulling)) continue;
 
-        switch(renderType)
-        {
+        switch(renderType){
+
             // WIREFRAME
             case RenderType::WIREFRAME:
-
-                // backface culling
-                if (camToObj.angulo_entre_vetores(normal) > 90 || !this->backfaceCulling)
-                {
-
-                    window.drawLine(projection[i0], projection[i1]);
-                    window.drawLine(projection[i1], projection[i2]);
-                    window.drawLine(projection[i2], projection[i0]);
-                    
-                }
+                window.drawLine(projection[i0], projection[i1]);
+                window.drawLine(projection[i1], projection[i2]);
+                window.drawLine(projection[i2], projection[i0]);
                 break;
 
             // SHADED
             case RenderType::SHADED:
-            {
-
-                // backface culling
-                if (camToObj.angulo_entre_vetores(normal) > 90 || !this->backfaceCulling)
+        
+                if (shadowCast)
                 {
-                    if (shadowCast)
-                    {
-                        angulo = 90;
-                        R = corR - ((255.0 / 180.0) * angulo);
-                        G = corG - ((255.0 / 180.0) * angulo);
-                        B = corB - ((255.0 / 180.0) * angulo);
-                    }
-                    else
-                    {
-                        R = corR;
-                        G = corG;
-                        B = corB;
-                    }
-
-                    window.drawBlankPolygon(
-                        projection[i0],
-                        projection[i1],
-                        projection[i2],
-                        R, G, B
-                    );
+                    angulo = 90;
+                    R = corR - ((255.0 / 180.0) * angulo);
+                    G = corG - ((255.0 / 180.0) * angulo);
+                    B = corB - ((255.0 / 180.0) * angulo);
                 }
+                else
+                {
+                    R = corR;
+                    G = corG;
+                    B = corB;
+                }
+
+                window.drawBlankPolygon(
+                    projection[i0],
+                    projection[i1],
+                    projection[i2],
+                    R, G, B
+                );
                 break;
-            }
 
             // TEXTURED
             case RenderType::TEXTURED:
-            {
-
-                // backface culling
-                if (camToObj.angulo_entre_vetores(normal) > 90 || !this->backfaceCulling)
-                {
-                    
-                    window.drawTexturedPolygon(
-                        //projections
-                        projection[i0],
-                        projection[i1],
-                        projection[i2],
-                        //vertices
-                        pontos[i0],
-                        pontos[i1],
-                        pontos[i2],
-                        //uvs
-                        uvs[i0],
-                        uvs[i1],
-                        uvs[i2],
-                        //texture
-                        (unsigned char*)diffuseTexture->data,
-                        diffuseTexture->width,
-                        diffuseTexture->height,
-                        //lights
-                        this->lights,
-                        this->nLights
-                    );
-                }
+                window.drawTexturedPolygon(
+                    //projections
+                    projection[i0],
+                    projection[i1],
+                    projection[i2],
+                    //vertices
+                    pontos[i0],
+                    pontos[i1],
+                    pontos[i2],
+                    //uvs
+                    uvs[i0],
+                    uvs[i1],
+                    uvs[i2],
+                    //texture
+                    (unsigned char*)diffuseTexture->data,
+                    diffuseTexture->width,
+                    diffuseTexture->height,
+                    //lights
+                    this->lights,
+                    this->nLights
+                );
                 break;
-            }
         }
     }
 }

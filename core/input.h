@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <string>
 #include "vec3.h"
+#include "gui.h"
 
 class Input
 {
@@ -116,7 +117,7 @@ class Input
         void bindKey(std::string key, std::string event, std::function<void()> func);
         void bindMouseButton(std::string button, std::string event, std::function<void()> func);
         void bindMouseMotion(std::function<void()> func);
-        void process(bool &quit, SDL_Event ev);
+        void process(bool &quit, SDL_Event ev, GUI *gui);
         void setMapMouseMotion(bool state);
 
 };
