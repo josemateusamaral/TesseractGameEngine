@@ -4,6 +4,7 @@
 #include "scene.h"
 #include "input.h"
 #include "gui.h"
+#include "audio.h"
 #include "analitycs.h"
 #include <stdio.h>
 #include <functional>
@@ -24,7 +25,9 @@ class Tesseract
         Scene *scene;
         Input *input;
         GUI *gui;
+        AudioManager *audio;
         Analitycs *analitycs;
+
         SDL_Event ev;
 
         Tesseract(int width = 640, int height = 480);

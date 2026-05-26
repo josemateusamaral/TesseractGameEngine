@@ -3,6 +3,7 @@
 #include "core/tesseract.h"
 #include "core/camera.h"
 #include "core/gui.h"
+#include "core/audio.h"
 
 // Screen dimension
 const int SCREEN_WIDTH = 640;
@@ -100,6 +101,11 @@ int main(int argc, char *args[])
 		engine.analitycs->fpsMeter->getIsVisible() ? engine.analitycs->fpsMeter->hide() : engine.analitycs->fpsMeter->show();
 	};
 	engine.gui->addElement(button);
+
+	//create audio
+	Audio *audio = new Audio("samples/audio_loading/birds.wav");
+	engine.audio->addElement(audio);
+	audio->play();
 
 	// game loop
 	engine.run([&]() {

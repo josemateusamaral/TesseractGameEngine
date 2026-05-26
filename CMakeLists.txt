@@ -30,6 +30,7 @@ set(SOURCES
     core/light.cpp
     core/gui.cpp
     core/analitycs.cpp
+    core/audio.cpp
 
 )
 

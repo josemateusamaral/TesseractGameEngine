@@ -6,7 +6,7 @@ Tesseract::Tesseract(int width, int height)
 {
 
     // inicializa SDL
-    if (SDL_Init(SDL_INIT_VIDEO) > 0)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) > 0)
     {
         std::cout << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
         this->quit = true;
@@ -25,6 +25,7 @@ Tesseract::Tesseract(int width, int height)
     this->input = new Input();
     this->gui = new GUI();
     this->analitycs = new Analitycs(this->gui);
+    this->audio = new AudioManager();
 
 }
 
