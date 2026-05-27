@@ -8,11 +8,12 @@ class Texture
         
     public:
 
-        char* data;
+        unsigned char* data;
         int width;
         int height;
 
-        Texture(char* data, int width, int height);
+        Texture(unsigned char* data, int width, int height);
+        Texture(string path);
 
 };
 

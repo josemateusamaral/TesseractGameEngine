@@ -3,7 +3,6 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <iostream>
-#define STB_IMAGE_IMPLEMENTATION
 #include "vendor/stb_image.h"
 
 enum RenderType {
@@ -65,7 +64,6 @@ void Model::loadModel(string path)
     this->uvs = new Vec3[nVertices];
     this->polygonCount = mesh->mNumFaces;
 
-
     if(scene->mNumMaterials > 0) {
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
         aiString str;
@@ -95,7 +93,7 @@ void Model::loadModel(string path)
             }
 
             if (data) {
-                this->diffuseTexture = new Texture((char*)data, width, height);
+                this->diffuseTexture = new Texture((unsigned char*)data, width, height);
                 printf("Sucesso: Textura carregada (%dx%d)\n", width, height);
             } else {
                 printf("Erro ao carregar textura: %s\n", stbi_failure_reason());

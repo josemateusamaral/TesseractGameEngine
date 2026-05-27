@@ -26,7 +26,7 @@ class Model
         //diffuse texture
         Texture* diffuseTexture = nullptr;
 
-        int renderType = 1;
+        int renderType = 3;
         int corR = 255;
         int corG = 255;
         int corB = 255;

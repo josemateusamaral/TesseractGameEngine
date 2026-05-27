@@ -4,6 +4,7 @@
 #include "core/camera.h"
 #include "core/gui.h"
 #include "core/audio.h"
+#include "core/vec3.h"
 
 // Screen dimension
 const int SCREEN_WIDTH = 640;
@@ -29,19 +30,22 @@ int main(int argc, char *args[])
 	// load model
 	Model* model = new Model("samples/model_loading/esfere.glb");
 	model->setPos( 0, 0, 14);
-	model->setScale(3);
-	model->renderType = 3;
+	model->setScale(1);
 	engine.scene->addModel(model);
 	model->setLight(pointLight);
 	model->setLight(ambientLight);
 
 	// point light place holder
-	Model* modelLight = new Model("samples/model_loading/cubo.glb");
-	modelLight->setPos( 0, 0, 30);
-	modelLight->setScale(3);
-	modelLight->renderType = 3;
-	engine.scene->addModel(modelLight);
-	modelLight->setLight(ambientLight);
+	Model* plane = new Model("samples/model_loading/plane.glb");
+	plane->setPos( 0, 0, 30);
+	plane->setScale(10);
+	engine.scene->addModel(plane);
+	plane->setLight(ambientLight);
+
+
+	// load texture
+	Texture *texture = new Texture("samples/texture_loading/areia.jpg");
+	plane->diffuseTexture = texture;
 	
 	// bind keys
 	engine.input->bindKey("escape", "release", [&engine]() {
@@ -102,8 +106,9 @@ int main(int argc, char *args[])
 	};
 	engine.gui->addElement(button);
 
-	//create audio
+	//create audio3D
 	Audio *audio = new Audio("samples/audio_loading/birds.wav");
+	audio->setPos(new Vec3(0, 0, 14));
 	engine.audio->addElement(audio);
 	audio->play();
 

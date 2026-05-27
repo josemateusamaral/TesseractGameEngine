@@ -25,7 +25,7 @@ Tesseract::Tesseract(int width, int height)
     this->input = new Input();
     this->gui = new GUI();
     this->analitycs = new Analitycs(this->gui);
-    this->audio = new AudioManager();
+    this->audio = new AudioManager(this->camera);
 
 }
 
