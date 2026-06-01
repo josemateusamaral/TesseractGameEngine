@@ -6,6 +6,7 @@
 #include "gui.h"
 #include "audio.h"
 #include "analitycs.h"
+#include "renderer.h"
 #include <stdio.h>
 #include <functional>
 
@@ -27,6 +28,7 @@ class Tesseract
         GUI *gui;
         AudioManager *audio;
         Analitycs *analitycs;
+        Renderer *renderer;
 
         SDL_Event ev;
 

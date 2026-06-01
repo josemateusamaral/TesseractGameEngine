@@ -15,7 +15,6 @@ class Camera
 
         Camera();
         ~Camera();
-        void project(Vec3* pontos, Vec3* projection, int nVertices, bool* projectionClippingBuffer);
 
         void setPos(Vec3 pos);
         void setX(float x);

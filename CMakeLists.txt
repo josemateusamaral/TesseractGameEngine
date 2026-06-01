@@ -31,6 +31,7 @@ set(SOURCES
     core/gui.cpp
     core/analitycs.cpp
     core/audio.cpp
+    core/renderer.cpp
 
 )
 

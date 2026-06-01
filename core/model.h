@@ -13,6 +13,10 @@ class Model
 {
     private:
 
+        
+        
+    public:
+
         float scale = 1;
         Vec3 position;
         bool backfaceCulling = true;
@@ -20,8 +24,6 @@ class Model
         int polygonCount;
         unsigned int* indices = nullptr;
         unsigned int indexCount;
-        
-    public:
 
         //diffuse texture
         Texture* diffuseTexture = nullptr;
@@ -50,7 +52,6 @@ class Model
         Model();
         Model(string filePath, Vec3 position = Vec3(0, 0, 0), float scale = 1);
         void loadModel(string path);
-        void draw(Window &window, Camera *camera);
         void calcular_pontos_3D();
 
         //rotation

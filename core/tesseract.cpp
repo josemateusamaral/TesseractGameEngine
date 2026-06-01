@@ -26,6 +26,7 @@ Tesseract::Tesseract(int width, int height)
     this->gui = new GUI();
     this->analitycs = new Analitycs(this->gui);
     this->audio = new AudioManager(this->camera);
+    this->renderer = new Renderer();
 
 }
 
@@ -77,7 +78,10 @@ void Tesseract::run(function<void()> userUpdate) {
         this->window->clean();
         for(int i = 0; i < this->scene->qtdModels; i++){
             Model* model = this->scene->models[i];
-            model->draw(*window, this->camera);
+            //model->draw(*window, this->camera);
+
+            this->renderer->render(model, this->window, this->camera);
+
         }
 
         // update fps meter
