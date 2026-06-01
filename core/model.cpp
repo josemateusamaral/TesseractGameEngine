@@ -24,6 +24,7 @@ Model::Model(string filePath, Vec3 position, float scale)
     maxNLight = 10;
     lights = new Light*[maxNLight];
     shadowMapBuffer = new bool[100 * 100];
+    std::fill(shadowMapBuffer,shadowMapBuffer + (100*100),false);
     loadModel(filePath);
 
 }

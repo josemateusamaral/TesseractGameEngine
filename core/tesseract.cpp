@@ -82,9 +82,12 @@ void Tesseract::run(function<void()> userUpdate) {
         //int shadowMapHeight = this->window->getHeight();
         //Camera *shadowCamera = new Camera();
         //shadowCamera->setPos(Vec3(0, 0, 0));
+        //shadowCamera->hpr = Vec3(0,0,0);
         //float* shadowZBuffer = new float[shadowMapWidth * shadowMapHeight];
+        //std::fill(shadowZBuffer, shadowZBuffer + (shadowMapWidth * shadowMapHeight), std::numeric_limits<float>::infinity());
         //Model** shadowEBuffer = new Model*[shadowMapWidth * shadowMapHeight];
         //for(int i = 0; i < this->scene->qtdModels; i++){
+        //    std::fill(this->scene->models[i]->shadowMapBuffer,this->scene->models[i]->shadowMapBuffer + (100*100),false);
         //    this->renderer->createShadowMap(shadowCamera, shadowZBuffer, shadowEBuffer, this->scene->models[i], shadowMapWidth, shadowMapHeight);
         //}
 

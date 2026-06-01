@@ -56,9 +56,6 @@ int main(int argc, char *args[])
 		plane->rotate(0, -1, 0);
 	});
 
-
-
-
 	// load texture
 	Texture *texture = new Texture("samples/texture_loading/areia.jpg");
 	plane->diffuseTexture = texture;
@@ -93,8 +90,13 @@ int main(int argc, char *args[])
 	engine.input->bindMouseButton("left", "release", [&model]() {
 		//printf("releasing left mouse button");
 	});
-	engine.input->bindMouseButton("right", "press", [&model]() {
-		//printf("pressing right mouse button");
+	engine.input->bindMouseButton("right", "release", [&model]() {
+		printf("\n");
+		for( int i = 0 ; i < (100 * 100); i++){
+			if(model->shadowMapBuffer[i]){
+				printf("%d -",model->shadowMapBuffer[i]);
+			}
+		}
 	});
 	engine.input->bindMouseMotion([&engine]() {
 		engine.camera->hpr.x += engine.input->mouseMotionVector->y * 0.1;

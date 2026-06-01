@@ -175,76 +175,6 @@ void Renderer::project(Camera *camera, Vec3* vertices, Vec3* projection, int nVe
 
 }
 
-void Renderer::createShadowMap(Camera *camera, float* zBuffer, Model** eBuffer, Model* model, int shadowMapWidth, int shadowMapHeight){//, Vec3* vertices, Vec3* projection, int nVertices, bool* screenSpaceBuffer, int bufferHeight, int bufferWidth, char* dataShadowMap, int shadowMapWidth, int shadowMapHeight){
-    // Similar to project function but instead of projecting to screen space, it projects to a shadow map texture and fills the dataShadowMap with depth values.
-    // This function is a placeholder and should be implemented according to the specific requirements of the shadow mapping technique being used (e.g., standard shadow mapping, variance shadow mapping, etc.).
-
-    model->calcular_pontos_3D();
-
-    // project vertices
-    this->project(camera, model->pontos, model->projection, model->nVertices, model->screenSpaceBuffer, shadowMapHeight, shadowMapWidth);
-
-    int R = 255, G = 255, B = 255;
-    float angulo;
-
-    // camera vector
-    float origem[3] = {camera->getX(), camera->getY(), camera->getZ()};
-    float a[3] = {model->getX(), model->getY(), model->getZ()};
-    Vec3 cam{origem, a};
-
-    // indexes
-    for (int i = 0; i < model->indexCount; i += 3)
-    {
-
-        int i0 = model->indices[i];
-        int i1 = model->indices[i + 1];
-        int i2 = model->indices[i + 2];
-
-        // ignore polygons out off screen space
-        if(!model->screenSpaceBuffer[i0] && !model->screenSpaceBuffer[i1] && !model->screenSpaceBuffer[i2]) continue;
-
-        //polygon
-        Vec3 p0 = model->pontos[i0];
-        Vec3 p1 = model->pontos[i1];
-        Vec3 p2 = model->pontos[i2];
-        float b[3] = {model->pontos[i0].x, model->pontos[i0].y, model->pontos[i0].z};
-        float c[3] = {model->pontos[i1].x, model->pontos[i1].y, model->pontos[i1].z};
-        float d[3] = {model->pontos[i2].x, model->pontos[i2].y, model->pontos[i2].z};
-        Vec3 v1(b, c);
-        Vec3 v2(b, d);
-        Vec3 normal = v1.produto_vetorial(v2);
-
-        // backface culling
-        if (!(cam.angulo_entre_vetores(normal) > 90 || !model->backfaceCulling)) continue;
-
-        // TEXTURED
-        this->drawShadowMap(
-            //projections
-            model->projection[i0],
-            model->projection[i1],
-            model->projection[i2],
-            //vertices
-            model->pontos[i0],
-            model->pontos[i1],
-            model->pontos[i2],
-            //uvs
-            model->uvs[i0],
-            model->uvs[i1],
-            model->uvs[i2],
-            //texture
-            (unsigned char*)model->diffuseTexture->data,
-            model->diffuseTexture->width,
-            model->diffuseTexture->height,
-            //lights
-            zBuffer,
-            eBuffer,
-            model,
-            shadowMapWidth,
-            shadowMapHeight
-        );
-    }
-}
-
 void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, Vec3 &v3, Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, unsigned char* data, int texW, int texH, Light** lights, int nLights) 
 {
 
@@ -539,6 +469,209 @@ float Renderer::area(int x1, int y1, int x2, int y2, int x3, int y3)
     return abs((x1*(y2-y3) + x2*(y3-y1)+ x3*(y1-y2))/2.0);
 }
 
-void Renderer::drawShadowMap(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, Vec3 &v3 ,Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, unsigned char* data, int texW, int texH, float* shadowZBuffer, Model** shadowEBuffer, Model* model, int shadowMapWidth, int shadowMapHeight){
+
+
+
+
+
+
+
+void Renderer::createShadowMap(Camera *camera, float* zBuffer, Model** eBuffer, Model* model, int shadowMapWidth, int shadowMapHeight){//, Vec3* vertices, Vec3* projection, int nVertices, bool* screenSpaceBuffer, int bufferHeight, int bufferWidth, char* dataShadowMap, int shadowMapWidth, int shadowMapHeight){
+    
+    model->calcular_pontos_3D();
+
+    // project vertices
+    this->project(camera, model->pontos, model->projection, model->nVertices, model->screenSpaceBuffer, shadowMapHeight, shadowMapWidth);
+
+    int R = 255, G = 255, B = 255;
+    float angulo;
+
+    // camera vector
+    float origem[3] = {camera->getX(), camera->getY(), camera->getZ()};
+    float a[3] = {model->getX(), model->getY(), model->getZ()};
+    Vec3 cam{origem, a};
+
+    // indexes
+    for (int i = 0; i < model->indexCount; i += 3)
+    {
+
+        int i0 = model->indices[i];
+        int i1 = model->indices[i + 1];
+        int i2 = model->indices[i + 2];
+
+        // ignore polygons out off screen space
+        if(!model->screenSpaceBuffer[i0] && !model->screenSpaceBuffer[i1] && !model->screenSpaceBuffer[i2]) continue;
+
+        //polygon
+        Vec3 p0 = model->pontos[i0];
+        Vec3 p1 = model->pontos[i1];
+        Vec3 p2 = model->pontos[i2];
+        float b[3] = {model->pontos[i0].x, model->pontos[i0].y, model->pontos[i0].z};
+        float c[3] = {model->pontos[i1].x, model->pontos[i1].y, model->pontos[i1].z};
+        float d[3] = {model->pontos[i2].x, model->pontos[i2].y, model->pontos[i2].z};
+        Vec3 v1(b, c);
+        Vec3 v2(b, d);
+        Vec3 normal = v1.produto_vetorial(v2);
+
+        // backface culling
+        if (!(cam.angulo_entre_vetores(normal) > 90 || !model->backfaceCulling)) continue;
+
+        // TEXTURED
+        this->drawShadowMap(
+            //projections
+            model->projection[i0],
+            model->projection[i1],
+            model->projection[i2],
+            //vertices
+            model->pontos[i0],
+            model->pontos[i1],
+            model->pontos[i2],
+            //uvs
+            model->uvs[i0],
+            model->uvs[i1],
+            model->uvs[i2],
+            //lights
+            zBuffer,
+            eBuffer,
+            model,
+            640,
+            480,
+            100,
+            100
+        );
+
+    }
+
+    //printf("\nshadow map created...");
+
+}
+
+void Renderer::drawShadowMap(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, Vec3 &v3 ,Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, float* shadowZBuffer, Model** shadowEBuffer, Model* model, int shadowWindowWidth, int shadowWindowHeight, int shadowMapHeight, int shadowMapWidth){
+
+    //printf("\ndrawing shadow map...");
+
+    // polygon boundbox
+    int topY,bottomY,maxLeft,maxRight;
+    // top
+    if(p1.y > p2.y && p1.y > p3.y){
+        topY = p1.y;
+    }
+    else if(p2.y > p1.y && p2.y > p3.y){
+        topY = p2.y;
+    }
+    else{
+        topY = p3.y;
+    }
+    if(topY >= shadowWindowHeight) topY = shadowWindowHeight - 1;
+    // bottom
+    if(p1.y < p2.y && p1.y < p3.y){
+        bottomY = p1.y;
+    }
+    else if(p2.y < p1.y && p2.y < p3.y){
+        bottomY = p2.y;
+    }
+    else{
+        bottomY = p3.y;
+    }
+    if(bottomY < 0) bottomY = 0;
+    // left
+    if(p1.x < p2.x && p1.x < p3.x){
+        maxLeft = p1.x;
+    }
+    else if(p2.x < p1.x && p2.x < p3.x){
+        maxLeft = p2.x;
+    }
+    else{
+        maxLeft = p3.x;
+    }
+    if(maxLeft < 0) maxLeft = 0;
+
+    // right
+    if(p1.x > p2.x && p1.x > p3.x){
+        maxRight = p1.x;
+    }
+    else if(p2.x > p1.x && p2.x > p3.x){
+        maxRight = p2.x;
+    }
+    else{
+        maxRight = p3.x;
+    }
+    if(maxRight >= shadowWindowWidth) maxRight = shadowWindowWidth - 1;
+
+    // top left corner of the boundbox
+    float px = maxLeft; 
+    float py = topY; 
+    float sizeX = maxRight - maxLeft;
+    float sizeY = topY - bottomY;
+
+    // calculate the area of the polygon
+    float areaTotal = this->area(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+
+    if (areaTotal == 0) return;
+
+    // loop through the bounding box of the triangle
+    for(int x = 0; x < sizeX; x++) {
+        for(int y = 0; y < sizeY; y++) {
+
+            // pixel screen space position
+            int px_atual = px + x;
+            int py_atual = py - y;
+
+            // test area
+            float a1 = this->area(px_atual, py_atual, p2.x, p2.y, p3.x, p3.y);
+            float a2 = this->area(p1.x, p1.y, px_atual, py_atual, p3.x, p3.y);
+            float a3 = this->area(p1.x, p1.y, p2.x, p2.y, px_atual, py_atual);
+
+            // verify if the the pixel is inside the polygon
+            if (abs(areaTotal - (a1 + a2 + a3)) < 0.01) {
+                
+                // baricentric weights
+                float w1 = a1 / areaTotal;
+                float w2 = a2 / areaTotal;
+                float w3 = a3 / areaTotal;
+
+                // test zbuffer
+                float z = w1 * p1.z + w2 * p2.z + w3 * p3.z;
+                int bufferIndex = ( py_atual * shadowWindowWidth ) + px_atual;
+                if (z < shadowZBuffer[bufferIndex]) {
+                    shadowZBuffer[bufferIndex] = z;
+                } else {
+                    continue;
+                }
+
+                // Interpola o UV para este pixel exato
+                float u = w1 * uv1.x + w2 * uv2.x + w3 * uv3.x;
+                float v = w1 * uv1.y + w2 * uv2.y + w3 * uv3.y;
+
+                // Enrola o UV para sempre ficar entre 0.0 e 1.0 (permite textura repetida)
+                u = u - floor(u);
+                v = v - floor(v);
+
+                // Converte UV para coordenada de pixel na imagem
+                int tx = (int)(u * (shadowMapWidth - 1));
+                int ty = (int)(v * (shadowMapHeight - 1));
+
+                // Clamping de segurança extra contra problemas de arredondamento de float
+                if (tx < 0) tx = 0;
+                if (tx >= shadowMapWidth) tx = shadowMapWidth - 1;
+                if (ty < 0) ty = 0;
+                if (ty >= shadowMapHeight) ty = shadowMapHeight - 1;
+
+                // Texture index (assuming format RGB, 3 bytes per pixel)
+                int idx = (ty * shadowMapWidth + tx);
+
+                // fill color buffer
+                //Uint32 rt = data[idx];
+                //Uint32  gt = data[idx + 1];
+                //Uint32 bt = data[idx + 2];
+                //window->colorBuffer[bufferIndex] = (255 << 24) | (rt << 16) | (gt << 8) | bt;
+
+                model->shadowMapBuffer[idx] = true;
+
+            }
+        }
+    }
+
+    //printf("\nshadow map drawed...");
 
 }
