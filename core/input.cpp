@@ -1,62 +1,120 @@
 #include "input.h"
+#include <stdio.h>
+#include <string>
 
-void Input::bindKey(SDL_Keycode key, std::function<void()> func)
-{
-    keyDownBindings[key] = func;
+Input::Input(){
+
+    this->mouseMotionVector = new Vec3(0,0,0);
+    this->mousePositionVector = new Vec3(0,0,0);
+    this->isMapMouseMotion = false;
+    this->mouseMotionBind = NULL;
+
 }
 
-void Input::processar(bool &quit)
+void Input::bindKey(std::string key, std::string event, std::function<void()> func)
 {
-    SDL_Event ev;
-
-    while (SDL_PollEvent(&ev) != 0)
-    {
-        if (ev.type == SDL_QUIT)
-        {
-            quit = true;
+    auto sdl2_key = this->keyMap.find(key.c_str());
+    if(sdl2_key != this->keyMap.end()){
+        if(event == "press"){
+            keyDownBindings[sdl2_key->second] = func;
         }
-
-        if (ev.type == SDL_KEYDOWN)
-        {
-            auto it = keyDownBindings.find(ev.key.keysym.sym);
-
-            if (it != keyDownBindings.end())
-            {
-                it->second(); // 🔥 executa a função associada
-            }
+        else if(event == "release"){
+            keyUpBindings[sdl2_key->second] = func;
         }
     }
 }
 
+void Input::bindMouseButton(std::string button, std::string event, std::function<void()> func){
+    auto sdl2_mouse_button = this->mouseMap.find(button.c_str());
+    if(sdl2_mouse_button != this->mouseMap.end()){
+        if(event == "press"){
+            mouseDownBindings[sdl2_mouse_button->second] = func;
+        }
+        else if(event == "release"){
+            mouseUpBindings[sdl2_mouse_button->second] = func;
+        }
+    }
+}
 
-/*
-EXEMPLO USO
+void Input::bindMouseMotion(std::function<void()> func){
+    this->mouseMotionBind = func;
+}
 
-Input input;
+void Input::process(bool &quit, SDL_Event ev, GUI *gui)
+{
 
-input.bindKey(SDLK_ESCAPE, [&quit]() {
-    quit = true;
-});
+    while (SDL_PollEvent(&ev) != 0)
+    {
 
-input.bindKey(SDLK_w, [camera]() {
-    camera->mover(0, 0, 1);
-});
+        if (ev.type == SDL_KEYDOWN)
+        {
+            auto func = keyDownBindings.find(ev.key.keysym.sym);
+            if (func != keyDownBindings.end())
+            {
+                func->second();
+            }
+        }
 
-input.bindKey(SDLK_s, [camera]() {
-    camera->mover(0, 0, -1);
-});
+        if (ev.type == SDL_KEYUP)
+        {
+            auto func = keyUpBindings.find(ev.key.keysym.sym);
+            if (func != keyUpBindings.end())
+            {
+                func->second();
+            }
+        }
 
-input.bindKey(SDLK_a, [camera]() {
-    camera->mover(1);
-});
+        if (ev.type == SDL_MOUSEMOTION && this->isMapMouseMotion)
+        {
+            if(this->mouseMotionBind != NULL){
+                this->mouseMotionVector->x =  ev.motion.xrel;
+                this->mouseMotionVector->y =  ev.motion.yrel;
+                this->mousePositionVector->x = ev.motion.x;
+                this->mousePositionVector->y = ev.motion.y;
+                this->mouseMotionBind();
+            }
+        }
 
-input.bindKey(SDLK_d, [camera]() {
-    camera->mover(-1);
-});
+        if (ev.type == SDL_MOUSEBUTTONDOWN)
+        {
+            auto func = this->mouseDownBindings.find(ev.button.button);
+            if (func != this->mouseDownBindings.end())
+            {
+                func->second();
+            }
 
-input.bindKey(SDLK_e, [camera, &sol]() {
-    camera->rodarx(0.34, sol.posicao);
-});
+            if( !this->isMapMouseMotion ){
+                int mouseX = ev.button.x;
+                int mouseY = ev.button.y;
+                gui->processMouseClick( "left", mouseX, mouseY);
+            }
+            
 
-input.processar(quit);
-*/
+        }
+
+        if (ev.type == SDL_MOUSEBUTTONUP)
+        {
+            auto func = this->mouseUpBindings.find(ev.button.button);
+            if (func != this->mouseUpBindings.end())
+            {
+                func->second();
+            }
+
+            if( !this->isMapMouseMotion ){
+                int mouseX = ev.button.x;
+                int mouseY = ev.button.y;
+                gui->processMouseRelease( "left", mouseX, mouseY);
+            }
+
+        }
+
+    }
+}
+
+void Input::setMapMouseMotion(bool state){
+    if(state){
+        this->isMapMouseMotion = true;
+    }else{
+        this->isMapMouseMotion = false;
+    }
+}

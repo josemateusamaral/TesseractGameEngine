@@ -1,0 +1,45 @@
+#pragma once
+#include "window.h"
+#include "camera.h"
+#include "scene.h"
+#include "input.h"
+#include "gui.h"
+#include "audio.h"
+#include "analitycs.h"
+#include "renderer.h"
+#include <stdio.h>
+#include <functional>
+
+class Tesseract
+{
+
+    private:
+        bool quit;
+        bool isCaptureMouse;
+        bool initialized;
+        int delay;
+
+    public:
+
+        Window *window;
+        Camera *camera;
+        Scene *scene;
+        Input *input;
+        GUI *gui;
+        AudioManager *audio;
+        Analitycs *analitycs;
+        Renderer *renderer;
+
+        SDL_Event ev;
+
+        Tesseract(int width = 640, int height = 480);
+        ~Tesseract();
+
+        void setCaptureMouse(bool state);
+        bool getCaptureMouse();
+
+        bool isRunning();
+        void run(function<void()> userUpdate);
+        void exit();
+
+};

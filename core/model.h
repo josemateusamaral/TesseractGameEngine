@@ -1,12 +1,11 @@
 #pragma once
 #include<SDL2/SDL.h>
 #include <iostream>
-#include "../core/ponto3.h"
-#include "../core/ponto.h"
 #include "window.h"
 #include "vec3.h"
 #include "camera.h"
 #include "texture.h"
+#include "light.h"
 
 using namespace std;
 
@@ -14,59 +13,71 @@ class Model
 {
     private:
 
-        double tamanho = 1;
-        Ponto3 posicao;
-        bool backfaceCulling = true;
-
-    
-        int polygonCount;
-        Ponto3* polygons = nullptr;
-        unsigned int* indices = nullptr;
-        unsigned int indexCount;
         
-        Ponto* uvs = nullptr;
         
     public:
 
-        Camera* camera = Camera::criar();
+        float scale = 1;
+        Vec3 position;
+        bool backfaceCulling = true;
+    
+        int polygonCount;
+        unsigned int* indices = nullptr;
+        unsigned int indexCount;
+        
+        //diffuse texture
+        Texture* diffuseTexture = nullptr;
 
-        Texture* texture = nullptr;
-
-        int renderType = 1;
+        int renderType = 3;
         int corR = 255;
         int corG = 255;
         int corB = 255;
-        int comSombra = false;
-        Vec3 iluminacao;
+        bool shadowCast = false;
 
-        int quantidadePontos;
-        Ponto3 angulo;
-        
-        Ponto3* pontos_base;
-        Ponto3* pontos;
-        Ponto* projecao;
+        int nVertices;
+        Vec3 angulo;
 
-        Model(string filePath, Ponto3 posicao = Ponto3(0, 0, 0), double tamanho = 1);
+        // vertices / projection
+        Vec3* vertices;
+        Vec3* pontos;
+        Vec3* projection;
+        bool* screenSpaceBuffer;
+        Vec3* uvs = nullptr;
+
+        // lights
+        int nLights;
+        int maxNLight;
+        Light** lights;
+
+        Model();
+        Model(string filePath, Vec3 position = Vec3(0, 0, 0), float scale = 1);
         void loadModel(string path);
-        void draw(Window &window);
         void calcular_pontos_3D();
+
+        //rotation
         void rotate(int rotacaoX, int rotacaoY, int rotacaoZ);
 
         //position
-        void setPos(double x, double y, double z);
-        void setPos(Ponto3 posicao);
-        void setX(double x);
-        void setY(double y);
-        void setZ(double z);
-        Ponto3 getPos();
+        void setPos(float x, float y, float z);
+        void setPos(Vec3 posicao);
+        void setX(float x);
+        void setY(float y);
+        void setZ(float z);
+        Vec3 getPos();
+        float getX();
+        float getY();
+        float getZ();
 
         //scale
-        void setScale(double tamanho);
-        double getScale();
+        void setScale(float tamanho);
+        float getScale();
 
         //backface culling
         bool getBackfaceCulling();
         void setBackfaceCulling(bool value);
+
+        //light
+        void setLight(Light *light);
 
 };
 

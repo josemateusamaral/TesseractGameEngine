@@ -1,34 +1,47 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(teste_projecao)
+project(test)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Encontrar SDL2
 find_package(SDL2 REQUIRED)
+find_package(SDL2_ttf REQUIRED)
 
 include_directories(
     ${SDL2_INCLUDE_DIRS}
     ${ASSIMP_INCLUDE_DIRS}
+    ${SDL2_TTF_INCLUDE_DIRS}
     core
 )
 
-# Lista de arquivos fonte
+# implementation files
 set(SOURCES
-    teste.cpp
+    test.cpp
 
+    core/tesseract.cpp
     core/window.cpp
     core/camera.cpp
     core/vec3.cpp
     core/model.cpp
     core/texture.cpp
     core/input.cpp
-    core/ponto.cpp
-    core/ponto3.cpp
+    core/scene.cpp
+    core/light.cpp
+    core/gui.cpp
+    core/analitycs.cpp
+    core/audio.cpp
+    core/renderer.cpp
+
 )
 
-# Criar executável
-add_executable(teste ${SOURCES})
+# create executable
+add_executable(test ${SOURCES})
 
-# Linkar SDL2
-target_link_libraries(teste ${SDL2_LIBRARIES} assimp)
+# Link SDL2
+target_link_libraries(
+    test 
+    ${SDL2_LIBRARIES} 
+    assimp 
+    SDL2_ttf
+)

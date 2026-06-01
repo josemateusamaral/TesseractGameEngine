@@ -1,32 +1,34 @@
 #pragma once
 #include<SDL2/SDL.h>
-#include "../core/ponto.h"
+#include "vec3.h"
+#include "light.h"
 
 class Window
 {
     private:
         int width;
         int height;
-        SDL_Window* window = NULL;
-
+        
+       
+        SDL_Window* window = NULL;   
+        SDL_Texture* texture;
 
     public:
+
+        SDL_Renderer* renderer;
+        float* zBuffer;
+        uint32_t* colorBuffer;
+
         Window(int width,int height);
         ~Window();
-        SDL_Renderer *renderer;
 
-        
-        void atualiza();
+        SDL_Window* getWindow();
+        void refresh();
         void clean();
+        int getWidth();
+        int getHeight();
 
-        void desenha(Ponto &p1, Ponto &p2);
-        void desenha(Ponto &p1, Ponto &p2,int r, int g, int b);
-        void desenhar_poligono(Ponto &p1, Ponto &p2, Ponto &p3,int r = 0, int g = 255, int b = 0);
 
-        void desenhar_poligono_texturizado(Ponto &p1, Ponto &p2, Ponto &p3,Ponto &uv1, Ponto &uv2, Ponto &uv3,unsigned char* data, int texW, int texH);
-
-        float area(int x1, int y1, int x2, int y2, int x3, int y3); 
-        bool estaDentro(int x1, int y1, int x2, int y2, int x3, int y3, int x, int y);
 };
 
 
