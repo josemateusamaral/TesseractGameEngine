@@ -19,6 +19,8 @@ int main(int argc, char *args[])
 		printf("Failed to start Tesseract Game Engine !");
 		return -1;
 	}
+	engine.camera->hpr.x = 1;
+	engine.camera->hpr.y = 1;
 
 	// create ambient light
 	AmbientLight* ambientLight = new AmbientLight( 0.2, 0.2, 0.2);
@@ -92,9 +94,17 @@ int main(int argc, char *args[])
 	});
 	engine.input->bindMouseButton("right", "release", [&model]() {
 		printf("\n");
+		int n = 0;
 		for( int i = 0 ; i < (100 * 100); i++){
 			if(model->shadowMapBuffer[i]){
-				printf("%d -",model->shadowMapBuffer[i]);
+				printf("#");
+			}else{
+				printf(" ");
+			}
+			n++;
+			if(n >= 100){
+				printf("\n");
+				n = 0;
 			}
 		}
 	});

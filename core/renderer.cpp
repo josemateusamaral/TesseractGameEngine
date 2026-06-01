@@ -108,7 +108,11 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
                     model->diffuseTexture->height,
                     //lights
                     model->lights,
-                    model->nLights
+                    model->nLights,
+                    //shadow map
+                    model->shadowMapBuffer,
+                    100,
+                    100
                 );
                 break;
         }
@@ -175,7 +179,7 @@ void Renderer::project(Camera *camera, Vec3* vertices, Vec3* projection, int nVe
 
 }
 
-void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, Vec3 &v3, Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, unsigned char* data, int texW, int texH, Light** lights, int nLights) 
+void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, Vec3 &v3, Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, unsigned char* data, int texW, int texH, Light** lights, int nLights, bool* shadowMapBuffer, int shadowMapWidth, int shadowMapHeight) 
 {
 
     // polygon boundbox
@@ -283,6 +287,26 @@ void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3,
                 u = u - floor(u);
                 v = v - floor(v);
 
+                // shadow mapping test
+                bool inShadow = false;
+                if (shadowMapBuffer != nullptr){
+                    // Converte UV para coordenada de pixel na imagem
+                    int tx = (int)(u * (shadowMapWidth - 1));
+                    int ty = (int)(v * (shadowMapHeight - 1));
+
+                    // Clamping de segurança extra contra problemas de arredondamento de float
+                    if (tx < 0) tx = 0;
+                    if (tx >= shadowMapWidth) tx = shadowMapWidth - 1;
+                    if (ty < 0) ty = 0;
+                    if (ty >= shadowMapHeight) ty = shadowMapHeight - 1;
+
+                    // Texture index (assuming format RGB, 3 bytes per pixel)
+                    int idx = (ty * shadowMapWidth + tx);
+                    if(!shadowMapBuffer[idx]){
+                        inShadow = true;
+                    }
+                }                
+
                 // Converte UV para coordenada de pixel na imagem
                 int tx = (int)(u * (texW - 1));
                 int ty = (int)(v * (texH - 1));
@@ -295,13 +319,19 @@ void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3,
 
                 // Texture index (assuming format RGB, 3 bytes per pixel)
                 int idx = (ty * texW + tx) * 3;
-
-                // fill color buffer
                 Uint32 rt = data[idx] * lightEffetR;
                 Uint32  gt = data[idx + 1] * lightEffetG;
                 Uint32 bt = data[idx + 2] * lightEffetB;
-                window->colorBuffer[bufferIndex] = (255 << 24) | (rt << 16) | (gt << 8) | bt;
 
+                // fill color buffer
+                if(inShadow){
+                    rt = rt * 0.5;
+                    gt = gt * 0.5;
+                    bt = bt * 0.5;
+                }
+        
+                window->colorBuffer[bufferIndex] = (255 << 24) | (rt << 16) | (gt << 8) | bt;
+                
             }
         }
     }
