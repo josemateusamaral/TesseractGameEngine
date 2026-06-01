@@ -15,7 +15,7 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
     model->calcular_pontos_3D();
 
     // project vertices
-    this->project(camera, model->pontos, model->projection, model->nVertices, model->screenSpaceBuffer);
+    this->project(camera, model->pontos, model->projection, model->nVertices, model->screenSpaceBuffer, window->getHeight(), window->getWidth());
 
     int R = 255, G = 255, B = 255;
     float angulo;
@@ -116,7 +116,7 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
 
 }
 
-void Renderer::project(Camera *camera, Vec3* vertices, Vec3* projection, int nVertices, bool* screenSpaceBuffer){
+void Renderer::project(Camera *camera, Vec3* vertices, Vec3* projection, int nVertices, bool* screenSpaceBuffer, int bufferHeight, int bufferWidth){
 
     // camera inverse rotation
     float pitch = -camera->hpr.x * M_PI / 180.0;
@@ -132,12 +132,19 @@ void Renderer::project(Camera *camera, Vec3* vertices, Vec3* projection, int nVe
     float cosR = cos(roll);
     float sinR = sin(roll);
 
+    float cx = camera->getX();
+    float cy = camera->getY();
+    float cz = camera->getZ();
+
+    int centerX = bufferWidth / 2;
+    int centerY = bufferHeight / 2;
+
     for( int i = 0 ; i < nVertices ; i++ ){
         
         // transform to camera space
-        float x = vertices[i].x - camera->getX();
-        float y = vertices[i].y - camera->getY();
-        float z = vertices[i].z - camera->getZ();
+        float x = vertices[i].x - cx;
+        float y = vertices[i].y - cy;
+        float z = vertices[i].z - cz;
 
         // yaw - y
         float dx = x * cosY - z * sinY;
@@ -158,14 +165,19 @@ void Renderer::project(Camera *camera, Vec3* vertices, Vec3* projection, int nVe
         // project perpective
         float px = (camera->dist_f * x) / z;
         float py = (camera->dist_f * y) / z;
-        projection[i].x = px * -1 + 320;
-        projection[i].y = py * -1 + 240;
+        projection[i].x = px * -1 + centerX;
+        projection[i].y = py * -1 + centerY;
         projection[i].z = z;
 
-        screenSpaceBuffer[i] = !((projection[i].x > 640 || projection[i].x < 0 ) && ( projection[i].y > 480 || projection[i].y < 0)) || z<0;
+        screenSpaceBuffer[i] = !((projection[i].x > bufferWidth || projection[i].x < 0 ) && ( projection[i].y > bufferHeight || projection[i].y < 0)) || z < 0;
     
     }
 
+}
+
+void Renderer::createShadowMap(Camera *camera, float* zBuffer, Model** eBuffer, Model* model){//, Vec3* vertices, Vec3* projection, int nVertices, bool* screenSpaceBuffer, int bufferHeight, int bufferWidth, char* dataShadowMap, int shadowMapWidth, int shadowMapHeight){
+    // Similar to project function but instead of projecting to screen space, it projects to a shadow map texture and fills the dataShadowMap with depth values.
+    // This function is a placeholder and should be implemented according to the specific requirements of the shadow mapping technique being used (e.g., standard shadow mapping, variance shadow mapping, etc.).
 }
 
 void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, Vec3 &v3, Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, unsigned char* data, int texW, int texH, Light** lights, int nLights) 

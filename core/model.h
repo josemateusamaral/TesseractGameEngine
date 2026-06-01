@@ -24,6 +24,7 @@ class Model
         int polygonCount;
         unsigned int* indices = nullptr;
         unsigned int indexCount;
+        bool* shadowMapBuffer = nullptr;
 
         //diffuse texture
         Texture* diffuseTexture = nullptr;
