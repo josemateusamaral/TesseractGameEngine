@@ -39,8 +39,24 @@ int main(int argc, char *args[])
 	Model* plane = new Model("samples/model_loading/plane.glb");
 	plane->setPos( 0, 0, 30);
 	plane->setScale(10);
+	plane->rotate(0, -90, 0);
 	engine.scene->addModel(plane);
 	plane->setLight(ambientLight);
+
+	engine.input->bindKey("i", "press", [&plane]() {
+		plane->rotate(1, 0, 0);
+	});
+	engine.input->bindKey("k", "press", [&plane]() {
+		plane->rotate(-1, 0, 0);
+	});
+	engine.input->bindKey("l", "press", [&plane]() {
+		plane->rotate(0, 1, 0);
+	});
+	engine.input->bindKey("j", "release", [&plane]() {
+		plane->rotate(0, -1, 0);
+	});
+
+
 
 
 	// load texture
@@ -110,7 +126,7 @@ int main(int argc, char *args[])
 	Audio *audio = new Audio("samples/audio_loading/birds.wav");
 	audio->setPos(new Vec3(0, 0, 14));
 	engine.audio->addElement(audio);
-	audio->play();
+	//audio->play();
 
 	// game loop
 	engine.run([&]() {

@@ -76,12 +76,20 @@ void Tesseract::run(function<void()> userUpdate) {
 
         // render scene
         this->window->clean();
+        
+        // create shadow maps for all models that cast shadows
+        //int shadowMapWidth = this->window->getWidth();
+        //int shadowMapHeight = this->window->getHeight();
+        //Camera *shadowCamera = new Camera();
+        //shadowCamera->setPos(Vec3(0, 0, 0));
+        //float* shadowZBuffer = new float[shadowMapWidth * shadowMapHeight];
+        //Model** shadowEBuffer = new Model*[shadowMapWidth * shadowMapHeight];
+        //for(int i = 0; i < this->scene->qtdModels; i++){
+        //    this->renderer->createShadowMap(shadowCamera, shadowZBuffer, shadowEBuffer, this->scene->models[i], shadowMapWidth, shadowMapHeight);
+        //}
+
         for(int i = 0; i < this->scene->qtdModels; i++){
-            Model* model = this->scene->models[i];
-            //model->draw(*window, this->camera);
-
-            this->renderer->render(model, this->window, this->camera);
-
+            this->renderer->render(this->scene->models[i], this->window, this->camera);
         }
 
         // update fps meter

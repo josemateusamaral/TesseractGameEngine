@@ -175,9 +175,74 @@ void Renderer::project(Camera *camera, Vec3* vertices, Vec3* projection, int nVe
 
 }
 
-void Renderer::createShadowMap(Camera *camera, float* zBuffer, Model** eBuffer, Model* model){//, Vec3* vertices, Vec3* projection, int nVertices, bool* screenSpaceBuffer, int bufferHeight, int bufferWidth, char* dataShadowMap, int shadowMapWidth, int shadowMapHeight){
+void Renderer::createShadowMap(Camera *camera, float* zBuffer, Model** eBuffer, Model* model, int shadowMapWidth, int shadowMapHeight){//, Vec3* vertices, Vec3* projection, int nVertices, bool* screenSpaceBuffer, int bufferHeight, int bufferWidth, char* dataShadowMap, int shadowMapWidth, int shadowMapHeight){
     // Similar to project function but instead of projecting to screen space, it projects to a shadow map texture and fills the dataShadowMap with depth values.
     // This function is a placeholder and should be implemented according to the specific requirements of the shadow mapping technique being used (e.g., standard shadow mapping, variance shadow mapping, etc.).
+
+    model->calcular_pontos_3D();
+
+    // project vertices
+    this->project(camera, model->pontos, model->projection, model->nVertices, model->screenSpaceBuffer, shadowMapHeight, shadowMapWidth);
+
+    int R = 255, G = 255, B = 255;
+    float angulo;
+
+    // camera vector
+    float origem[3] = {camera->getX(), camera->getY(), camera->getZ()};
+    float a[3] = {model->getX(), model->getY(), model->getZ()};
+    Vec3 cam{origem, a};
+
+    // indexes
+    for (int i = 0; i < model->indexCount; i += 3)
+    {
+
+        int i0 = model->indices[i];
+        int i1 = model->indices[i + 1];
+        int i2 = model->indices[i + 2];
+
+        // ignore polygons out off screen space
+        if(!model->screenSpaceBuffer[i0] && !model->screenSpaceBuffer[i1] && !model->screenSpaceBuffer[i2]) continue;
+
+        //polygon
+        Vec3 p0 = model->pontos[i0];
+        Vec3 p1 = model->pontos[i1];
+        Vec3 p2 = model->pontos[i2];
+        float b[3] = {model->pontos[i0].x, model->pontos[i0].y, model->pontos[i0].z};
+        float c[3] = {model->pontos[i1].x, model->pontos[i1].y, model->pontos[i1].z};
+        float d[3] = {model->pontos[i2].x, model->pontos[i2].y, model->pontos[i2].z};
+        Vec3 v1(b, c);
+        Vec3 v2(b, d);
+        Vec3 normal = v1.produto_vetorial(v2);
+
+        // backface culling
+        if (!(cam.angulo_entre_vetores(normal) > 90 || !model->backfaceCulling)) continue;
+
+        // TEXTURED
+        this->drawShadowMap(
+            //projections
+            model->projection[i0],
+            model->projection[i1],
+            model->projection[i2],
+            //vertices
+            model->pontos[i0],
+            model->pontos[i1],
+            model->pontos[i2],
+            //uvs
+            model->uvs[i0],
+            model->uvs[i1],
+            model->uvs[i2],
+            //texture
+            (unsigned char*)model->diffuseTexture->data,
+            model->diffuseTexture->width,
+            model->diffuseTexture->height,
+            //lights
+            zBuffer,
+            eBuffer,
+            model,
+            shadowMapWidth,
+            shadowMapHeight
+        );
+    }
 }
 
 void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, Vec3 &v3, Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, unsigned char* data, int texW, int texH, Light** lights, int nLights) 
@@ -472,4 +537,8 @@ bool Renderer::isPixelInsidePolygon(int x1, int y1, int x2, int y2, int x3, int 
 float Renderer::area(int x1, int y1, int x2, int y2, int x3, int y3)
 {
     return abs((x1*(y2-y3) + x2*(y3-y1)+ x3*(y1-y2))/2.0);
+}
+
+void Renderer::drawShadowMap(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, Vec3 &v3 ,Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, unsigned char* data, int texW, int texH, float* shadowZBuffer, Model** shadowEBuffer, Model* model, int shadowMapWidth, int shadowMapHeight){
+
 }
