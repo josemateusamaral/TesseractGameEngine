@@ -30,8 +30,8 @@ int main(int argc, char *args[])
 	DirectionalLight* directionalLight = new DirectionalLight( 1, 1, 1, 0, 0, -1);
 
 	// load model
-	Model* model = new Model("samples/model_loading/esfere.glb");
-	model->setPos( 0, 0, 14);
+	Model* model = new Model("samples/model_loading/character.glb");
+	model->setPos( 0, 0, 30);
 	model->setScale(1);
 	engine.scene->addModel(model);
 	model->setLight(pointLight);
@@ -39,23 +39,24 @@ int main(int argc, char *args[])
 
 	// point light place holder
 	Model* plane = new Model("samples/model_loading/plane.glb");
-	plane->setPos( 0, 0, 30);
+	plane->setPos( 0, -9, 30);
 	plane->setScale(10);
-	plane->rotate(0, -90, 0);
 	engine.scene->addModel(plane);
 	plane->setLight(ambientLight);
 
 	engine.input->bindKey("i", "press", [&plane]() {
-		plane->rotate(1, 0, 0);
+		plane->setY(plane->getY() + 1);
+		printf("%f",plane->getY());
 	});
 	engine.input->bindKey("k", "press", [&plane]() {
-		plane->rotate(-1, 0, 0);
+		plane->setY(plane->getY() - 1);
+		printf("%f",plane->getY());
 	});
 	engine.input->bindKey("l", "press", [&plane]() {
-		plane->rotate(0, 1, 0);
+		plane->setX(plane->getX() + 1);
 	});
 	engine.input->bindKey("j", "release", [&plane]() {
-		plane->rotate(0, -1, 0);
+		plane->setX(plane->getY() + 1);
 	});
 
 	// load texture
