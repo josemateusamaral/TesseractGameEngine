@@ -7,7 +7,6 @@
 
 
   <br>
-  ## Compiling tips
   
   RUN TEST SAMPLE ON WINDOWS<br>
 
