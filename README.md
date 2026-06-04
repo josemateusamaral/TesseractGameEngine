@@ -7,6 +7,8 @@
 
 
   <br>
+  ## Compiling tips
+  
   RUN TEST SAMPLE ON WINDOWS<br>
 
   - Install MSYS2 on https://www.msys2.org/.<br>
