@@ -11,9 +11,6 @@ using namespace std;
 
 class Model
 {
-    private:
-
-        
         
     public:
 

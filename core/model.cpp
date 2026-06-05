@@ -254,6 +254,7 @@ float Model::getScale(){
 }
 
 void Model::setLight(Light *light){
+    light->attachModel(this);
     this->lights[this->nLights] = light;
     this->nLights += 1;
     printf("Light added. Total lights: %d\n", this->nLights);

@@ -112,7 +112,8 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
                     //shadow map
                     model->shadowMapBuffer,
                     100,
-                    100
+                    100,
+                    model->shadowCast
                 );
                 break;
         }
@@ -173,13 +174,13 @@ void Renderer::project(Camera *camera, Vec3* vertices, Vec3* projection, int nVe
         projection[i].y = py * -1 + centerY;
         projection[i].z = z;
 
-        screenSpaceBuffer[i] = !((projection[i].x > bufferWidth || projection[i].x < 0 ) && ( projection[i].y > bufferHeight || projection[i].y < 0)) || z < 0;
+        screenSpaceBuffer[i] = !((projection[i].x > bufferWidth || projection[i].x < 0 ) && ( projection[i].y > bufferHeight || projection[i].y < 0)) && z > 0.1;
     
     }
 
 }
 
-void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, Vec3 &v3, Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, unsigned char* data, int texW, int texH, Light** lights, int nLights, bool* shadowMapBuffer, int shadowMapWidth, int shadowMapHeight) 
+void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, Vec3 &v3, Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, unsigned char* data, int texW, int texH, Light** lights, int nLights, bool* shadowMapBuffer, int shadowMapWidth, int shadowMapHeight, bool shadowCast) 
 {
 
     // polygon boundbox
@@ -279,17 +280,43 @@ void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3,
                     continue;
                 }
 
-                // Interpola o UV para este pixel exato
-                float u = w1 * uv1.x + w2 * uv2.x + w3 * uv3.x;
-                float v = w1 * uv1.y + w2 * uv2.y + w3 * uv3.y;
+                // Interpolate UV coordinates with perspective correction
+                float iz1 = 1.0f / p1.z;
+                float iz2 = 1.0f / p2.z;
+                float iz3 = 1.0f / p3.z;
+                float u =
+                (
+                    w1 * uv1.x * iz1 +
+                    w2 * uv2.x * iz2 +
+                    w3 * uv3.x * iz3
+                )
+                /
+                (
+                    w1 * iz1 +
+                    w2 * iz2 +
+                    w3 * iz3
+                );
+
+                float v =
+                (
+                    w1 * uv1.y * iz1 +
+                    w2 * uv2.y * iz2 +
+                    w3 * uv3.y * iz3
+                )
+                /
+                (
+                    w1 * iz1 +
+                    w2 * iz2 +
+                    w3 * iz3
+                );
 
                 // Enrola o UV para sempre ficar entre 0.0 e 1.0 (permite textura repetida)
                 u = u - floor(u);
                 v = v - floor(v);
 
                 // shadow mapping test
-                bool inShadow = false;
-                if (shadowMapBuffer != nullptr){
+                float shadowFactor = 1.0f;
+                if (shadowMapBuffer != nullptr && shadowCast){
                     // Converte UV para coordenada de pixel na imagem
                     int tx = (int)(u * (shadowMapWidth - 1));
                     int ty = (int)(v * (shadowMapHeight - 1));
@@ -303,7 +330,7 @@ void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3,
                     // Texture index (assuming format RGB, 3 bytes per pixel)
                     int idx = (ty * shadowMapWidth + tx);
                     if(!shadowMapBuffer[idx]){
-                        inShadow = true;
+                        shadowFactor = 0.5f;
                     }
                 }                
 
@@ -319,17 +346,11 @@ void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3,
 
                 // Texture index (assuming format RGB, 3 bytes per pixel)
                 int idx = (ty * texW + tx) * 3;
-                Uint32 rt = data[idx] * lightEffetR;
-                Uint32  gt = data[idx + 1] * lightEffetG;
-                Uint32 bt = data[idx + 2] * lightEffetB;
+                Uint32 rt = (data[idx] * lightEffetR) * shadowFactor;
+                Uint32  gt = (data[idx + 1] * lightEffetG) * shadowFactor;
+                Uint32 bt = (data[idx + 2] * lightEffetB) * shadowFactor;
 
                 // fill color buffer
-                if(inShadow){
-                    rt = rt * 0.5;
-                    gt = gt * 0.5;
-                    bt = bt * 0.5;
-                }
-        
                 window->colorBuffer[bufferIndex] = (255 << 24) | (rt << 16) | (gt << 8) | bt;
                 
             }
@@ -670,8 +691,34 @@ void Renderer::drawShadowMap(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, V
                 }
 
                 // Interpola o UV para este pixel exato
-                float u = w1 * uv1.x + w2 * uv2.x + w3 * uv3.x;
-                float v = w1 * uv1.y + w2 * uv2.y + w3 * uv3.y;
+                float iz1 = 1.0f / p1.z;
+                float iz2 = 1.0f / p2.z;
+                float iz3 = 1.0f / p3.z;
+                float u =
+                (
+                    w1 * uv1.x * iz1 +
+                    w2 * uv2.x * iz2 +
+                    w3 * uv3.x * iz3
+                )
+                /
+                (
+                    w1 * iz1 +
+                    w2 * iz2 +
+                    w3 * iz3
+                );
+
+                float v =
+                (
+                    w1 * uv1.y * iz1 +
+                    w2 * uv2.y * iz2 +
+                    w3 * uv3.y * iz3
+                )
+                /
+                (
+                    w1 * iz1 +
+                    w2 * iz2 +
+                    w3 * iz3
+                );
 
                 // Enrola o UV para sempre ficar entre 0.0 e 1.0 (permite textura repetida)
                 u = u - floor(u);
@@ -688,15 +735,7 @@ void Renderer::drawShadowMap(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, V
                 if (ty >= shadowMapHeight) ty = shadowMapHeight - 1;
 
                 // Texture index (assuming format RGB, 3 bytes per pixel)
-                int idx = (ty * shadowMapWidth + tx);
-
-                // fill color buffer
-                //Uint32 rt = data[idx];
-                //Uint32  gt = data[idx + 1];
-                //Uint32 bt = data[idx + 2];
-                //window->colorBuffer[bufferIndex] = (255 << 24) | (rt << 16) | (gt << 8) | bt;
-
-                model->shadowMapBuffer[idx] = true;
+                model->shadowMapBuffer[(ty * shadowMapWidth + tx)] = true;
 
             }
         }

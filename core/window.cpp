@@ -24,6 +24,7 @@ Window::Window(int width,int height)
         width,
         height
     );
+    backgroundColor = (255 << 24) | (255 << 16) | (255 << 8) | 255;
 
 }
 
@@ -56,7 +57,7 @@ void Window::clean()
     std::fill(this->zBuffer, this->zBuffer + (this->width * this->height), std::numeric_limits<float>::infinity());
 
     // clear color buffer
-    std::fill(colorBuffer,colorBuffer + (width * height),0x00000000);
+    std::fill(colorBuffer,colorBuffer + (width * height),this->backgroundColor);
 
 }
 
@@ -75,5 +76,9 @@ SDL_Window* Window::getWindow(){
 Window::~Window()
 {
     SDL_DestroyWindow(window);
+}
+
+void Window::setBackgroundColor(uint8_t r, uint8_t g, uint8_t b){
+    backgroundColor = (255 << 24) | (r << 16) | (g << 8) | b;
 }
 

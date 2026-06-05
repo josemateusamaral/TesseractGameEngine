@@ -19,47 +19,31 @@ int main(int argc, char *args[])
 		printf("Failed to start Tesseract Game Engine !");
 		return -1;
 	}
-	engine.camera->hpr.x = 1;
-	engine.camera->hpr.y = 1;
+	engine.window->setBackgroundColor(135, 206, 235); // sky blue
 
 	// create ambient light
-	AmbientLight* ambientLight = new AmbientLight( 0.2, 0.2, 0.2);
+	AmbientLight* ambientLight = new AmbientLight(0.4,0.4,0.4);
 	// create point light
-	PointLight* pointLight = new PointLight( 0.8, 0.8, 0.8, 0, 0, 30);
+	PointLight* pointLight = new PointLight(0.4,0.4,0.4,0,0,0);
 	// create directional light
-	DirectionalLight* directionalLight = new DirectionalLight( 1, 1, 1, 0, 0, -1);
+	DirectionalLight* directionalLight = new DirectionalLight(0.6,0.6,0.6,0,0,-1);
 
 	// load model
 	Model* model = new Model("samples/model_loading/character.glb");
 	model->setPos( 0, 0, 30);
 	model->setScale(1);
 	engine.scene->addModel(model);
-	model->setLight(pointLight);
+	model->setLight(directionalLight);
 	model->setLight(ambientLight);
 
-	// point light place holder
+	// load plane
 	Model* plane = new Model("samples/model_loading/plane.glb");
 	plane->setPos( 0, -9, 30);
 	plane->setScale(10);
 	engine.scene->addModel(plane);
 	plane->setLight(ambientLight);
-
-	engine.input->bindKey("i", "press", [&plane]() {
-		plane->setY(plane->getY() + 1);
-		printf("%f",plane->getY());
-	});
-	engine.input->bindKey("k", "press", [&plane]() {
-		plane->setY(plane->getY() - 1);
-		printf("%f",plane->getY());
-	});
-	engine.input->bindKey("l", "press", [&plane]() {
-		plane->setX(plane->getX() + 1);
-	});
-	engine.input->bindKey("j", "release", [&plane]() {
-		plane->setX(plane->getY() + 1);
-	});
-
-	// load texture
+	plane->setLight(directionalLight);
+	// apply texture to plane
 	Texture *texture = new Texture("samples/texture_loading/areia.jpg");
 	plane->diffuseTexture = texture;
 	
@@ -91,31 +75,27 @@ int main(int argc, char *args[])
 
 	// bind mouse
 	engine.input->bindMouseButton("left", "release", [&model]() {
-		//printf("releasing left mouse button");
+		printf("\nreleasing left mouse button");
 	});
 	engine.input->bindMouseButton("right", "release", [&model]() {
-		printf("\n");
-		int n = 0;
-		for( int i = 0 ; i < (100 * 100); i++){
-			if(model->shadowMapBuffer[i]){
-				printf("#");
-			}else{
-				printf(" ");
-			}
-			n++;
-			if(n >= 100){
-				printf("\n");
-				n = 0;
-			}
-		}
+		printf("\nreleasing right mouse button");
 	});
 	engine.input->bindMouseMotion([&engine]() {
+
+		//rotate camera left and right using mouse movement
 		engine.camera->hpr.x += engine.input->mouseMotionVector->y * 0.1;
-		if(engine.camera->hpr.x < 0) 
-			engine.camera->hpr.x = 359;
+		if(engine.camera->hpr.x == 0) 
+			engine.camera->hpr.x = 360;
+		if(engine.camera->hpr.x > 360)
+			engine.camera->hpr.x = 1;
+		
+		//rotate camera up and down using mouse movement
 		engine.camera->hpr.y += engine.input->mouseMotionVector->x * 0.1;
-		if(engine.camera->hpr.y < 0) 
-			engine.camera->hpr.y = 359;
+		if(engine.camera->hpr.y == 0) 
+			engine.camera->hpr.y = 360;
+		if(engine.camera->hpr.y > 360)
+			engine.camera->hpr.y = 1;
+
 	});
 
 	//create text
@@ -140,6 +120,9 @@ int main(int argc, char *args[])
 	audio->setPos(new Vec3(0, 0, 14));
 	engine.audio->addElement(audio);
 	//audio->play();
+
+	//create shadow caster
+	engine.scene->addShadowCaster(directionalLight);
 
 	// game loop
 	engine.run([&]() {

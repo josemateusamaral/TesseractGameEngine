@@ -1,14 +1,22 @@
 #include "light.h"
 #include "vec3.h"
-
+#include "model.h"
 
 Light::Light(){
-    
+
+    this->attachedModel = new Model*[this->attachedModelBufferSize];
+    this->qtdAttachedModels = 0;
+
 }
 Light::Light(float r, float g, float b)
 : r{r}, g{g}, b{b}
 {
-
+    this->attachedModel = new Model*[this->attachedModelBufferSize];
+    this->qtdAttachedModels = 0;
+}
+void Light::attachModel(Model *model){
+    this->attachedModel[qtdAttachedModels] = model;
+    qtdAttachedModels++;
 }
 Light::~Light()
 {
@@ -28,6 +36,10 @@ void AmbientLight::apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, fl
     outR += this->r;
     outG += this->g;
     outB += this->b;
+}
+void AmbientLight::createShadowMapper()
+{
+    // ambient lights do not cast shadows in this implementation
 }
 
 
@@ -60,6 +72,18 @@ void DirectionalLight::apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG
     outR += r * intensity;
     outG += g * intensity;
     outB += b * intensity;
+}
+
+void DirectionalLight::createShadowMapper()
+{
+    this->shadowMapWidth = 640;
+    this->shadowMapHeight = 480;
+    this->shadowCamera = new Camera();
+    this->shadowCamera->setPos(Vec3(0, 0, 0));
+    this->shadowCamera->hpr.x = 1;
+    this->shadowCamera->hpr.y = 1;
+    this->shadowZBuffer = new float[shadowMapWidth * shadowMapHeight];
+    this->shadowEBuffer = new Model*[shadowMapWidth * shadowMapHeight];
 }
 
 
@@ -106,4 +130,9 @@ void PointLight::apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, floa
     outG += this->g * intensity;
     outB += this->b * intensity;
 
+}
+
+void PointLight::createShadowMapper()
+{
+    // point lights do not cast shadows in this implementation
 }

@@ -29,6 +29,7 @@ class Tesseract
         AudioManager *audio;
         Analitycs *analitycs;
         Renderer *renderer;
+        Uint32 deltaTime;
 
         SDL_Event ev;
 

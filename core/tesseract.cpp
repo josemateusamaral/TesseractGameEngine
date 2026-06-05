@@ -22,6 +22,8 @@ Tesseract::Tesseract(int width, int height)
     this->window = new Window(width, height);
     this->scene = new Scene();
     this->camera = new Camera();
+	this->camera->hpr.x = 1;
+	this->camera->hpr.y = 1;
     this->input = new Input();
     this->gui = new GUI();
     this->analitycs = new Analitycs(this->gui);
@@ -58,11 +60,20 @@ bool Tesseract::isRunning(){
 void Tesseract::run(function<void()> userUpdate) {
     
     Uint32 lastFrameTicktime = SDL_GetTicks();
-    Uint32 deltaTime; 
     Uint32 sdlTick; 
     int fps = 0;
 
     float updateFPSCount = 0.0;
+
+    // create shadow maps for all models that cast shadows
+    int shadowMapWidth = this->window->getWidth();
+    int shadowMapHeight = this->window->getHeight();
+    Camera *shadowCamera = new Camera();
+    shadowCamera->setPos(Vec3(0, 0, 0));
+    shadowCamera->hpr.x = 1;
+    shadowCamera->hpr.y = 1;
+    float* shadowZBuffer = new float[shadowMapWidth * shadowMapHeight];
+    Model** shadowEBuffer = new Model*[shadowMapWidth * shadowMapHeight];
 
     while (!this->quit) {
 
@@ -74,35 +85,37 @@ void Tesseract::run(function<void()> userUpdate) {
             userUpdate();
         }
 
-        // render scene
+        // clear color buffer and z buffer
         this->window->clean();
         
-        // create shadow maps for all models that cast shadows
-        int shadowMapWidth = this->window->getWidth();
-        int shadowMapHeight = this->window->getHeight();
-        Camera *shadowCamera = new Camera();
-        shadowCamera->setPos(Vec3(0, 0, 0));
-        shadowCamera->hpr.x = 1;
-        shadowCamera->hpr.y = 1;
-        float* shadowZBuffer = new float[shadowMapWidth * shadowMapHeight];
-        std::fill(shadowZBuffer, shadowZBuffer + (shadowMapWidth * shadowMapHeight), std::numeric_limits<float>::infinity());
-        Model** shadowEBuffer = new Model*[shadowMapWidth * shadowMapHeight];
-        for(int i = 0; i < this->scene->qtdModels; i++){
-            std::fill(this->scene->models[i]->shadowMapBuffer,this->scene->models[i]->shadowMapBuffer + (100*100),false);
-            this->renderer->createShadowMap(shadowCamera, shadowZBuffer, shadowEBuffer, this->scene->models[i], shadowMapWidth, shadowMapHeight);
+        // create shadow maps
+        if(this->scene->qtdShadowCasters > 0){
+            
+            for(int i = 0; i < this->scene->qtdShadowCasters; i++){
+                
+                Light* light = this->scene->shadowCasters[i];
+                std::fill(light->shadowZBuffer, light->shadowZBuffer + (light->shadowMapWidth * light->shadowMapHeight), std::numeric_limits<float>::infinity());
+                
+                for(int i = 0; i < this->scene->qtdModels; i++){
+                    Model* model = this->scene->models[i];
+                    std::fill(model->shadowMapBuffer,model->shadowMapBuffer + (100*100),false);
+                    this->renderer->createShadowMap(light->shadowCamera, light->shadowZBuffer, light->shadowEBuffer, model, light->shadowMapWidth, light->shadowMapHeight);
+                }
+            }
         }
 
+        // render scene
         for(int i = 0; i < this->scene->qtdModels; i++){
             this->renderer->render(this->scene->models[i], this->window, this->camera);
         }
 
         // update fps meter
+        sdlTick = SDL_GetTicks();
+        this->deltaTime = sdlTick - lastFrameTicktime;
         if(this->analitycs->fpsMeter->getIsVisible()){
-            sdlTick = SDL_GetTicks();
-            deltaTime = sdlTick - lastFrameTicktime;
-            fps = 1000 / deltaTime;
+            fps = 1000 / this->deltaTime;
             lastFrameTicktime = sdlTick;
-            updateFPSCount += deltaTime;
+            updateFPSCount += this->deltaTime;
             if(updateFPSCount > 1000){
                 Text* fpsText = dynamic_cast<Text*>(this->gui->elements[0]);
                 if (fpsText)
@@ -126,7 +139,7 @@ void Tesseract::run(function<void()> userUpdate) {
         this->window->refresh();
 
         // refresh rate delay
-        SDL_Delay(this->delay);
+        //SDL_Delay(this->delay);
 
     }
 
