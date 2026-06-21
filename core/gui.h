@@ -67,6 +67,7 @@ class Text : public GUIElement
 
         SDL_Surface* surface = nullptr;
         TTF_Font* font = nullptr;
+        int scale;
 
         Text(const char* text, const char* fontPath = "core/assets/fonts/opensans.ttf");
         ~Text();

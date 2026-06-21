@@ -53,7 +53,7 @@ int main(int argc, char *args[])
 	});
 	engine.input->bindKey("w", "press", [&engine]() {
 		engine.camera->setZ(engine.camera->getZ() + 1);
-		printf("x: %f - y: %f - z:%f\n",engine.camera->getX(),engine.camera->getY(),engine.camera->getZ());
+		//printf("x: %f - y: %f - z:%f\n",engine.camera->getX(),engine.camera->getY(),engine.camera->getZ());
 	});
 	engine.input->bindKey("a", "press", [&engine]() {
 		engine.camera->setX(engine.camera->getX() + 1);
@@ -123,7 +123,7 @@ int main(int argc, char *args[])
 	//audio->play();
 
 	//create shadow caster
-	//engine.scene->addShadowCaster(directionalLight);
+	engine.scene->addShadowCaster(directionalLight);
 
 	model->rotate(180, 0, 0);
 
@@ -131,7 +131,7 @@ int main(int argc, char *args[])
 	engine.run([&]() {
 
 		// rotate model
-        //model->rotate(1, 0, 0);
+        model->rotate(1, 0, 0);
         
     });
 	
