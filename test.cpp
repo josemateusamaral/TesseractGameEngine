@@ -123,7 +123,7 @@ int main(int argc, char *args[])
 	//audio->play();
 
 	//create shadow caster
-	engine.scene->addShadowCaster(directionalLight);
+	//engine.scene->addShadowCaster(directionalLight);
 
 	model->rotate(180, 0, 0);
 
@@ -131,7 +131,7 @@ int main(int argc, char *args[])
 	engine.run([&]() {
 
 		// rotate model
-        model->rotate(1, 0, 0);
+        //model->rotate(1, 0, 0);
         
     });
 	
