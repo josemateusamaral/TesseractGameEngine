@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(SDL2 REQUIRED)
 find_package(SDL2_ttf REQUIRED)
+find_package(OpenMP REQUIRED)
 
 include_directories(
     ${SDL2_INCLUDE_DIRS}
@@ -44,4 +45,5 @@ target_link_libraries(
     ${SDL2_LIBRARIES} 
     assimp 
     SDL2_ttf
+    OpenMP::OpenMP_CXX
 )

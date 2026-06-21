@@ -144,6 +144,7 @@ void Renderer::project(Camera *camera, Vec3* vertices, Vec3* projection, int nVe
     int centerX = bufferWidth / 2;
     int centerY = bufferHeight / 2;
 
+    #pragma omp parallel for schedule(static)
     for( int i = 0 ; i < nVertices ; i++ ){
         
         // transform to camera space
