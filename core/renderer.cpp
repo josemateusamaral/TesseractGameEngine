@@ -1,4 +1,6 @@
 #include "renderer.h"
+#include <pthread.h>
+#include <cmath>
 
 Renderer::Renderer() {
     // Inicialização do renderer
@@ -121,21 +123,62 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
 
 }
 
-void Renderer::project(Camera *camera, Vec3* vertices, Vec3* projection, int nVertices, bool* screenSpaceBuffer, int bufferHeight, int bufferWidth){
+struct ProjectThreadData {
+    Camera* camera;
+    Vec3* vertices;
+    Vec3* projection;
+    bool* screenSpaceBuffer;
+    int start, end;
+    int bufferHeight, bufferWidth;
+    int centerX, centerY;
+    float cosY, sinY, cosP, sinP, cosR, sinR;
+    float cx, cy, cz;
+};
 
-    // camera inverse rotation
+static void* projectWorker(void* arg) {
+    ProjectThreadData* d = static_cast<ProjectThreadData*>(arg);
+
+    for (int i = d->start; i < d->end; i++) {
+        float x = d->vertices[i].x - d->cx;
+        float y = d->vertices[i].y - d->cy;
+        float z = d->vertices[i].z - d->cz;
+
+        float dx = x * d->cosY - z * d->sinY;
+        float dz = x * d->sinY + z * d->cosY;
+        x = dx; z = dz;
+
+        float dy = y * d->cosP - z * d->sinP;
+        dz = y * d->sinP + z * d->cosP;
+        y = dy; z = dz;
+
+        dx = x * d->cosR - y * d->sinR;
+        dy = x * d->sinR + y * d->cosR;
+        x = dx; y = dy;
+
+        float px = (d->camera->dist_f * x) / z;
+        float py = (d->camera->dist_f * y) / z;
+        d->projection[i].x = px * -1 + d->centerX;
+        d->projection[i].y = py * -1 + d->centerY;
+        d->projection[i].z = z;
+
+        d->screenSpaceBuffer[i] =
+            !((d->projection[i].x > d->bufferWidth || d->projection[i].x < 0) &&
+              (d->projection[i].y > d->bufferHeight || d->projection[i].y < 0))
+            && z > 0.1f;
+    }
+    return nullptr;
+}
+
+void Renderer::project(Camera *camera, Vec3* vertices, Vec3* projection, int nVertices,
+                        bool* screenSpaceBuffer, int bufferHeight, int bufferWidth){
+
     float pitch = -camera->hpr.x * M_PI / 180.0;
     float yaw   = -camera->hpr.y * M_PI / 180.0;
     float roll  = -camera->hpr.z * M_PI / 180.0;
-    // yaw - y
-    float cosY = cos(yaw);
-    float sinY = sin(yaw);
-    // pitch - x
-    float cosP = cos(pitch);
-    float sinP = sin(pitch);
-    // roll - z
-    float cosR = cos(roll);
-    float sinR = sin(roll);
+
+    float cosY = cos(yaw),   sinY = sin(yaw);
+    float cosP = cos(pitch), sinP = sin(pitch);
+    float cosR = cos(roll),  sinR = sin(roll);
 
     float cx = camera->getX();
     float cy = camera->getY();
@@ -144,40 +187,30 @@ void Renderer::project(Camera *camera, Vec3* vertices, Vec3* projection, int nVe
     int centerX = bufferWidth / 2;
     int centerY = bufferHeight / 2;
 
-    for( int i = 0 ; i < nVertices ; i++ ){
-        
-        // transform to camera space
-        float x = vertices[i].x - cx;
-        float y = vertices[i].y - cy;
-        float z = vertices[i].z - cz;
+    const int NUM_THREADS = 4;
+    pthread_t threads[NUM_THREADS];
+    ProjectThreadData threadData[NUM_THREADS];
 
-        // yaw - y
-        float dx = x * cosY - z * sinY;
-        float dz = x * sinY + z * cosY;
-        x = dx;
-        z = dz;
-        // pitch - x
-        float dy = y * cosP - z * sinP;
-        dz = y * sinP + z * cosP;
-        y = dy;
-        z = dz;
-        // roll - z
-        dx = x * cosR - y * sinR;
-        dy = x * sinR + y * cosR;
-        x = dx;
-        y = dy;
+    int chunk = nVertices / NUM_THREADS;
+    int remainder = nVertices % NUM_THREADS;
+    int start = 0;
 
-        // project perpective
-        float px = (camera->dist_f * x) / z;
-        float py = (camera->dist_f * y) / z;
-        projection[i].x = px * -1 + centerX;
-        projection[i].y = py * -1 + centerY;
-        projection[i].z = z;
+    for (int t = 0; t < NUM_THREADS; t++) {
+        int end = start + chunk + (t < remainder ? 1 : 0);
 
-        screenSpaceBuffer[i] = !((projection[i].x > bufferWidth || projection[i].x < 0 ) && ( projection[i].y > bufferHeight || projection[i].y < 0)) && z > 0.1;
-    
+        threadData[t] = { camera, vertices, projection, screenSpaceBuffer,
+                           start, end, bufferHeight, bufferWidth,
+                           centerX, centerY,
+                           cosY, sinY, cosP, sinP, cosR, sinR,
+                           cx, cy, cz };
+
+        pthread_create(&threads[t], nullptr, projectWorker, &threadData[t]);
+        start = end;
     }
 
+    for (int t = 0; t < NUM_THREADS; t++) {
+        pthread_join(threads[t], nullptr);
+    }
 }
 
 void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, Vec3 &v3, Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, unsigned char* data, int texW, int texH, Light** lights, int nLights, bool* shadowMapBuffer, int shadowMapWidth, int shadowMapHeight, bool shadowCast) 
