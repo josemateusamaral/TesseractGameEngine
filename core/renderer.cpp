@@ -10,66 +10,110 @@ Renderer::~Renderer() {
     // Limpeza de recursos do renderer
 }
 
-void Renderer::render(Model *model, Window *window, Camera *camera) {
-    // Implementação da função de renderização
-    // Esta função deve transformar os vértices do modelo usando a câmera e desenhá-los na janela
+struct RenderThreadData {
+    Renderer* renderer;
+    Model* model;
+    Window* window;
+    Camera* camera;
 
-    model->calcular_pontos_3D();
+    int start;
+    int end;
+};
 
-    // project vertices
-    this->project(camera, model->pontos, model->projection, model->nVertices, model->screenSpaceBuffer, window->getHeight(), window->getWidth());
+void* renderWorker(void* arg)
+{
+    RenderThreadData* data = (RenderThreadData*)arg;
+
+    Renderer* renderer = data->renderer;
+    Model* model = data->model;
+    Window* window = data->window;
+    Camera* camera = data->camera;
 
     int R = 255, G = 255, B = 255;
     float angulo;
 
-    // camera vector
-    float origem[3] = {camera->getX(), camera->getY(), camera->getZ()};
-    float a[3] = {model->getX(), model->getY(), model->getZ()};
+    float origem[3] = {
+        camera->getX(),
+        camera->getY(),
+        camera->getZ()
+    };
+
+    float a[3] = {
+        model->getX(),
+        model->getY(),
+        model->getZ()
+    };
+
     Vec3 cam{origem, a};
 
-    // indexes
-    for (int i = 0; i < model->indexCount; i += 3)
+    for (int i = data->start; i < data->end; i += 3)
     {
-
         int i0 = model->indices[i];
         int i1 = model->indices[i + 1];
         int i2 = model->indices[i + 2];
 
-        // ignore polygons out off screen space
-        if(!model->screenSpaceBuffer[i0] && !model->screenSpaceBuffer[i1] && !model->screenSpaceBuffer[i2]) continue;
+        if(!model->screenSpaceBuffer[i0] &&
+           !model->screenSpaceBuffer[i1] &&
+           !model->screenSpaceBuffer[i2])
+            continue;
 
-        //polygon
-        Vec3 p0 = model->pontos[i0];
-        Vec3 p1 = model->pontos[i1];
-        Vec3 p2 = model->pontos[i2];
-        float b[3] = {model->pontos[i0].x, model->pontos[i0].y, model->pontos[i0].z};
-        float c[3] = {model->pontos[i1].x, model->pontos[i1].y, model->pontos[i1].z};
-        float d[3] = {model->pontos[i2].x, model->pontos[i2].y, model->pontos[i2].z};
+        float b[3] = {
+            model->pontos[i0].x,
+            model->pontos[i0].y,
+            model->pontos[i0].z
+        };
+
+        float c[3] = {
+            model->pontos[i1].x,
+            model->pontos[i1].y,
+            model->pontos[i1].z
+        };
+
+        float d[3] = {
+            model->pontos[i2].x,
+            model->pontos[i2].y,
+            model->pontos[i2].z
+        };
+
         Vec3 v1(b, c);
         Vec3 v2(b, d);
+
         Vec3 normal = v1.produto_vetorial(v2);
 
-        // backface culling
-        if (!(cam.angulo_entre_vetores(normal) > 90 || !model->backfaceCulling)) continue;
+        if (!(cam.angulo_entre_vetores(normal) > 90 ||
+              !model->backfaceCulling))
+            continue;
 
-        switch(model->renderType){
-
-            // WIREFRAME
+        switch(model->renderType)
+        {
             case 1:
-                this->drawLine(window, model->projection[i0], model->projection[i1]);
-                this->drawLine(window, model->projection[i1], model->projection[i2]);
-                this->drawLine(window, model->projection[i2], model->projection[i0]);
+                renderer->drawLine(window,
+                                   model->projection[i0],
+                                   model->projection[i1]);
+
+                renderer->drawLine(window,
+                                   model->projection[i1],
+                                   model->projection[i2]);
+
+                renderer->drawLine(window,
+                                   model->projection[i2],
+                                   model->projection[i0]);
                 break;
 
-            // SHADED
             case 2:
-        
+
                 if (model->shadowCast)
                 {
                     angulo = 90;
-                    R = model->corR - ((255.0 / 180.0) * angulo);
-                    G = model->corG - ((255.0 / 180.0) * angulo);
-                    B = model->corB - ((255.0 / 180.0) * angulo);
+
+                    R = model->corR -
+                        ((255.0f / 180.0f) * angulo);
+
+                    G = model->corG -
+                        ((255.0f / 180.0f) * angulo);
+
+                    B = model->corB -
+                        ((255.0f / 180.0f) * angulo);
                 }
                 else
                 {
@@ -78,49 +122,104 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
                     B = model->corB;
                 }
 
-                this->drawBlankPolygon(
+                renderer->drawBlankPolygon(
                     window,
                     model->projection[i0],
                     model->projection[i1],
                     model->projection[i2],
                     R, G, B
                 );
+
                 break;
 
-            // TEXTURED
             case 3:
-                this->drawTexturedPolygon(
-                    //window
+
+                renderer->drawTexturedPolygon(
                     window,
-                    //projections
+
                     model->projection[i0],
                     model->projection[i1],
                     model->projection[i2],
-                    //vertices
+
                     model->pontos[i0],
                     model->pontos[i1],
                     model->pontos[i2],
-                    //uvs
+
                     model->uvs[i0],
                     model->uvs[i1],
                     model->uvs[i2],
-                    //texture
+
                     (unsigned char*)model->diffuseTexture->data,
                     model->diffuseTexture->width,
                     model->diffuseTexture->height,
-                    //lights
+
                     model->lights,
                     model->nLights,
-                    //shadow map
+
                     model->shadowMapBuffer,
                     100,
                     100,
+
                     model->shadowCast
                 );
+
                 break;
         }
     }
 
+    return nullptr;
+}
+
+void Renderer::render(Model *model,Window *window,Camera *camera)
+{
+    model->calcular_pontos_3D();
+
+    this->project(
+        camera,
+        model->pontos,
+        model->projection,
+        model->nVertices,
+        model->screenSpaceBuffer,
+        window->getHeight(),
+        window->getWidth()
+    );
+
+    const int NUM_THREADS = 4;
+
+    pthread_t threads[NUM_THREADS];
+    RenderThreadData data[NUM_THREADS];
+
+    int triangles = model->indexCount / 3;
+    int trianglesPerThread = triangles / NUM_THREADS;
+
+    for(int t = 0; t < NUM_THREADS; t++)
+    {
+        int startTri = t * trianglesPerThread;
+
+        int endTri = (t == NUM_THREADS - 1)
+            ? triangles
+            : startTri + trianglesPerThread;
+
+        data[t].renderer = this;
+        data[t].model = model;
+        data[t].window = window;
+        data[t].camera = camera;
+
+        data[t].start = startTri * 3;
+        data[t].end   = endTri * 3;
+
+        pthread_create(
+            &threads[t],
+            nullptr,
+            renderWorker,
+            &data[t]
+        );
+    }
+
+    for(int t = 0; t < NUM_THREADS; t++)
+    {
+        pthread_join(threads[t], nullptr);
+    }
 }
 
 struct ProjectThreadData {
