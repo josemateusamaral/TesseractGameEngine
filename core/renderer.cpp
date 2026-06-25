@@ -26,6 +26,7 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
     Vec3 cam{origem, a};
 
     // indexes
+    #pragma omp parallel for schedule(static)
     for (int i = 0; i < model->indexCount; i += 3)
     {
 
