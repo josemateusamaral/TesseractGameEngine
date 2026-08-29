@@ -26,6 +26,7 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
     Vec3 cam{origem, a};
 
     // indexes
+    #pragma omp parallel for schedule(static)
     for (int i = 0; i < model->indexCount; i += 3)
     {
 
@@ -144,6 +145,7 @@ void Renderer::project(Camera *camera, Vec3* vertices, Vec3* projection, int nVe
     int centerX = bufferWidth / 2;
     int centerY = bufferHeight / 2;
 
+    #pragma omp parallel for schedule(static)
     for( int i = 0 ; i < nVertices ; i++ ){
         
         // transform to camera space
