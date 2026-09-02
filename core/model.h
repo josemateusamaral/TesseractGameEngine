@@ -17,7 +17,9 @@ class Model
         float scale = 1;
         Vec3 position;
         bool backfaceCulling = true;
-    
+
+        Vec3* camSpace; // no .h, junto dos outros buffers
+
         int polygonCount;
         unsigned int* indices = nullptr;
         unsigned int indexCount;

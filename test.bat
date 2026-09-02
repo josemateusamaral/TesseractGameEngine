@@ -1,13 +1,13 @@
 @echo off
 
-echo Limpando executavel...
+echo -- CLEANING --
 del test.exe 2>nul
 
-echo Gerando build...
+echo -- BUILDING --
 cmake -G "MinGW Makefiles"
 
-echo Compilando...
+echo -- COMPILING --
 mingw32-make
 
-echo Executando...
+echo -- EXECUTING --
 test.exe

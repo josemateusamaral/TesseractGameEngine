@@ -26,7 +26,6 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
     Vec3 cam{origem, a};
 
     // indexes
-    #pragma omp parallel for schedule(static)
     for (int i = 0; i < model->indexCount; i += 3)
     {
 
@@ -35,7 +34,10 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
         int i2 = model->indices[i + 2];
 
         // ignore polygons out off screen space
-        if(!model->screenSpaceBuffer[i0] && !model->screenSpaceBuffer[i1] && !model->screenSpaceBuffer[i2]) continue;
+        //if(!model->screenSpaceBuffer[i0] && !model->screenSpaceBuffer[i1] && !model->screenSpaceBuffer[i2]) continue;
+        // clip distance
+        if(model->projection[i0].z <= 0 || model->projection[i1].z <= 0 || model->projection[i2].z <= 0) continue;
+
 
         //polygon
         Vec3 p0 = model->pontos[i0];
@@ -49,7 +51,7 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
         Vec3 normal = v1.produto_vetorial(v2);
 
         // backface culling
-        if (!(cam.angulo_entre_vetores(normal) > 90 || !model->backfaceCulling)) continue;
+        //if (!(cam.angulo_entre_vetores(normal) > 90 || !model->backfaceCulling)) continue;
 
         switch(model->renderType){
 
@@ -145,7 +147,7 @@ void Renderer::project(Camera *camera, Vec3* vertices, Vec3* projection, int nVe
     int centerX = bufferWidth / 2;
     int centerY = bufferHeight / 2;
 
-    #pragma omp parallel for schedule(static)
+    #pragma omp parallel for simd
     for( int i = 0 ; i < nVertices ; i++ ){
         
         // transform to camera space
@@ -158,11 +160,13 @@ void Renderer::project(Camera *camera, Vec3* vertices, Vec3* projection, int nVe
         float dz = x * sinY + z * cosY;
         x = dx;
         z = dz;
+
         // pitch - x
         float dy = y * cosP - z * sinP;
         dz = y * sinP + z * cosP;
         y = dy;
         z = dz;
+
         // roll - z
         dx = x * cosR - y * sinR;
         dy = x * sinR + y * cosR;
@@ -176,10 +180,25 @@ void Renderer::project(Camera *camera, Vec3* vertices, Vec3* projection, int nVe
         projection[i].y = py * -1 + centerY;
         projection[i].z = z;
 
-        screenSpaceBuffer[i] = !((projection[i].x > bufferWidth || projection[i].x < 0 ) && ( projection[i].y > bufferHeight || projection[i].y < 0)) && z > 0.1;
+        screenSpaceBuffer[i] = !((projection[i].x > bufferWidth || projection[i].x < 0 ) && ( projection[i].y > bufferHeight || projection[i].y < 0));
     
     }
 
+}
+
+Vec3 Renderer::intersectPlane(Vec3 &p1, Vec3 &p2, Vec3 &uv1, Vec3 &uv2, Vec3 &outUV, float nearZ) {
+    float t = (nearZ - p1.z) / (p2.z - p1.z);
+    
+    Vec3 out;
+    out.x = p1.x + t * (p2.x - p1.x);
+    out.y = p1.y + t * (p2.y - p1.y);
+    out.z = nearZ; // Fixa sobre o plano da câmera
+    
+    // Interpola a textura para evitar distorção
+    outUV.x = uv1.x + t * (uv2.x - uv1.x);
+    outUV.y = uv1.y + t * (uv2.y - uv1.y);
+    
+    return out;
 }
 
 void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, Vec3 &v3, Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, unsigned char* data, int texW, int texH, Light** lights, int nLights, bool* shadowMapBuffer, int shadowMapWidth, int shadowMapHeight, bool shadowCast) 
@@ -234,10 +253,10 @@ void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3,
     if(maxRight >= window->getWidth()) maxRight = window->getWidth() - 1;
 
     // top left corner of the boundbox
-    float px = maxLeft; 
-    float py = topY; 
-    float sizeX = maxRight - maxLeft;
-    float sizeY = topY - bottomY;
+    int px = maxLeft; 
+    int py = topY; 
+    int sizeX = maxRight - maxLeft;
+    int sizeY = topY - bottomY;
 
     // calculate the area of the polygon
     float areaTotal = this->area(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
@@ -253,6 +272,7 @@ void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3,
     }
 
     // loop through the bounding box of the triangle
+    #pragma omp parallel for collapse(2) schedule(static)
     for(int x = 0; x < sizeX; x++) {
         for(int y = 0; y < sizeY; y++) {
 
@@ -266,7 +286,7 @@ void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3,
             float a3 = this->area(p1.x, p1.y, p2.x, p2.y, px_atual, py_atual);
 
             // verify if the the pixel is inside the polygon
-            if (abs(areaTotal - (a1 + a2 + a3)) < 0.01) {
+            if (abs(areaTotal - (a1 + a2 + a3)) < 0.5) {
                 
                 // baricentric weights
                 float w1 = a1 / areaTotal;
@@ -505,22 +525,6 @@ bool Renderer::isPixelInsidePolygon(int x1, int y1, int x2, int y2, int x3, int 
     return ( areaPoligono == triangulo1 + triangulo2 + triangulo3 );
 }
 
-/**
- * @brief calcular a area de um triangulo no R2
- * 
- * @param x1 int x do vertice 1
- * @param y1 int y do vertice 1
- * @param x2 int x do vertice 2
- * @param y2 int y do vertice 2
- * @param x3 int x do vertice 3
- * @param y3 int y do vertice 1
- * 
- * @author Jose Mateus Amaral
- */
-float Renderer::area(int x1, int y1, int x2, int y2, int x3, int y3)
-{
-    return abs((x1*(y2-y3) + x2*(y3-y1)+ x3*(y1-y2))/2.0);
-}
 
 
 
@@ -676,7 +680,7 @@ void Renderer::drawShadowMap(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, V
             float a3 = this->area(p1.x, p1.y, p2.x, p2.y, px_atual, py_atual);
 
             // verify if the the pixel is inside the polygon
-            if (abs(areaTotal - (a1 + a2 + a3)) < 0.01) {
+            if (abs(areaTotal - (a1 + a2 + a3)) < 0.5) {
                 
                 // baricentric weights
                 float w1 = a1 / areaTotal;

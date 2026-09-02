@@ -20,6 +20,13 @@ class GUIElement
         bool isSystemControlled = false;
         int width = 50;
         int height = 20;
+        int scale;
+        SDL_Surface* surface = nullptr;
+        TTF_Font* font = nullptr;
+
+        std::string text;
+        uint32_t textColor;
+        uint32_t backgroundColor;
 
         GUIElement();
         ~GUIElement();
@@ -33,10 +40,15 @@ class GUIElement
         Vec3 getPos();
         int getX();
         int getY();
+        void setTextColor(uint8_t r, uint8_t g, uint8_t b);
+        void setBackgroundColor(uint8_t r, uint8_t g, uint8_t b);
+        void setText(std::string text);
 
         virtual void render( uint32_t* colorBuffer, int bufferWidth, int bufferHeight) = 0;
         virtual void press() = 0;
         virtual void release() = 0;
+
+        
 
 
 };
@@ -65,15 +77,10 @@ class Text : public GUIElement
 {
     public:
 
-        SDL_Surface* surface = nullptr;
-        TTF_Font* font = nullptr;
-        int scale;
-
-        Text(const char* text, const char* fontPath = "core/assets/fonts/opensans.ttf");
+        Text(std::string text, const char* fontPath = "core/assets/fonts/opensans.ttf");
         ~Text();
         
         void render( uint32_t* colorBuffer, int bufferWidth, int bufferHeight);
-        void setText(const char* text);
         void press();
         void release();
 
@@ -83,14 +90,10 @@ class Button : public GUIElement
 {
     public:
 
-        SDL_Surface* surface = nullptr;
-        TTF_Font* font = nullptr;
-
-        Button(const char* text, const char* fontPath = "core/assets/fonts/opensans.ttf");
+        Button(std::string text, const char* fontPath = "core/assets/fonts/opensans.ttf");
         ~Button();
         
         void render( uint32_t* colorBuffer, int bufferWidth, int bufferHeight);
-        void setText(const char* text);
         void press();
         void release();
 

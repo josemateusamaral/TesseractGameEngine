@@ -44,13 +44,21 @@ Audio::Audio(const char* path)
 
 void Audio::play()
 {
-    position = 0;
-    playing = true;
+    this->position = 0;
+    this->playing = true;
+    this->looping = false;
+}
+
+void Audio::loop(){
+    this->position = 0;   
+    this->playing = true;
+    this->looping = true; 
 }
 
 void Audio::stop()
 {
-    playing = false;
+    this->playing = false;
+    this->looping = false;
 }
 
 void Audio::setPos(Vec3 *pos){
@@ -116,14 +124,37 @@ void AudioManager::audioCallback(void* userdata, Uint8* stream, int len)
     {
         Audio* audio = manager->audios[a];
         
+        if(!audio->playing)
+            continue;
+
         if(audio->pos != nullptr){
 
+            //calculate distance attenuation
             float dx = manager->camera->getX() - audio->pos->x;
             float dy = manager->camera->getY() - audio->pos->y;
             float dz = manager->camera->getZ() - audio->pos->z;
             float distance = sqrt(dx * dx + dy * dy + dz * dz);
-            distance = distance > 100 ? 100 : distance;
 
+            float distanceAttenuation = 1.0f;
+
+            if (distance <= audio->minDistance)
+            {
+                distanceAttenuation = 1.0f;
+            }
+            else if (distance >= audio->maxDistance)
+            {
+                distanceAttenuation = 0.0f;
+            }
+            else
+            {
+                float t =
+                    (distance - audio->minDistance) /
+                    (audio->maxDistance - audio->minDistance);
+
+                distanceAttenuation = 1.0f - pow(t, audio->distanceAttenuationFactor);
+            }
+
+            //calculate audio direction
             Vec3 soundDir(
                 audio->pos->x - manager->camera->getX(),
                 audio->pos->y - manager->camera->getY(),
@@ -140,20 +171,25 @@ void AudioManager::audioCallback(void* userdata, Uint8* stream, int len)
             if(pan < -1.0f) pan = -1.0f;
             if(pan > 1.0f)  pan = 1.0f;
 
-            audio->volumeLeft  = (1.0f + pan) * 0.5f;
-            audio->volumeRight = (1.0f - pan) * 0.5f;
+            audio->volumeLeft  = (((1.0f + pan) * 0.5f) * audio->volume) * distanceAttenuation;
+            audio->volumeRight = (((1.0f - pan) * 0.5f) * audio->volume) * distanceAttenuation;
 
+        } else {
+            audio->volumeLeft  = 1 * audio->volume;
+            audio->volumeRight = 1 * audio->volume;
         }
-
-        if(!audio->playing)
-            continue;
 
         for(int i = 0; i < sampleCount; i += 2)
         {
             if(audio->position >= audio->sampleCount)
             {
-                audio->playing = false;
-                break;
+                if(audio->looping){
+                    audio->position = 0;
+                    printf("looping...");
+                }else{
+                    audio->playing = false;
+                    break;
+                }
             }
  
             out[i] += audio->samples[audio->position++] * audio->volumeLeft;

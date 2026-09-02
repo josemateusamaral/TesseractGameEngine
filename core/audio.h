@@ -15,13 +15,19 @@ class Audio {
 
         float volumeLeft = 1.0f;
         float volumeRight = 1.0f;
+        float volume = 1.0f;
+        float minDistance = 2.0f;
+        float maxDistance = 100.f;
+        float distanceAttenuationFactor = 1.0f;
 
         bool playing = false;
+        bool looping = false;
 
         Audio(const char* path);
         ~Audio();
 
         void play();
+        void loop();
         void stop();
 
         void setPos(Vec3 *pos);
@@ -39,6 +45,7 @@ class AudioManager
 
         int nAudios = 0;
         int maxNAudios = 100;
+        float volume = 1.0;
 
         Audio **audios;
 

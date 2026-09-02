@@ -1,18 +1,7 @@
 #include "gui.h"
 #include <SDL2/SDL_ttf.h>
 
-GUI::GUI()
-{
 
-    TTF_Init();
-    this->elements = new GUIElement*[this->nMaxElements];
-
-}
-
-GUI::~GUI()
-{
-
-}
 
 GUIElement::GUIElement()
 {
@@ -60,7 +49,75 @@ int GUIElement::getY(){
     return this->pos.y;
 }
 
+void GUIElement::setTextColor(uint8_t r, uint8_t g, uint8_t b){
+    this->textColor = (255 << 24) | (r << 16) | (g << 8) | b;
+    this->setText(this->text);
+}
 
+void GUIElement::setBackgroundColor(uint8_t r, uint8_t g, uint8_t b){
+    this->backgroundColor = (255 << 24) | (r << 16) | (g << 8) | b;
+    this->setText(this->text);
+}
+
+void GUIElement::setText(std::string text)
+{
+
+    this->text = text;
+
+    if (surface)
+    {
+        SDL_FreeSurface(surface);
+        surface = nullptr;
+    }
+
+    SDL_Color cor = {
+        (Uint8)((this->textColor >> 16) & 0xFF), // R
+        (Uint8)((this->textColor >> 8) & 0xFF),  // G
+        (Uint8)(this->textColor & 0xFF),         // B
+        255 
+    };
+
+    SDL_Surface* temp =
+        TTF_RenderUTF8_Blended(
+            font,
+            text.c_str(),
+            cor
+        );
+
+    if (!temp)
+    {
+        printf("Erro surface texto: %s\n", TTF_GetError());
+        return;
+    }
+
+    surface = SDL_ConvertSurfaceFormat(
+        temp,
+        SDL_PIXELFORMAT_ARGB8888,
+        0
+    );
+
+    SDL_FreeSurface(temp);
+
+    width = surface->w;
+    height = surface->h;
+}
+
+
+
+
+
+GUI::GUI()
+{
+
+    TTF_Init();
+    this->elements = new GUIElement*[this->nMaxElements];
+
+}
+
+GUI::~GUI()
+{
+
+}
 
 void GUI::addElement(GUIElement* element)
 {
@@ -99,10 +156,17 @@ void GUI::processMouseRelease(string button, int x, int y){
 
 
 
-Text::Text(const char* text, const char* fontPath)
+
+
+
+Text::Text(std::string text, const char* fontPath)
 {
 
+    this->text = text;
+
     font = TTF_OpenFont(fontPath, 24);
+    setTextColor(255,255,255);
+    setBackgroundColor(0,0,0);
 
     if (!font)
     {
@@ -119,47 +183,13 @@ Text::~Text()
     SDL_FreeSurface(surface);
 }
 
-void Text::setText(const char* text)
-{
-    if (surface)
-    {
-        SDL_FreeSurface(surface);
-        surface = nullptr;
-    }
-
-    SDL_Color cor = {255,255,255,255};
-
-    SDL_Surface* temp =
-        TTF_RenderUTF8_Blended(
-            font,
-            text,
-            cor
-        );
-
-    if (!temp)
-    {
-        printf("Erro surface texto: %s\n", TTF_GetError());
-        return;
-    }
-
-    surface = SDL_ConvertSurfaceFormat(
-        temp,
-        SDL_PIXELFORMAT_ARGB8888,
-        0
-    );
-
-    SDL_FreeSurface(temp);
-
-    width = surface->w;
-    height = surface->h;
-}
-
 void Text::render( uint32_t* colorBuffer, int bufferWidth, int bufferHeight)
 {
     uint32_t* pixels = (uint32_t*)this->surface->pixels;
 
     for (int y = 0; y < this->height; y++)
     {
+        #pragma omp parallel for schedule(static)
         for (int x = 0; x < this->width; x++)
         {
             int screenX = this->getX() + x;
@@ -200,10 +230,14 @@ void Text::release(){
 
 
 
-Button::Button(const char* text, const char* fontPath)
+
+
+Button::Button(std::string text, const char* fontPath)
 {
 
     font = TTF_OpenFont(fontPath, 24);
+    this->setTextColor(255,255,255);
+    this->setBackgroundColor(0,0,0);
 
     if (!font)
     {
@@ -220,47 +254,13 @@ Button::~Button()
     SDL_FreeSurface(surface);
 }
 
-void Button::setText(const char* text)
-{
-    if (surface)
-    {
-        SDL_FreeSurface(surface);
-        surface = nullptr;
-    }
-
-    SDL_Color cor = {255,255,255,255};
-
-    SDL_Surface* temp =
-        TTF_RenderUTF8_Blended(
-            font,
-            text,
-            cor
-        );
-
-    if (!temp)
-    {
-        printf("Erro surface texto: %s\n", TTF_GetError());
-        return;
-    }
-
-    surface = SDL_ConvertSurfaceFormat(
-        temp,
-        SDL_PIXELFORMAT_ARGB8888,
-        0
-    );
-
-    SDL_FreeSurface(temp);
-
-    width = surface->w;
-    height = surface->h;
-}
-
 void Button::render( uint32_t* colorBuffer, int bufferWidth, int bufferHeight)
 {
     uint32_t* pixels = (uint32_t*)this->surface->pixels;
 
     for (int y = 0; y < this->height; y++)
     {
+        #pragma omp parallel for schedule(static)
         for (int x = 0; x < this->width; x++)
         {
             int screenX = this->getX() + x;
@@ -293,7 +293,7 @@ void Button::render( uint32_t* colorBuffer, int bufferWidth, int bufferHeight)
                 }else{
                     colorBuffer[
                         screenY * bufferWidth + screenX
-                    ] = (150 << 24) | (150 << 16) | (150 << 8) | 150;
+                    ] = this->backgroundColor;
                 }
                 
             }
