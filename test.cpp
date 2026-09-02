@@ -32,10 +32,10 @@ int main(int argc, char *args[])
 	DirectionalLight* directionalLight = new DirectionalLight(0.6,0.6,0.6,0,0,-1);
 
 	//create audio3D
-	//Audio *audio = new Audio("samples/audio_loading/birds.wav");
-	//audio->setPos(new Vec3( 0, -6, 30));
-	//engine.audio->addElement(audio);
-	//audio->loop();
+	Audio *audio = new Audio("samples/audio_loading/birds.wav");
+	audio->setPos(new Vec3( 0, -6, 30));
+	engine.audio->addElement(audio);
+	audio->loop();
 	//
 	////audio placeholder
 	//Model* model = new Model("samples/model_loading/radio.glb");
@@ -75,7 +75,21 @@ int main(int argc, char *args[])
 		engine.exit();
 	});
 	engine.input->bindKey("w", "press", [&engine]() {
-		engine.camera->setZ(engine.camera->getZ() + 1);
+
+		float speed = 1.0f;
+
+		float h = engine.camera->hpr.y * M_PI / 180.0f * -1.0f;
+
+		float dx = sin(h);
+		float dy = cos(h);
+
+		engine.camera->setX(
+			engine.camera->getX() + dx * speed
+		);
+
+		engine.camera->setZ(
+			engine.camera->getZ() + dy * speed
+		);
 	});
 	engine.input->bindKey("a", "press", [&engine]() {
 		engine.camera->setX(engine.camera->getX() + 1);
