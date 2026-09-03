@@ -43,101 +43,55 @@ void Model::loadModel(string path)
     printf("\nLoading model: %s\n",path.c_str());
 
     Assimp::Importer importer;
-
-    const aiScene* scene = importer.ReadFile(
-        path,
-        aiProcess_Triangulate |
-        aiProcess_FlipUVs
-    );
-
-    if (!scene ||
-        scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
-        !scene->mRootNode)
+    const aiScene* scene = importer.ReadFile(path,aiProcess_Triangulate |aiProcess_FlipUVs);
+    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
-        std::cout << "Assimp Error: "
-                  << importer.GetErrorString()
-                  << std::endl;
+        std::cout << "Assimp Error: " << importer.GetErrorString() << std::endl;
         return;
     }
 
     if (scene->mNumMeshes == 0)
     {
-        std::cout << "Error: The model has no meshs!"
-                  << std::endl;
+        std::cout << "Error: The model has no meshs!"<< std::endl;
         return;
     }
 
-    printf(
-        "Meshs found: %d\n",
-        scene->mNumMeshes
-    );
+    printf("Meshs found: %d\n",scene->mNumMeshes);
 
-
-    // =========================================================
-    // CALCULAR QUANTIDADE TOTAL DE VERTICES E FACES
-    // =========================================================
-
+    //calculate vertices amount
     unsigned int totalVertices = 0;
     unsigned int totalFaces = 0;
-
     for (unsigned int m = 0; m < scene->mNumMeshes; m++)
     {
         aiMesh* mesh = scene->mMeshes[m];
-
         totalVertices += mesh->mNumVertices;
         totalFaces += mesh->mNumFaces;
     }
 
-
-    // =========================================================
-    // ALOCAR ARRAYS
-    // =========================================================
-
+    //allocate buffers
     this->nVertices = totalVertices;
-
     this->vertices = new Vec3[nVertices];
     this->projection = new Vec3[nVertices];
     this->screenSpaceBuffer = new bool[nVertices];
     this->pontos = new Vec3[nVertices];
     this->uvs = new Vec3[nVertices];
-
     this->polygonCount = totalFaces;
 
-
-    // =========================================================
-    // ÍNDICES
-    // =========================================================
-
+    //indexes
     this->indexCount = totalFaces * 3;
-
     this->indices = new unsigned int[indexCount];
 
-
-    // =========================================================
-    // CARREGAR TODAS AS MESHES
-    // =========================================================
-
+    //load all mashes
     unsigned int vertexOffset = 0;
     unsigned int indexOffset = 0;
-
 
     for (unsigned int m = 0; m < scene->mNumMeshes; m++)
     {
 
         aiMesh* mesh = scene->mMeshes[m];
+        printf("Loading mesh %d: %d vertices, %d faces\n",m,mesh->mNumVertices,mesh->mNumFaces);
 
-        printf(
-            "Loading mesh %d: %d vertices, %d faces\n",
-            m,
-            mesh->mNumVertices,
-            mesh->mNumFaces
-        );
-
-
-        // =====================================================
-        // VERTICES
-        // =====================================================
-
+        //load vertices and uvs
         for (unsigned int i = 0; i < mesh->mNumVertices; i++)
         {
             this->vertices[vertexOffset + i] = Vec3(
@@ -146,13 +100,9 @@ void Model::loadModel(string path)
                 mesh->mVertices[i].z
             );
 
-
-            this->projection[vertexOffset + i] =
-                Vec3(0.0f, 0.0f, 0.0f);
-
+            this->projection[vertexOffset + i] = Vec3(0.0f, 0.0f, 0.0f);
 
             // UV
-
             if (mesh->mTextureCoords[0])
             {
                 this->uvs[vertexOffset + i] = Vec3(
@@ -163,16 +113,11 @@ void Model::loadModel(string path)
             }
             else
             {
-                this->uvs[vertexOffset + i] =
-                    Vec3(0.0f, 0.0f, 0.0f);
+                this->uvs[vertexOffset + i] = Vec3(0.0f, 0.0f, 0.0f);
             }
         }
 
-
-        // =====================================================
-        // ÍNDICES
-        // =====================================================
-
+        //load indices
         for (unsigned int i = 0; i < mesh->mNumFaces; i++)
         {
             aiFace face = mesh->mFaces[i];
@@ -180,130 +125,58 @@ void Model::loadModel(string path)
             if (face.mNumIndices != 3)
                 continue;
 
-
-            this->indices[indexOffset++] =
-                face.mIndices[0] + vertexOffset;
-
-            this->indices[indexOffset++] =
-                face.mIndices[1] + vertexOffset;
-
-            this->indices[indexOffset++] =
-                face.mIndices[2] + vertexOffset;
+            this->indices[indexOffset++] = face.mIndices[0] + vertexOffset;
+            this->indices[indexOffset++] = face.mIndices[1] + vertexOffset;
+            this->indices[indexOffset++] =face.mIndices[2] + vertexOffset;
         }
 
-
-        // Próxima mesh começa depois dos vértices atuais
         vertexOffset += mesh->mNumVertices;
     }
 
 
-    // =========================================================
-    // TEXTURA
-    // =========================================================
-
-    // Por enquanto pegamos a textura da primeira mesh.
-    // Isso mantém o funcionamento do seu sistema atual.
-
+    //load texture
     aiMesh* firstMesh = scene->mMeshes[0];
 
     if (scene->mNumMaterials > 0)
     {
-        aiMaterial* material =
-            scene->mMaterials[firstMesh->mMaterialIndex];
-
+        aiMaterial* material = scene->mMaterials[firstMesh->mMaterialIndex];
         aiString str;
 
-        if (material->GetTexture(
-                aiTextureType_DIFFUSE,
-                0,
-                &str
-            ) == AI_SUCCESS)
-        {
-            int width;
-            int height;
-            int nrChannels;
+        if (material->GetTexture(aiTextureType_DIFFUSE,0,&str) == AI_SUCCESS){
 
+            int width, height, nrChannels;
             unsigned char* data = nullptr;
+            const aiTexture* embeddedTexture = scene->GetEmbeddedTexture(str.C_Str());
 
-            const aiTexture* embeddedTexture =
-                scene->GetEmbeddedTexture(str.C_Str());
-
-
-            // =============================================
-            // TEXTURA EMBUTIDA
-            // =============================================
-
-            if (embeddedTexture)
-            {
-                if (embeddedTexture->mHeight == 0)
-                {
+            //embedded texture
+            if (embeddedTexture){
+                if (embeddedTexture->mHeight == 0){
                     data = stbi_load_from_memory(
-                        reinterpret_cast<unsigned char*>(
-                            embeddedTexture->pcData
-                        ),
+                        reinterpret_cast<unsigned char*>(embeddedTexture->pcData),
                         embeddedTexture->mWidth,
-                        &width,
-                        &height,
-                        &nrChannels,
-                        3
+                        &width,&height,&nrChannels,3
                     );
                 }
             }
 
-
-            // =============================================
-            // TEXTURA EXTERNA
-            // =============================================
-
-            else
-            {
-                string directory =
-                    path.substr(
-                        0,
-                        path.find_last_of('/')
-                    );
-
-                string texPath =
-                    directory + "/" + string(str.C_Str());
-
-                data = stbi_load(
-                    texPath.c_str(),
-                    &width,
-                    &height,
-                    &nrChannels,
-                    3
-                );
+            //external texture
+            else{
+                string directory = path.substr(0,path.find_last_of('/'));
+                string texPath = directory + "/" + string(str.C_Str());
+                data = stbi_load(texPath.c_str(),&width,&height,&nrChannels,3);
             }
 
-
-            if (data)
-            {
-                this->diffuseTexture =
-                    new Texture(
-                        (unsigned char*)data,
-                        width,
-                        height
-                    );
-
-                printf(
-                    "(%dx%d) difusseTexture loaded\n",
-                    width,
-                    height
-                );
+            if (data){
+                this->diffuseTexture = new Texture((unsigned char*)data, width, height);
+                printf("(%dx%d) difusseTexture loaded\n",width,height);
             }
-            else
-            {
-                printf(
-                    "Error loading texture: %s\n",
-                    stbi_failure_reason()
-                );
+            else{
+                printf("Error loading texture: %s\n",stbi_failure_reason());
             }
         }
         else
         {
-            printf(
-                "Warning: No texture found.\n"
-            );
+            printf("Warning: No texture found.\n");
         }
     }
 
