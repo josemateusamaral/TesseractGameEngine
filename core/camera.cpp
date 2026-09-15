@@ -18,6 +18,38 @@ Camera::Camera()
     hpr = Vec3(0,0,0);
 }
 
+void Camera::moveFront(float distance) {
+    float h = hpr.y * M_PI / 180.0f * -1.0f;
+    float dx = sin(h);
+    float dy = cos(h);
+    posicao.x += dx * distance;
+    posicao.z += dy * distance;
+}
+
+void Camera::moveBack(float distance) {
+    float h = hpr.y * M_PI / 180.0f * -1.0f;
+    float dx = sin(h);
+    float dy = cos(h);
+    posicao.x -= dx * distance;
+    posicao.z -= dy * distance;
+}
+
+void Camera::moveLeft(float distance) {
+    float h = hpr.y * M_PI / 180.0f * -1.0f;
+    float dx = cos(h);
+    float dz = -sin(h);
+    posicao.x += dx * distance;
+    posicao.z += dz * distance;
+}
+
+void Camera::moveRight(float distance) {
+    float h = hpr.y * M_PI / 180.0f * -1.0f;
+    float dx = -cos(h);
+    float dz = sin(h);
+    posicao.x += dx * distance;
+    posicao.z += dz * distance;
+}
+
 void Camera::setPos(Vec3 pos){
     this->posicao = pos;
 }

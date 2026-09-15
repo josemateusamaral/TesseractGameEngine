@@ -9,20 +9,19 @@ Renderer::~Renderer() {
 }
 
 void Renderer::render(Model *model, Window *window, Camera *camera) {
-    // Implementação da função de renderização
-    // Esta função deve transformar os vértices do modelo usando a câmera e desenhá-los na janela
-
-    model->calcular_pontos_3D();
 
     // project vertices
-    this->project(camera, model->pontos, model->projection, model->nVertices, model->screenSpaceBuffer, window->getHeight(), window->getWidth());
+    this->project(camera, model, window->getHeight(), window->getWidth());
 
-    int R = 255, G = 255, B = 255;
-    float angulo;
+    //model data
+    float mx = model->getX();
+    float my = model->getY();
+    float mz = model->getZ();
+    float sm = model->getScale();
 
     // camera vector
     float origem[3] = {camera->getX(), camera->getY(), camera->getZ()};
-    float a[3] = {model->getX(), model->getY(), model->getZ()};
+    float a[3] = {mx, my, mz};
     Vec3 cam{origem, a};
 
     // indexes
@@ -32,99 +31,78 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
         int i0 = model->indices[i];
         int i1 = model->indices[i + 1];
         int i2 = model->indices[i + 2];
-
-        // ignore polygons out off screen space
-        //if(!model->screenSpaceBuffer[i0] && !model->screenSpaceBuffer[i1] && !model->screenSpaceBuffer[i2]) continue;
+        
         // clip distance
         if(model->projection[i0].z <= 0 || model->projection[i1].z <= 0 || model->projection[i2].z <= 0) continue;
 
-
         //polygon
-        Vec3 p0 = model->pontos[i0];
-        Vec3 p1 = model->pontos[i1];
-        Vec3 p2 = model->pontos[i2];
-        float b[3] = {model->pontos[i0].x, model->pontos[i0].y, model->pontos[i0].z};
-        float c[3] = {model->pontos[i1].x, model->pontos[i1].y, model->pontos[i1].z};
-        float d[3] = {model->pontos[i2].x, model->pontos[i2].y, model->pontos[i2].z};
-        Vec3 v1(b, c);
-        Vec3 v2(b, d);
-        Vec3 normal = v1.produto_vetorial(v2);
+        Vec3 v0 = model->vertices[i0];
+        v0.x = mx + (v0.x * sm);
+        v0.y = my + (v0.y * sm);
+        v0.z = mz + (v0.z * sm);
+        Vec3 v1 = model->vertices[i1];
+        v1.x = mx + (v1.x * sm);
+        v1.y = my + (v1.y * sm);
+        v1.z = mz + (v1.z * sm);
+        Vec3 v2 = model->vertices[i2];
+        v2.x = mx + (v2.x * sm);
+        v2.y = my + (v2.y * sm);
+        v2.z = mz + (v2.z * sm);
+
+        //calculate camera vector
+        float b[3] = {v0.x, v0.y, v0.z};
+        float c[3] = {v1.x, v1.y, v1.z};
+        float d[3] = {v2.x, v2.y, v2.z};
+        Vec3 vector1(b, c);
+        Vec3 vector2(b, d);
+        Vec3 normal = vector1.produto_vetorial(vector2);
 
         // backface culling
-        //if (!(cam.angulo_entre_vetores(normal) > 90 || !model->backfaceCulling)) continue;
-
-        switch(model->renderType){
-
-            // WIREFRAME
-            case 1:
-                this->drawLine(window, model->projection[i0], model->projection[i1]);
-                this->drawLine(window, model->projection[i1], model->projection[i2]);
-                this->drawLine(window, model->projection[i2], model->projection[i0]);
-                break;
-
-            // SHADED
-            case 2:
-        
-                if (model->shadowCast)
-                {
-                    angulo = 90;
-                    R = model->corR - ((255.0 / 180.0) * angulo);
-                    G = model->corG - ((255.0 / 180.0) * angulo);
-                    B = model->corB - ((255.0 / 180.0) * angulo);
-                }
-                else
-                {
-                    R = model->corR;
-                    G = model->corG;
-                    B = model->corB;
-                }
-
-                this->drawBlankPolygon(
-                    window,
-                    model->projection[i0],
-                    model->projection[i1],
-                    model->projection[i2],
-                    R, G, B
-                );
-                break;
-
-            // TEXTURED
-            case 3:
-                this->drawTexturedPolygon(
-                    //window
-                    window,
-                    //projections
-                    model->projection[i0],
-                    model->projection[i1],
-                    model->projection[i2],
-                    //vertices
-                    model->pontos[i0],
-                    model->pontos[i1],
-                    model->pontos[i2],
-                    //uvs
-                    model->uvs[i0],
-                    model->uvs[i1],
-                    model->uvs[i2],
-                    //texture
-                    (unsigned char*)model->diffuseTexture->data,
-                    model->diffuseTexture->width,
-                    model->diffuseTexture->height,
-                    //lights
-                    model->lights,
-                    model->nLights,
-                    //shadow map
-                    model->shadowMapBuffer,
-                    100,
-                    100,
-                    model->shadowCast
-                );
-                break;
-        }
+        if (!(cam.angulo_entre_vetores(normal) > 90 || !model->backfaceCulling)) continue;
+    
+        this->drawTexturedPolygon(
+            //window
+            window,
+            //projections
+            model->projection[i0],
+            model->projection[i1],
+            model->projection[i2],
+            //vertices
+            v0,
+            v1,
+            v2,
+            //uvs
+            model->uvs[i0],
+            model->uvs[i1],
+            model->uvs[i2],
+            //texture
+            (unsigned char*)model->diffuseTexture->data,
+            model->diffuseTexture->width,
+            model->diffuseTexture->height,
+            //lights
+            model->lights,
+            model->nLights,
+            //shadow map
+            model->shadowMapBuffer,
+            100,//height
+            100,//width
+            model->shadowCast
+        );
     }
 
 }
 
-void Renderer::project(Camera *camera, Vec3* vertices, Vec3* projection, int nVertices, bool* screenSpaceBuffer, int bufferHeight, int bufferWidth){
+void Renderer::project(Camera *camera, Model* model, int bufferHeight, int bufferWidth){
+
+    //model data
+    Vec3* vertices = model->vertices;
+    Vec3* projection = model->projection;
+    int nVertices = model->nVertices;
+    bool* screenSpaceBuffer = model->screenSpaceBuffer;
+    float mx = model->getX();
+    float my = model->getY();
+    float mz = model->getZ();
+    float sm = model->getScale();
 
     // camera inverse rotation
     float pitch = -camera->hpr.x * M_PI / 180.0;
@@ -151,9 +129,9 @@ void Renderer::project(Camera *camera, Vec3* vertices, Vec3* projection, int nVe
     for( int i = 0 ; i < nVertices ; i++ ){
         
         // transform to camera space
-        float x = vertices[i].x - cx;
-        float y = vertices[i].y - cy;
-        float z = vertices[i].z - cz;
+        float x = ((vertices[i].x * sm) + mx) - cx;
+        float y = ((vertices[i].y * sm) + my) - cy;
+        float z = ((vertices[i].z * sm) + mz) - cz;
 
         // yaw - y
         float dx = x * cosY - z * sinY;
@@ -180,25 +158,9 @@ void Renderer::project(Camera *camera, Vec3* vertices, Vec3* projection, int nVe
         projection[i].y = py * -1 + centerY;
         projection[i].z = z;
 
-        screenSpaceBuffer[i] = !((projection[i].x > bufferWidth || projection[i].x < 0 ) && ( projection[i].y > bufferHeight || projection[i].y < 0));
-    
+        screenSpaceBuffer[i] = projection[i].x >= 0 && projection[i].x < bufferWidth && projection[i].y >= 0 && projection[i].y < bufferHeight;    
     }
 
-}
-
-Vec3 Renderer::intersectPlane(Vec3 &p1, Vec3 &p2, Vec3 &uv1, Vec3 &uv2, Vec3 &outUV, float nearZ) {
-    float t = (nearZ - p1.z) / (p2.z - p1.z);
-    
-    Vec3 out;
-    out.x = p1.x + t * (p2.x - p1.x);
-    out.y = p1.y + t * (p2.y - p1.y);
-    out.z = nearZ; // Fixa sobre o plano da câmera
-    
-    // Interpola a textura para evitar distorção
-    outUV.x = uv1.x + t * (uv2.x - uv1.x);
-    outUV.y = uv1.y + t * (uv2.y - uv1.y);
-    
-    return out;
 }
 
 void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, Vec3 &v3, Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, unsigned char* data, int texW, int texH, Light** lights, int nLights, bool* shadowMapBuffer, int shadowMapWidth, int shadowMapHeight, bool shadowCast) 
@@ -207,10 +169,10 @@ void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3,
     // polygon boundbox
     int topY,bottomY,maxLeft,maxRight;
     // top
-    if(p1.y > p2.y && p1.y > p3.y){
+    if(p1.y >= p2.y && p1.y >= p3.y){
         topY = p1.y;
     }
-    else if(p2.y > p1.y && p2.y > p3.y){
+    else if(p2.y >= p1.y && p2.y >= p3.y){
         topY = p2.y;
     }
     else{
@@ -218,10 +180,10 @@ void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3,
     }
     if(topY >= window->getHeight()) topY = window->getHeight() - 1;
     // bottom
-    if(p1.y < p2.y && p1.y < p3.y){
+    if(p1.y <= p2.y && p1.y <= p3.y){
         bottomY = p1.y;
     }
-    else if(p2.y < p1.y && p2.y < p3.y){
+    else if(p2.y <= p1.y && p2.y <= p3.y){
         bottomY = p2.y;
     }
     else{
@@ -229,10 +191,10 @@ void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3,
     }
     if(bottomY < 0) bottomY = 0;
     // left
-    if(p1.x < p2.x && p1.x < p3.x){
+    if(p1.x <= p2.x && p1.x <= p3.x){
         maxLeft = p1.x;
     }
-    else if(p2.x < p1.x && p2.x < p3.x){
+    else if(p2.x <= p1.x && p2.x <= p3.x){
         maxLeft = p2.x;
     }
     else{
@@ -241,10 +203,10 @@ void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3,
     if(maxLeft < 0) maxLeft = 0;
 
     // right
-    if(p1.x > p2.x && p1.x > p3.x){
+    if(p1.x >= p2.x && p1.x >= p3.x){
         maxRight = p1.x;
     }
-    else if(p2.x > p1.x && p2.x > p3.x){
+    else if(p2.x >= p1.x && p2.x >= p3.x){
         maxRight = p2.x;
     }
     else{
@@ -254,7 +216,7 @@ void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3,
 
     // top left corner of the boundbox
     int px = maxLeft; 
-    int py = topY; 
+    int py = topY;  
     int sizeX = maxRight - maxLeft;
     int sizeY = topY - bottomY;
 
@@ -280,13 +242,13 @@ void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3,
             int px_atual = px + x;
             int py_atual = py - y;
 
-            // test area
+            //test area
             float a1 = this->area(px_atual, py_atual, p2.x, p2.y, p3.x, p3.y);
             float a2 = this->area(p1.x, p1.y, px_atual, py_atual, p3.x, p3.y);
             float a3 = this->area(p1.x, p1.y, p2.x, p2.y, px_atual, py_atual);
 
             // verify if the the pixel is inside the polygon
-            if (abs(areaTotal - (a1 + a2 + a3)) < 0.5) {
+            if (abs(areaTotal - (a1 + a2 + a3)) < 0.1) {
                 
                 // baricentric weights
                 float w1 = a1 / areaTotal;
@@ -380,155 +342,6 @@ void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3,
     }
 }
 
-/**
- * @brief Draw line between two points
- * 
- * @param v1 ponto v1 
- * @param v2 ponto v2
- * @param r componente vermelho da cor
- * @param g componente verde da cor
- * @param b componente azul da cor
- * 
- * @author Henrique Heiderscheidt
- */
-void Renderer::drawLine(Window* window, Vec3 &v1, Vec3 &v2)
-{
-    SDL_SetRenderDrawColor(window->renderer,255,255,255,SDL_ALPHA_OPAQUE);
-    SDL_RenderDrawLine(window->renderer, v1.x,v1.y,v2.x,v2.y);
-}
-
-/**
- * @brief Draw line between two points with a specific color
- * 
- * @param v1 ponto v1 
- * @param v2 ponto v2
- * @param r componente vermelho da cor
- * @param g componente verde da cor
- * @param b componente azul da cor
- * 
- * @author Henrique Heiderscheidt, Jose Mateus Amaral
- */
-void Renderer::drawLine(Window* window, Vec3 &v1, Vec3 &v2, int r, int g, int b)
-{
-    SDL_SetRenderDrawColor(window->renderer,r,g,b,SDL_ALPHA_OPAQUE);
-    SDL_RenderDrawLine(window->renderer, v1.x,v1.y,v2.x,v2.y);
-}
-
-
-/**
- * @brief Draw polygon between three points with a specific color
- * 
- * @param p1 Ponto 1
- * @param p2 Ponto 2
- * @param p3 Ponto 3
- * @param r Gradiente Vermelho
- * @param g Gradiente Verde
- * @param b Gradiente Azul
- * 
- * @author Jose Mateus Amaral
- */
-void Renderer::drawBlankPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3,int r, int g, int b){
-
-    // polygon boundbox
-    float topY,bottomY,maxLeft,maxRight;
-    //top
-    if(p1.y > p2.y && p1.y > p3.y){
-        topY = p1.y;
-    }
-    else if(p2.y > p1.y && p2.y > p3.y){
-        topY = p2.y;
-    }
-    else{
-        topY = p3.y;
-    }
-    //bottom
-    if(p1.y < p2.y && p1.y < p3.y){
-        bottomY = p1.y;
-    }
-    else if(p2.y < p1.y && p2.y < p3.y){
-        bottomY = p2.y;
-    }
-    else{
-        bottomY = p3.y;
-    }
-    //left
-    if(p1.x < p2.x && p1.x < p3.x){
-        maxLeft = p1.x;
-    }
-    else if(p2.x < p1.x && p2.x < p3.x){
-        maxLeft = p2.x;
-    }
-    else{
-        maxLeft = p3.x;
-    }
-    //right
-    if(p1.x > p2.x && p1.x > p3.x){
-        maxRight = p1.x;
-    }
-    else if(p2.x > p1.x && p2.x > p3.x){
-        maxRight = p2.x;
-    }
-    else{
-        maxRight = p3.x;
-    }
-
-    // top left corner of the boundbox
-    float px = maxLeft; 
-    float py = topY;
-    float sizeX = maxRight - maxLeft;
-    float sizeY = topY - bottomY;
-
-    // set polygon color
-    SDL_SetRenderDrawColor(window->renderer,r,g,b,255);
-
-    // loop through the pixels of the boundbox and check if they are inside the polygon
-    for( int x = 0 ; x < sizeX ; x++ ){
-        for( int y = 0 ; y < sizeY ; y++ ){
-            if(this->isPixelInsidePolygon(p1.x,p1.y,p2.x,p2.y,p3.x,p3.y,px+x,py-y)){
-                SDL_RenderDrawPoint(window->renderer,px + x,py - y);
-            }
-        }
-    }
-}
-
-/**
- * @brief Verifica se o ponto está dentro do poligono
- * 
- * @param x1 x1 poligono
- * @param y1 y1 poligono
- * @param x2 x2 poligono
- * @param y2 y2 poligono
- * @param x3 x3 poligono
- * @param y3 y3 poligono
- * @param x Posição x do ponto
- * @param y Posição y do ponto
- * @return true Se está dentro do poligono
- * @return false Se está fora do poligono
- * 
- * @author Jose Mateus Amaral
- */
-bool Renderer::isPixelInsidePolygon(int x1, int y1, int x2, int y2, int x3, int y3, int x, int y)
-{  
-    // calcular area do poligono
-    float areaPoligono = area(x1, y1, x2, y2, x3, y3);
-
-    //calcular area de um triangulo formado pelos pontos 2 e 3 do poligono e o ponto sendo testado
-    float triangulo1 = area(x, y, x2, y2, x3, y3);
-
-    //calcular area de um triangulo formado pelos pontos 1 e 3 do poligono e o ponto sendo testado
-    float triangulo2 = area(x1, y1, x, y, x3, y3);
-
-    //calcular area de um triangulo formado pelos pontos 1 e 2 do poligono e o ponto sendo testado
-    float triangulo3 = area(x1, y1, x2, y2, x, y);
-
-    // retornar se a area do poligono é igual a soma das areas dos triangulos formados com o ponto sendo testado
-    return ( areaPoligono == triangulo1 + triangulo2 + triangulo3 );
-}
-
-
-
-
-
 
 
 
@@ -538,7 +351,7 @@ void Renderer::createShadowMap(Camera *camera, float* zBuffer, Model** eBuffer, 
     model->calcular_pontos_3D();
 
     // project vertices
-    this->project(camera, model->pontos, model->projection, model->nVertices, model->screenSpaceBuffer, shadowMapHeight, shadowMapWidth);
+    this->project(camera, model, shadowMapHeight, shadowMapWidth);
 
     int R = 255, G = 255, B = 255;
     float angulo;
@@ -610,10 +423,10 @@ void Renderer::drawShadowMap(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, V
     // polygon boundbox
     int topY,bottomY,maxLeft,maxRight;
     // top
-    if(p1.y > p2.y && p1.y > p3.y){
+    if(p1.y >= p2.y && p1.y >= p3.y){
         topY = p1.y;
     }
-    else if(p2.y > p1.y && p2.y > p3.y){
+    else if(p2.y >= p1.y && p2.y >= p3.y){
         topY = p2.y;
     }
     else{
@@ -621,10 +434,10 @@ void Renderer::drawShadowMap(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, V
     }
     if(topY >= shadowWindowHeight) topY = shadowWindowHeight - 1;
     // bottom
-    if(p1.y < p2.y && p1.y < p3.y){
+    if(p1.y <= p2.y && p1.y <= p3.y){
         bottomY = p1.y;
     }
-    else if(p2.y < p1.y && p2.y < p3.y){
+    else if(p2.y <= p1.y && p2.y <= p3.y){
         bottomY = p2.y;
     }
     else{
@@ -632,10 +445,10 @@ void Renderer::drawShadowMap(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, V
     }
     if(bottomY < 0) bottomY = 0;
     // left
-    if(p1.x < p2.x && p1.x < p3.x){
+    if(p1.x <= p2.x && p1.x <= p3.x){
         maxLeft = p1.x;
     }
-    else if(p2.x < p1.x && p2.x < p3.x){
+    else if(p2.x <= p1.x && p2.x <= p3.x){
         maxLeft = p2.x;
     }
     else{
@@ -644,10 +457,10 @@ void Renderer::drawShadowMap(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, V
     if(maxLeft < 0) maxLeft = 0;
 
     // right
-    if(p1.x > p2.x && p1.x > p3.x){
+    if(p1.x >= p2.x && p1.x >= p3.x){
         maxRight = p1.x;
     }
-    else if(p2.x > p1.x && p2.x > p3.x){
+    else if(p2.x >= p1.x && p2.x >= p3.x){
         maxRight = p2.x;
     }
     else{
@@ -746,7 +559,5 @@ void Renderer::drawShadowMap(Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, V
             }
         }
     }
-
-    //printf("\nshadow map drawed...");
 
 }

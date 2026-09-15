@@ -16,6 +16,11 @@ class Camera
         Camera();
         ~Camera();
 
+        void moveFront(float distance);
+        void moveBack(float distance);
+        void moveLeft(float distance);
+        void moveRight(float distance);
+
         void setPos(Vec3 pos);
         void setX(float x);
         void setY(float y);

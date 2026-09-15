@@ -220,29 +220,46 @@ void Model::rotate(int rotacaoX, int rotacaoY, int rotacaoZ){
     angulo.y += rotacaoY;
     angulo.z += rotacaoZ;
 
-    float senoX = sin( rotacaoX * M_PI / 180 );
-    float cossenoX = cos( rotacaoX * M_PI / 180 );
-    float senoY = sin( rotacaoY * M_PI / 180 );
-    float cossenoY = cos( rotacaoY * M_PI / 180 );
-    float senoZ = sin( rotacaoZ * M_PI / 180 );
-    float cossenoZ = cos( rotacaoZ * M_PI / 180 );
-    float x, y, z;
+    const float radX = rotacaoX * M_PI / 180.0f;
+    const float radY = rotacaoY * M_PI / 180.0f;
+    const float radZ = rotacaoZ * M_PI / 180.0f;
 
-    for( int i = 0 ; i < nVertices ; i++ ){
-        
-        vertices[i].x = vertices[i].x * cossenoX - vertices[i].z * senoX;
-        vertices[i].z = vertices[i].z * cossenoX + vertices[i].x * senoX;
-        
-        y = vertices[i].y;
-        z = vertices[i].z;
-        vertices[i].y = y * cossenoY - z * senoY;
-        vertices[i].z = z * cossenoY + y * senoY;
-        
-        x = vertices[i].x;
-        y = vertices[i].y;
-        vertices[i].y = y * cossenoZ - x * senoZ;
-        vertices[i].x = x * cossenoZ + y * senoZ;
-    
+    const float senoX = sin(radX);
+    const float cossenoX = cos(radX);
+
+    const float senoY = sin(radY);
+    const float cossenoY = cos(radY);
+
+    const float senoZ = sin(radZ);
+    const float cossenoZ = cos(radZ);
+
+    for(int i = 0; i < nVertices; i++){
+
+        float x = vertices[i].x;
+        float y = vertices[i].y;
+        float z = vertices[i].z;
+
+        // rotate around X axis
+        float novoY = y * cossenoX - z * senoX;
+        float novoZ = y * senoX + z * cossenoX;
+        y = novoY;
+        z = novoZ;
+
+        // rotate around Y axis
+        float novoX = x * cossenoY + z * senoY;
+        novoZ = -x * senoY + z * cossenoY;
+        x = novoX;
+        z = novoZ;
+
+        // rotate around Z axis
+        novoX = x * cossenoZ - y * senoZ;
+        novoY = x * senoZ + y * cossenoZ;
+        x = novoX;
+        y = novoY;
+
+        vertices[i].x = x;
+        vertices[i].y = y;
+        vertices[i].z = z;
     }
 }
 
