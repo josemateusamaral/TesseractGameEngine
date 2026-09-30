@@ -21,7 +21,7 @@ int main(int argc, char *args[])
 	}
 	engine.window->setBackgroundColor(135, 206, 235); // sky blue
 	engine.setCaptureMouse(true);
-	engine.camera->setPos(Vec3(179,58,28));
+	engine.camera->setPos(Vec3(-6.2,32,21));
 	engine.camera->hpr = Vec3(11,90,0);
 
 	// create ambient light
@@ -38,9 +38,9 @@ int main(int argc, char *args[])
 	audio->loop();
 
 	//audio placeholder
-	Model* model = new Model("samples/model_loading/character.glb");
-	model->setPos(0, 12, 40);
-	model->setScale(2);
+	Model* model = new Model("samples/model_loading/coliseu.glb");
+	model->setPos(0, 45, 40);
+	model->setScale(140);
 	model->rotate(0, 90, 0);
 	engine.scene->addModel(model);
 	model->setLight(directionalLight);
@@ -48,13 +48,13 @@ int main(int argc, char *args[])
 
 	// load plane
 	Model* ground = new Model("samples/model_loading/plane_sub.glb");
-	ground->setPos(-30, -7, 30);
-	ground->setScale(100);
+	ground->setPos(-30, -12, 30);
+	ground->setScale(200);
 	engine.scene->addModel(ground);
 	ground->setLight(ambientLight);
 	ground->setLight(directionalLight);
-	// apply texture to plane
-	Texture *texture = new Texture("samples/texture_loading/areia.jpg");
+	//apply texture to plane
+	Texture *texture = new Texture("samples/texture_loading/urban_ground.jpg");
 	ground->diffuseTexture = texture;
 	
 	// bind keys
@@ -83,15 +83,11 @@ int main(int argc, char *args[])
 		engine.setCaptureMouse(!engine.getCaptureMouse());
 	});
 	// bind mouse
-	engine.input->bindMouseButton("left", "release", [&model]() {
-		//model->rotate(45, 0, 0);
-		model->setZ(model->getZ() + 10);
-		printf("model z: %f\n", model->getZ());
+	engine.input->bindMouseButton("left", "release", [&engine]() {
+		printf("%f %f %f",engine.camera->getX(),engine.camera->getY(),engine.camera->getZ());
 	});
-	engine.input->bindMouseButton("right", "release", [&model]() {
-		//model->rotate(0, 10, 0);
-		model->setZ(model->getZ() - 10);
-		printf("model z: %f\n", model->getZ());
+	engine.input->bindMouseButton("right", "release", [&engine]() {
+		printf("%f %f %f",engine.camera->getX(),engine.camera->getY(),engine.camera->getZ());
 	});
 	engine.input->bindMouseMotion([&engine]() {
 
