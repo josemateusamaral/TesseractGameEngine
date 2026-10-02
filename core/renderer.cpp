@@ -33,7 +33,11 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
         int i2 = model->indices[i + 2];
         
         // clip distance
-        if(model->projection[i0].z <= 0 || model->projection[i1].z <= 0 || model->projection[i2].z <= 0) continue;
+        if(model->projection[i0].z <= 1 || model->projection[i1].z <= 1 || model->projection[i2].z <= 1) continue;
+
+        // screen space test
+        if(!model->screenSpaceBuffer[i0] && !model->screenSpaceBuffer[i1] && !model->screenSpaceBuffer[i2]) continue;
+
 
         //polygon
         Vec3 v0 = model->vertices[i0];
@@ -58,7 +62,7 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
         Vec3 normal = vector1.produto_vetorial(vector2);
 
         // backface culling
-        if (!(cam.angulo_entre_vetores(normal) > 90 || !model->backfaceCulling)) continue;
+        //if (!(cam.angulo_entre_vetores(normal) > 90 || !model->backfaceCulling)) continue;
     
         this->drawTexturedPolygon(
             //window

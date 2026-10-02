@@ -19,7 +19,7 @@ int main(int argc, char *args[])
 		printf("Failed to start Tesseract Game Engine !");
 		return -1;
 	}
-	engine.window->setBackgroundColor(135, 206, 235); // sky blue
+	engine.window->setBackgroundColor(0,0,0); // sky blue
 	engine.setCaptureMouse(true);
 	engine.camera->setPos(Vec3(-6.2,32,21));
 	engine.camera->hpr = Vec3(11,90,0);
@@ -31,14 +31,30 @@ int main(int argc, char *args[])
 	// create directional light
 	DirectionalLight* directionalLight = new DirectionalLight(0.6,0.6,0.6,0,0,-1);
 
-	//create audio3D
-	Audio *audio = new Audio("samples/audio_loading/birds.wav");
-	audio->setPos(new Vec3( 0, -6, 30));
+	//create table
+	Model* table = new Model("samples/model_loading/table.glb");
+	table->setPos(-30, -20, 30);
+	table->setScale(20);
+	engine.scene->addModel(table);
+	table->setLight(ambientLight);
+	table->setLight(directionalLight);
+
+	//create radio
+	Model* radio = new Model("samples/model_loading/radio.glb");
+	radio->setPos(-30, 15, 30);
+	radio->setScale(20);
+	radio->rotate(0, 90, 0);
+	engine.scene->addModel(radio);
+	radio->setLight(ambientLight);
+	radio->setLight(directionalLight);
+	Audio *audio = new Audio("samples/audio_loading/radio_broadcast.wav");
+	audio->setPos(new Vec3(-30, 21, 30));
+	audio->volume = 0.5;
 	engine.audio->addElement(audio);
 	audio->loop();
 
-	//audio placeholder
-	Model* model = new Model("samples/model_loading/coliseu.glb");
+	//create interior
+	Model* model = new Model("samples/model_loading/interior.glb");
 	model->setPos(0, 45, 40);
 	model->setScale(140);
 	model->rotate(0, 90, 0);
@@ -46,16 +62,46 @@ int main(int argc, char *args[])
 	model->setLight(directionalLight);
 	model->setLight(ambientLight);
 
-	// load plane
-	Model* ground = new Model("samples/model_loading/plane_sub.glb");
+	//create ground
+	Model* ground = new Model("samples/model_loading/ground_plane.glb");
 	ground->setPos(-30, -12, 30);
 	ground->setScale(200);
 	engine.scene->addModel(ground);
 	ground->setLight(ambientLight);
 	ground->setLight(directionalLight);
-	//apply texture to plane
-	Texture *texture = new Texture("samples/texture_loading/urban_ground.jpg");
-	ground->diffuseTexture = texture;
+
+	//create text
+	Text *information = new Text("[ F ] interact");
+	information->setX((engine.window->getWidth() / 2) - (information->width / 2));
+	information->setY((engine.window->getHeight() /2) + (engine.window->getHeight() /4));
+	information->setTextColor(255,255,255);
+	engine.gui->addElement(information);
+
+	//create button
+	Button *button = new Button("Turn OFF");
+	button->setX(10);
+	button->setY(80);
+	button->setTextColor(255,255,255);
+	button->setBackgroundColor(0,0,0);
+	button->hide();
+	button->onClick = []{
+	};
+	button->onRelease = [&]{
+		if(audio->playing){
+			audio->stop();
+			button->setText("Turn ON");
+		}else{
+			audio->loop();
+			button->setText("Turn OFF");
+		}
+	};
+	engine.gui->addElement(button);
+
+
+
+
+	//game loop variables
+	float radioDistance;
 	
 	// bind keys
 	engine.input->bindKey("escape", "release", [&engine]() {
@@ -79,15 +125,28 @@ int main(int argc, char *args[])
 	engine.input->bindKey("e", "press", [&engine]() {
 		engine.camera->setY(engine.camera->getY() + 1);
 	});
-	engine.input->bindKey("t", "release", [&engine]() {
-		engine.setCaptureMouse(!engine.getCaptureMouse());
+	engine.input->bindKey("f", "release", [&]() {
+
+		float radioDistance = (radio->getPos() - engine.camera->getPos()).modulo();
+		if(radioDistance <= 30){
+			if(engine.getCaptureMouse()){
+				engine.setCaptureMouse(false);
+				button->show();
+			}else{
+				engine.setCaptureMouse(true);
+				button->hide();
+			}
+		}
+		
 	});
 	// bind mouse
-	engine.input->bindMouseButton("left", "release", [&engine]() {
-		printf("%f %f %f",engine.camera->getX(),engine.camera->getY(),engine.camera->getZ());
+	engine.input->bindMouseButton("left", "release", [&]() {
+		//radio->setY(radio->getY() + 1);
+		//printf("%f %f %f",radio->getX(),radio->getY(),radio->getZ());
 	});
-	engine.input->bindMouseButton("right", "release", [&engine]() {
-		printf("%f %f %f",engine.camera->getX(),engine.camera->getY(),engine.camera->getZ());
+	engine.input->bindMouseButton("right", "release", [&]() {
+		//radio->setY(radio->getY() - 1);
+		//printf("%f %f %f",radio->getX(),radio->getY(),radio->getZ());
 	});
 	engine.input->bindMouseMotion([&engine]() {
 
@@ -107,31 +166,17 @@ int main(int argc, char *args[])
 
 	});
 
-	//create text
-	Text *information = new Text("[ T ] toggle mouse");
-	information->setX(10);
-	information->setY(30);
-	information->setTextColor(255,0,0);
-	engine.gui->addElement(information);
-
-	//create button
-	Button *button = new Button("analitycs");
-	button->setX(10);
-	button->setY(80);
-	button->setTextColor(0,255,0);
-	button->setBackgroundColor(79,6,102);
-	button->onClick = []{
-	};
-	button->onRelease = [&engine]{
-		engine.analitycs->fpsMeter->getIsVisible() ? engine.analitycs->fpsMeter->hide() : engine.analitycs->fpsMeter->show();
-	};
-	engine.gui->addElement(button);
 
 	// game loop
 	engine.run([&]() {
 
-		// rotate model
-        //model->rotate(1, 0, 0);
+		//update radio interaction
+		radioDistance = (radio->getPos() - engine.camera->getPos()).modulo();
+		if(radioDistance <= 30){
+			information->show();
+		}else{
+			information->hide();
+		}
         
     });
 	
