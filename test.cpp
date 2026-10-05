@@ -37,6 +37,8 @@ int main(int argc, char *args[])
 	engine.camera->setPos(Vec3(-6.2,35,21));
 	engine.camera->hpr = Vec3(11,90,0);
 
+	engine.analitycs->fpsMeter->show();
+
 	// create ambient light
 	AmbientLight* ambientLight = new AmbientLight(0.4,0.4,0.4);
 	// create point light
@@ -70,6 +72,7 @@ int main(int argc, char *args[])
 	model->setPos(0, 45, 40);
 	model->setScale(140);
 	model->rotate(0, 90, 0);
+	model->setBackfaceCulling(false);
 	engine.scene->addModel(model);
 	model->setLight(directionalLight);
 	model->setLight(ambientLight);
@@ -166,7 +169,21 @@ int main(int argc, char *args[])
 	// bind mouse
 	engine.input->bindMouseButton("left", "release", [&]() {
 		//radio->setY(radio->getY() + 1);
-		printf("\n\n%f %f %f",engine.camera->getX(),engine.camera->getY(),engine.camera->getZ());
+		//printf("\n\n%f %f %f",engine.camera->getX(),engine.camera->getY(),engine.camera->getZ());
+
+		int qtdVertices = 0;
+		int qtdPolygons = 0;
+
+		Scene *scene = engine.scene;
+		for(int i = 0; i < scene->qtdModels; i++){
+			Model *model = scene->models[i];
+			qtdVertices += model->nVertices;
+			qtdPolygons += model->indexCount / 3;
+		}
+
+		printf("VERTICES: %d\n", qtdVertices);
+		printf("POLYGONS: %d\n", qtdPolygons);
+
 	});
 	engine.input->bindMouseButton("right", "release", [&]() {
 		printf("%f %f %f",engine.camera->getX(),engine.camera->getY(),engine.camera->getZ());

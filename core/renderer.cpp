@@ -19,6 +19,10 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
     float mz = model->getZ();
     float sm = model->getScale();
 
+    //window data
+    int windowWidth = window->getWidth();
+    int windowHeight = window->getHeight();
+
     // camera vector
     float origem[3] = {camera->getX(), camera->getY(), camera->getZ()};
     float a[3] = {mx, my, mz};
@@ -28,16 +32,70 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
     for (int i = 0; i < model->indexCount; i += 3)
     {
 
-        int i0 = model->indices[i];
-        int i1 = model->indices[i + 1];
-        int i2 = model->indices[i + 2];
+        const int i0 = model->indices[i];
+        const int i1 = model->indices[i + 1];
+        const int i2 = model->indices[i + 2];
+
+        const auto& p0 = model->projection[i0];
+        const auto& p1 = model->projection[i1];
+        const auto& p2 = model->projection[i2];
         
         // clip distance
-        if(model->projection[i0].z <= 1 || model->projection[i1].z <= 1 || model->projection[i2].z <= 1) continue;
+        if(p0.z <= 0 || p1.z <= 0 || p2.z <= 0) continue;
+
+        // calculate bounding box
+        int topY,bottomY,maxLeft,maxRight;
+        // top
+        if(p0.y >= p1.y && p0.y >= p2.y){
+            topY = p0.y;
+        }
+        else if(p1.y >= p0.y && p1.y >= p2.y){
+            topY = p1.y;
+        }
+        else{
+            topY = p2.y;
+        }
+        if(topY >= windowHeight) topY = windowHeight - 1;
+        // bottom
+        if(p0.y <= p1.y && p0.y <= p2.y){
+            bottomY = p0.y;
+        }
+        else if(p1.y <= p0.y && p1.y <= p2.y){
+            bottomY = p1.y;
+        }
+        else{
+            bottomY = p2.y;
+        }
+        if(bottomY < 0) bottomY = 0;
+        // left
+        if(p0.x <= p1.x && p0.x <= p2.x){
+            maxLeft = p0.x;
+        }
+        else if(p1.x <= p0.x && p1.x <= p2.x){
+            maxLeft = p1.x;
+        }
+        else{
+            maxLeft = p2.x;
+        }
+        if(maxLeft < 0) maxLeft = 0;
+        // right
+        if(p0.x >= p1.x && p0.x >= p2.x){
+            maxRight = p0.x;
+        }
+        else if(p1.x >= p0.x && p1.x >= p2.x){
+            maxRight = p1.x;
+        }
+        else{
+            maxRight = p2.x;
+        }
+        if(maxRight >= windowWidth) maxRight = windowWidth - 1;
+
+        if((maxRight - maxLeft) * (topY - bottomY) < 1) continue;
+
+
 
         // screen space test
-        if(!model->screenSpaceBuffer[i0] && !model->screenSpaceBuffer[i1] && !model->screenSpaceBuffer[i2]) continue;
-
+        //if(!model->screenSpaceBuffer[i0] && !model->screenSpaceBuffer[i1] && !model->screenSpaceBuffer[i2]){
 
         //polygon
         Vec3 v0 = model->vertices[i0];
@@ -62,7 +120,7 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
         Vec3 normal = vector1.produto_vetorial(vector2);
 
         // backface culling
-        //if (!(cam.angulo_entre_vetores(normal) > 90 || !model->backfaceCulling)) continue;
+        if (!(cam.angulo_entre_vetores(normal) > 90 || !model->backfaceCulling)) continue;
     
         this->drawTexturedPolygon(
             //window
@@ -90,7 +148,11 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
             model->shadowMapBuffer,
             100,//height
             100,//width
-            model->shadowCast
+            model->shadowCast,
+            topY,
+            bottomY,
+            maxLeft,
+            maxRight
         );
     }
 
@@ -129,6 +191,8 @@ void Renderer::project(Camera *camera, Model* model, int bufferHeight, int buffe
     int centerX = bufferWidth / 2;
     int centerY = bufferHeight / 2;
 
+    float dist_f = camera->dist_f;
+
     #pragma omp parallel for simd
     for( int i = 0 ; i < nVertices ; i++ ){
         
@@ -156,67 +220,18 @@ void Renderer::project(Camera *camera, Model* model, int bufferHeight, int buffe
         y = dy;
 
         // project perpective
-        float px = (camera->dist_f * x) / z;
-        float py = (camera->dist_f * y) / z;
+        float px = (dist_f * x) / z;
+        float py = (dist_f * y) / z;
         projection[i].x = px * -1 + centerX;
         projection[i].y = py * -1 + centerY;
         projection[i].z = z;
 
-        screenSpaceBuffer[i] = projection[i].x >= 0 && projection[i].x < bufferWidth && projection[i].y >= 0 && projection[i].y < bufferHeight;    
     }
 
 }
 
-void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, Vec3 &v3, Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, unsigned char* data, int texW, int texH, Light** lights, int nLights, bool* shadowMapBuffer, int shadowMapWidth, int shadowMapHeight, bool shadowCast) 
+void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, Vec3 &v3, Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, unsigned char* data, int texW, int texH, Light** lights, int nLights, bool* shadowMapBuffer, int shadowMapWidth, int shadowMapHeight, bool shadowCast, int topY,int bottomY,int maxLeft,int maxRight) 
 {
-
-    // polygon boundbox
-    int topY,bottomY,maxLeft,maxRight;
-    // top
-    if(p1.y >= p2.y && p1.y >= p3.y){
-        topY = p1.y;
-    }
-    else if(p2.y >= p1.y && p2.y >= p3.y){
-        topY = p2.y;
-    }
-    else{
-        topY = p3.y;
-    }
-    if(topY >= window->getHeight()) topY = window->getHeight() - 1;
-    // bottom
-    if(p1.y <= p2.y && p1.y <= p3.y){
-        bottomY = p1.y;
-    }
-    else if(p2.y <= p1.y && p2.y <= p3.y){
-        bottomY = p2.y;
-    }
-    else{
-        bottomY = p3.y;
-    }
-    if(bottomY < 0) bottomY = 0;
-    // left
-    if(p1.x <= p2.x && p1.x <= p3.x){
-        maxLeft = p1.x;
-    }
-    else if(p2.x <= p1.x && p2.x <= p3.x){
-        maxLeft = p2.x;
-    }
-    else{
-        maxLeft = p3.x;
-    }
-    if(maxLeft < 0) maxLeft = 0;
-
-    // right
-    if(p1.x >= p2.x && p1.x >= p3.x){
-        maxRight = p1.x;
-    }
-    else if(p2.x >= p1.x && p2.x >= p3.x){
-        maxRight = p2.x;
-    }
-    else{
-        maxRight = p3.x;
-    }
-    if(maxRight >= window->getWidth()) maxRight = window->getWidth() - 1;
 
     // top left corner of the boundbox
     int px = maxLeft; 
