@@ -10,6 +10,19 @@
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 
+void applyWorldBoundry(Tesseract &engine){
+
+	if(engine.camera->getX() < -69)
+		engine.camera->setX(-69);
+	if(engine.camera->getX() > 95)
+		engine.camera->setX(95);
+	if(engine.camera->getZ() < -107)
+		engine.camera->setZ(-107);
+	if(engine.camera->getZ() > 192)
+		engine.camera->setZ(192);
+
+}
+
 int main(int argc, char *args[])
 {
 
@@ -21,7 +34,7 @@ int main(int argc, char *args[])
 	}
 	engine.window->setBackgroundColor(0,0,0); // sky blue
 	engine.setCaptureMouse(true);
-	engine.camera->setPos(Vec3(-6.2,32,21));
+	engine.camera->setPos(Vec3(-6.2,35,21));
 	engine.camera->hpr = Vec3(11,90,0);
 
 	// create ambient light
@@ -33,15 +46,15 @@ int main(int argc, char *args[])
 
 	//create table
 	Model* table = new Model("samples/model_loading/table.glb");
-	table->setPos(-30, -20, 30);
-	table->setScale(20);
+	table->setPos(-30, -13, 30);
+	table->setScale(18);
 	engine.scene->addModel(table);
 	table->setLight(ambientLight);
 	table->setLight(directionalLight);
 
 	//create radio
 	Model* radio = new Model("samples/model_loading/radio.glb");
-	radio->setPos(-30, 15, 30);
+	radio->setPos(-30, 19, 30);
 	radio->setScale(20);
 	radio->rotate(0, 90, 0);
 	engine.scene->addModel(radio);
@@ -51,7 +64,6 @@ int main(int argc, char *args[])
 	audio->setPos(new Vec3(-30, 21, 30));
 	audio->volume = 0.5;
 	engine.audio->addElement(audio);
-	audio->loop();
 
 	//create interior
 	Model* model = new Model("samples/model_loading/interior.glb");
@@ -78,9 +90,9 @@ int main(int argc, char *args[])
 	engine.gui->addElement(information);
 
 	//create button
-	Button *button = new Button("Turn OFF");
-	button->setX(10);
-	button->setY(80);
+	Button *button = new Button("Turn ON");
+	button->setX((engine.window->getWidth() / 2) - (button->width / 2));
+	button->setY((engine.window->getHeight() /2) + (engine.window->getHeight() /8));
 	button->setTextColor(255,255,255);
 	button->setBackgroundColor(0,0,0);
 	button->hide();
@@ -108,16 +120,28 @@ int main(int argc, char *args[])
 		engine.exit();
 	});
 	engine.input->bindKey("w", "press", [&engine]() {
+		if(!engine.getCaptureMouse())
+			return;
 		engine.camera->moveFront(1.0f);
+		applyWorldBoundry(engine);
 	});
 	engine.input->bindKey("a", "press", [&engine]() {
+		if(!engine.getCaptureMouse())
+			return;
 		engine.camera->moveLeft(1.0f);
+		applyWorldBoundry(engine);
 	});
 	engine.input->bindKey("s", "press", [&engine]() {
+		if(!engine.getCaptureMouse())
+			return;
 		engine.camera->moveBack(1.0f);
+		applyWorldBoundry(engine);
 	});
 	engine.input->bindKey("d", "press", [&engine]() {
+		if(!engine.getCaptureMouse())
+			return;
 		engine.camera->moveRight(1.0f);
+		applyWorldBoundry(engine);	
 	});
 	engine.input->bindKey("q", "press", [&engine]() {
 		engine.camera->setY(engine.camera->getY() - 1);
@@ -142,11 +166,10 @@ int main(int argc, char *args[])
 	// bind mouse
 	engine.input->bindMouseButton("left", "release", [&]() {
 		//radio->setY(radio->getY() + 1);
-		//printf("%f %f %f",radio->getX(),radio->getY(),radio->getZ());
+		printf("\n\n%f %f %f",engine.camera->getX(),engine.camera->getY(),engine.camera->getZ());
 	});
 	engine.input->bindMouseButton("right", "release", [&]() {
-		//radio->setY(radio->getY() - 1);
-		//printf("%f %f %f",radio->getX(),radio->getY(),radio->getZ());
+		printf("%f %f %f",engine.camera->getX(),engine.camera->getY(),engine.camera->getZ());
 	});
 	engine.input->bindMouseMotion([&engine]() {
 
