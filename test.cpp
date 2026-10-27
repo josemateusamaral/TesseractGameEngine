@@ -112,9 +112,6 @@ int main(int argc, char *args[])
 	};
 	engine.gui->addElement(button);
 
-
-
-
 	//game loop variables
 	float radioDistance;
 	
@@ -125,25 +122,25 @@ int main(int argc, char *args[])
 	engine.input->bindKey("w", "press", [&engine]() {
 		if(!engine.getCaptureMouse())
 			return;
-		engine.camera->moveFront(1.0f);
+		engine.camera->moveFront(0.1f * engine.deltaTime);
 		applyWorldBoundry(engine);
 	});
 	engine.input->bindKey("a", "press", [&engine]() {
 		if(!engine.getCaptureMouse())
 			return;
-		engine.camera->moveLeft(1.0f);
+		engine.camera->moveLeft(0.1f * engine.deltaTime);
 		applyWorldBoundry(engine);
 	});
 	engine.input->bindKey("s", "press", [&engine]() {
 		if(!engine.getCaptureMouse())
 			return;
-		engine.camera->moveBack(1.0f);
+		engine.camera->moveBack(0.1f * engine.deltaTime);
 		applyWorldBoundry(engine);
 	});
 	engine.input->bindKey("d", "press", [&engine]() {
 		if(!engine.getCaptureMouse())
 			return;
-		engine.camera->moveRight(1.0f);
+		engine.camera->moveRight(0.1f * engine.deltaTime);
 		applyWorldBoundry(engine);	
 	});
 	engine.input->bindKey("q", "press", [&engine]() {
@@ -168,37 +165,22 @@ int main(int argc, char *args[])
 	});
 	// bind mouse
 	engine.input->bindMouseButton("left", "release", [&]() {
-		//radio->setY(radio->getY() + 1);
-		//printf("\n\n%f %f %f",engine.camera->getX(),engine.camera->getY(),engine.camera->getZ());
-
-		int qtdVertices = 0;
-		int qtdPolygons = 0;
-
-		Scene *scene = engine.scene;
-		for(int i = 0; i < scene->qtdModels; i++){
-			Model *model = scene->models[i];
-			qtdVertices += model->nVertices;
-			qtdPolygons += model->indexCount / 3;
-		}
-
-		printf("VERTICES: %d\n", qtdVertices);
-		printf("POLYGONS: %d\n", qtdPolygons);
 
 	});
 	engine.input->bindMouseButton("right", "release", [&]() {
-		printf("%f %f %f",engine.camera->getX(),engine.camera->getY(),engine.camera->getZ());
+
 	});
 	engine.input->bindMouseMotion([&engine]() {
 
 		//rotate camera left and right using mouse movement
-		engine.camera->hpr.x += engine.input->mouseMotionVector->y * 0.1;
+		engine.camera->hpr.x += engine.input->mouseMotionVector->y * 0.01 * engine.deltaTime;
 		if(engine.camera->hpr.x == 0) 
 			engine.camera->hpr.x = 360;
 		if(engine.camera->hpr.x > 360)
 			engine.camera->hpr.x = 1;
 		
 		//rotate camera up and down using mouse movement
-		engine.camera->hpr.y += engine.input->mouseMotionVector->x * 0.1;
+		engine.camera->hpr.y += engine.input->mouseMotionVector->x * 0.01 * engine.deltaTime;
 		if(engine.camera->hpr.y == 0) 
 			engine.camera->hpr.y = 360;
 		if(engine.camera->hpr.y > 360)

@@ -58,69 +58,73 @@ bool Tesseract::isRunning(){
     return this->initialized && !this->quit;
 }
 
-void Tesseract::run(function<void()> userUpdate) {
-    
-    Uint32 lastFrameTicktime = SDL_GetTicks();
-    Uint32 sdlTick; 
-    int fps = 0;
 
-    float updateFPSCount = 0.0;
+void Tesseract::run(function<void()> userUpdate) {
+
+    Uint32 lastFrameTicktime = SDL_GetTicks();
+    Uint32 fpsUpdateTime = lastFrameTicktime;
+    Uint32 frameCount = 0;
+    int fps = 0;
 
     while (!this->quit) {
 
-        // process inputs
+        // Calculate frame delta time
+        Uint32 currentTick = SDL_GetTicks();
+        this->deltaTime = currentTick - lastFrameTicktime;
+        lastFrameTicktime = currentTick;
+
+        // Process inputs
         this->input->process(this->quit, this->ev, this->gui);
 
-        // scripts
+        // Run user scripts
         if (userUpdate) {
             userUpdate();
         }
 
-        // clear color buffer and z buffer
+        // Clear color and depth buffers
         this->window->clean();
 
-        // render scene
-        for(int i = 0; i < this->scene->qtdModels; i++){
-            this->renderer->render(this->scene->models[i], this->window, this->camera);
+        // Render scene
+        for (int i = 0; i < this->scene->qtdModels; i++) {
+            this->renderer->render(this->scene->models[i],this->window,this->camera);
         }
 
-        // update fps meter
-        sdlTick = SDL_GetTicks();
-        this->deltaTime = sdlTick - lastFrameTicktime;
-        if(this->analitycs->fpsMeter->getIsVisible()){
-            fps = 1000 / this->deltaTime;
-            lastFrameTicktime = sdlTick;
-            updateFPSCount += this->deltaTime;
-            if(updateFPSCount > 1000){
+        // Update FPS counter
+        frameCount++;
+        currentTick = SDL_GetTicks();
+
+        if (currentTick - fpsUpdateTime >= 1000) {
+
+            fps = frameCount * 1000 / (currentTick - fpsUpdateTime);
+
+            //update fps counter
+            if (this->analitycs->fpsMeter->getIsVisible()) {
                 Text* fpsText = dynamic_cast<Text*>(this->gui->elements[0]);
-                if (fpsText)
-                {
-                    char buffer[10];
+                if (fpsText) {
+                    char buffer[32];
                     sprintf(buffer, "FPS: %d", fps);
                     fpsText->setText(buffer);
                 }
-                updateFPSCount = 0.0f;
+            }
+
+            frameCount = 0;
+            fpsUpdateTime = currentTick;
+        }
+
+        // Render GUI
+        for (int i = 0; i < this->gui->nElements; i++) {
+            if (this->gui->elements[i]->getIsVisible()) {
+                this->gui->elements[i]->render(this->window->colorBuffer,this->window->getWidth(),this->window->getHeight());
             }
         }
 
-        // render gui
-        for(int i = 0; i < this->gui->nElements; i++){
-            if(this->gui->elements[i]->getIsVisible()){
-                this->gui->elements[i]->render(this->window->colorBuffer, this->window->getWidth(), this->window->getHeight());
-            } 
-        }
-
-        // show color buffer
+        // Present frame
         this->window->refresh();
-
-        // refresh rate delay
-        //SDL_Delay(this->delay);
-
     }
 
     SDL_Quit();
-
 }
+
 
 void Tesseract::exit(){
     this->quit = true;
