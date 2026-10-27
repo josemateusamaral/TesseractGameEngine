@@ -112,6 +112,24 @@ class Vec3
          **/
         Vec3 operator-(const Vec3 &v);
 
+        /**
+         * Operador de multiplicacao e atribuição
+         * > param v uma referência constante (&) para um vetor
+         **/
+        Vec3 operator*=(const Vec3 &v);
+
+         /**
+         * Operador de multiplicacao 
+         * > param v uma referência constante (&) para um vetor
+         **/
+        Vec3 operator*(const Vec3 &v);
+
+         /**
+         * Operador de multiplicacao 
+         * > param n eh um float
+         **/
+        Vec3 operator*(const float n);
+
         float x; /**< Valor da coordenada x */
         float y; /**< Valor da coordenada y */
         float z; /**< Valor da coordenada z */

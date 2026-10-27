@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # ---------------------------------------------------------
-# Dependências
+# Dependences
 # ---------------------------------------------------------
 
 find_package(SDL2 REQUIRED)

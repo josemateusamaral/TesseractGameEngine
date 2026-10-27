@@ -130,6 +130,30 @@ Vec3 Vec3::operator-(const Vec3 &v)
     return tmp;
 }
 
+Vec3 Vec3::operator*=(const Vec3 &v)
+{
+    x *= v.x;
+    y *= v.y;
+    z *= v.z;
+    return *this;
+}
+
+Vec3 Vec3::operator*(const Vec3 &v) 
+{
+    Vec3 tmp(*this);
+    tmp *= v;
+    return tmp;
+}
+
+Vec3 Vec3::operator*(const float n) 
+{
+    Vec3 tmp(*this);
+    tmp.x *= n;
+    tmp.y *= n;
+    tmp.z *= n;
+    return tmp;
+}
+
 
 
 

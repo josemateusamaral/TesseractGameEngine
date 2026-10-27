@@ -1,4 +1,5 @@
 #include <cmath>
+#include <algorithm>
 #include "renderer.h"
 
 Renderer::Renderer() {
@@ -93,8 +94,6 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
 
         if((maxRight - maxLeft) * (topY - bottomY) < 1) continue;
 
-
-
         // screen space test
         //if(!model->screenSpaceBuffer[i0] && !model->screenSpaceBuffer[i1] && !model->screenSpaceBuffer[i2]){
 
@@ -121,7 +120,20 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
         Vec3 normal = vector1.produto_vetorial(vector2);
 
         // backface culling
-        if (!(cam.angulo_entre_vetores(normal) > 90 || !model->backfaceCulling)) continue;
+        if (model->getBackfaceCulling()) {
+            float centerX = (v0.x + v1.x + v2.x) / 3.0f;
+            float centerY = (v0.y + v1.y + v2.y) / 3.0f;
+            float centerZ = (v0.z + v1.z + v2.z) / 3.0f;
+
+            float viewX = camera->getX() - centerX;
+            float viewY = camera->getY() - centerY;
+            float viewZ = camera->getZ() - centerZ;
+            
+            float dot = normal.x * viewX + normal.y * viewY + normal.z * viewZ;
+            if (dot <= 0.0f) {
+                continue;
+            }
+        }
     
         this->drawTexturedPolygon(
             //window
@@ -153,7 +165,8 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
             topY,
             bottomY,
             maxLeft,
-            maxRight
+            maxRight,
+            !model->getBackfaceCulling()
         );
     }
 
@@ -231,133 +244,147 @@ void Renderer::project(Camera *camera, Model* model, int bufferHeight, int buffe
 
 }
 
-void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, Vec3 &v3, Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, unsigned char* data, int texW, int texH, Light** lights, int nLights, bool* shadowMapBuffer, int shadowMapWidth, int shadowMapHeight, bool shadowCast, int topY,int bottomY,int maxLeft,int maxRight) 
+void Renderer::drawTexturedPolygon(Window* window, Vec3 &p1, Vec3 &p2, Vec3 &p3, Vec3 &v1, Vec3 &v2, Vec3 &v3, Vec3 &uv1, Vec3 &uv2, Vec3 &uv3, unsigned char* data, int texW, int texH, Light** lights, int nLights, bool* shadowMapBuffer, int shadowMapWidth, int shadowMapHeight, bool shadowCast, int topY, int bottomY, int maxLeft, int maxRight, bool isTwoSided)
 {
+    const int width = window->getWidth();
 
-    // top left corner of the boundbox
-    int px = maxLeft; 
-    int py = topY;  
-    int sizeX = maxRight - maxLeft;
-    int sizeY = topY - bottomY;
+    // Inclusive bounding box limits
+    const int px = maxLeft;
+    const int py = topY;
+    const int sizeX = maxRight - maxLeft + 1;
+    const int sizeY = topY - bottomY + 1;
 
-    // calculate the area of the polygon
-    float areaTotal = this->area(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+    if (sizeX <= 0 || sizeY <= 0)
+        return;
 
-    if (areaTotal == 0) return;
+    const auto edge = [](const Vec3& a, const Vec3& b, float x, float y) -> float {
+        return (b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x);
+    };
 
-    // calculate lights effect
+    const float areaTotal = edge(p1, p2, p3.x, p3.y);
+
+    if (std::fabs(areaTotal) < 1e-8f)
+        return;
+
+    const float invArea = 1.0f / areaTotal;
+
+    // Calculate lighting once per triangle
     float lightEffetR = 0.0f;
     float lightEffetG = 0.0f;
     float lightEffetB = 0.0f;
-    for (int i = 0; i < nLights; i++) { 
-        lights[i]->apply( v1, v2, v3, lightEffetR, lightEffetG, lightEffetB);
+
+    for (int i = 0; i < nLights; i++) {
+        lights[i]->apply(v1, v2, v3,lightEffetR, lightEffetG, lightEffetB,isTwoSided);
     }
+    lightEffetR = std::clamp(lightEffetR, 0.0f, 1.0f);
+    lightEffetG = std::clamp(lightEffetG, 0.0f, 1.0f);
+    lightEffetB = std::clamp(lightEffetB, 0.0f, 1.0f);
 
-    // loop through the bounding box of the triangle
+    // Calculate the reciprocal depth of each vertex.
+    // Positive depth is measured in camera space.
+    const float iz1 = 1.0f / p1.z;
+    const float iz2 = 1.0f / p2.z;
+    const float iz3 = 1.0f / p3.z;
+
     #pragma omp parallel for collapse(2) schedule(static)
-    for(int x = 0; x < sizeX; x++) {
-        for(int y = 0; y < sizeY; y++) {
+    for (int x = 0; x < sizeX; x++) {
+        for (int y = 0; y < sizeY; y++) {
 
-            // pixel screen space position
-            int px_atual = px + x;
-            int py_atual = py - y;
+            const int px_atual = px + x;
+            const int py_atual = py - y;
 
-            //test area
-            float a1 = this->area(px_atual, py_atual, p2.x, p2.y, p3.x, p3.y);
-            float a2 = this->area(p1.x, p1.y, px_atual, py_atual, p3.x, p3.y);
-            float a3 = this->area(p1.x, p1.y, p2.x, p2.y, px_atual, py_atual);
+            // Pixel position in screen space
+            const float fx = static_cast<float>(px_atual);
+            const float fy = static_cast<float>(py_atual);
 
-            // verify if the the pixel is inside the polygon
-            if (abs(areaTotal - (a1 + a2 + a3)) < 0.1) {
-                
-                // baricentric weights
-                float w1 = a1 / areaTotal;
-                float w2 = a2 / areaTotal;
-                float w3 = a3 / areaTotal;
+            // Calculate the oriented edge functions
+            const float e1 = edge(p2, p3, fx, fy);
+            const float e2 = edge(p3, p1, fx, fy);
+            const float e3 = edge(p1, p2, fx, fy);
 
-                // test zbuffer
-                float z = w1 * p1.z + w2 * p2.z + w3 * p3.z;
-                int bufferIndex = ( py_atual * window->getWidth() ) + px_atual;
-                if (z < window->zBuffer[bufferIndex]) {
-                    window->zBuffer[bufferIndex] = z;
-                } else {
+            // A pixel is inside the triangle if all edge functions
+            // have the same sign as the triangle's oriented area.
+            if (areaTotal > 0.0f) {
+                if (e1 < 0.0f || e2 < 0.0f || e3 < 0.0f)
                     continue;
-                }
-
-                // Interpolate UV coordinates with perspective correction
-                float iz1 = 1.0f / p1.z;
-                float iz2 = 1.0f / p2.z;
-                float iz3 = 1.0f / p3.z;
-                float u =
-                (
-                    w1 * uv1.x * iz1 +
-                    w2 * uv2.x * iz2 +
-                    w3 * uv3.x * iz3
-                )
-                /
-                (
-                    w1 * iz1 +
-                    w2 * iz2 +
-                    w3 * iz3
-                );
-
-                float v =
-                (
-                    w1 * uv1.y * iz1 +
-                    w2 * uv2.y * iz2 +
-                    w3 * uv3.y * iz3
-                )
-                /
-                (
-                    w1 * iz1 +
-                    w2 * iz2 +
-                    w3 * iz3
-                );
-
-                // Enrola o UV para sempre ficar entre 0.0 e 1.0 (permite textura repetida)
-                u = u - floor(u);
-                v = v - floor(v);
-
-                // shadow mapping test
-                float shadowFactor = 1.0f;
-                if (shadowMapBuffer != nullptr && shadowCast){
-                    // Converte UV para coordenada de pixel na imagem
-                    int tx = (int)(u * (shadowMapWidth - 1));
-                    int ty = (int)(v * (shadowMapHeight - 1));
-
-                    // Clamping de segurança extra contra problemas de arredondamento de float
-                    if (tx < 0) tx = 0;
-                    if (tx >= shadowMapWidth) tx = shadowMapWidth - 1;
-                    if (ty < 0) ty = 0;
-                    if (ty >= shadowMapHeight) ty = shadowMapHeight - 1;
-
-                    // Texture index (assuming format RGB, 3 bytes per pixel)
-                    int idx = (ty * shadowMapWidth + tx);
-                    if(!shadowMapBuffer[idx]){
-                        shadowFactor = 0.5f;
-                    }
-                }                
-
-                // Converte UV para coordenada de pixel na imagem
-                int tx = (int)(u * (texW - 1));
-                int ty = (int)(v * (texH - 1));
-
-                // Clamping de segurança extra contra problemas de arredondamento de float
-                if (tx < 0) tx = 0;
-                if (tx >= texW) tx = texW - 1;
-                if (ty < 0) ty = 0;
-                if (ty >= texH) ty = texH - 1;
-
-                // Texture index (assuming format RGB, 3 bytes per pixel)
-                int idx = (ty * texW + tx) * 3;
-                Uint32 rt = (data[idx] * lightEffetR) * shadowFactor;
-                Uint32  gt = (data[idx + 1] * lightEffetG) * shadowFactor;
-                Uint32 bt = (data[idx + 2] * lightEffetB) * shadowFactor;
-
-                // fill color buffer
-                window->colorBuffer[bufferIndex] = (255 << 24) | (rt << 16) | (gt << 8) | bt;
-                
+            } else {
+                if (e1 > 0.0f || e2 > 0.0f || e3 > 0.0f)
+                    continue;
             }
+
+            // Calculate barycentric weights
+            const float w1 = e1 * invArea;
+            const float w2 = e2 * invArea;
+            const float w3 = e3 * invArea;
+
+            const int bufferIndex = py_atual * width + px_atual;
+
+            // Perspective-correct depth interpolation:
+            // interpolate 1/z instead of z directly.
+            const float invZ =
+                w1 * iz1 +
+                w2 * iz2 +
+                w3 * iz3;
+
+            if (invZ <= 0.0f)
+                continue;
+
+            // A larger 1/z value represents a closer pixel.
+            // The Z-buffer must be initialized to zero.
+            if (invZ <= window->zBuffer[bufferIndex])
+                continue;
+
+            window->zBuffer[bufferIndex] = invZ;
+
+            // Perspective-correct UV interpolation:
+            // interpolate u/z and v/z, then divide by 1/z.
+            float u =
+                (w1 * uv1.x * iz1 +
+                 w2 * uv2.x * iz2 +
+                 w3 * uv3.x * iz3) 
+                / invZ;
+
+            float v =
+                (w1 * uv1.y * iz1 +
+                 w2 * uv2.y * iz2 +
+                 w3 * uv3.y * iz3) 
+                / invZ;
+
+            // Wrap texture coordinates to the [0, 1) range
+            u -= std::floor(u);
+            v -= std::floor(v);
+
+            // Shadow mapping
+            float shadowFactor = 1.0f;
+            if (shadowMapBuffer != nullptr && shadowCast &&
+                shadowMapWidth > 0 && shadowMapHeight > 0) {
+
+                int tx = static_cast<int>(u * (shadowMapWidth - 1));
+                int ty = static_cast<int>(v * (shadowMapHeight - 1));
+
+                tx = std::clamp(tx, 0, shadowMapWidth - 1);
+                ty = std::clamp(ty, 0, shadowMapHeight - 1);
+
+                const int shadowIndex = ty * shadowMapWidth + tx;
+
+                if (!shadowMapBuffer[shadowIndex])
+                    shadowFactor = 0.5f;
+            }
+
+            // Convert UV coordinates to texture pixel coordinates
+            int tx = static_cast<int>(u * (texW - 1));
+            int ty = static_cast<int>(v * (texH - 1));
+            tx = std::clamp(tx, 0, texW - 1);
+            ty = std::clamp(ty, 0, texH - 1);
+            const int textureIndex = (ty * texW + tx) * 3;
+
+            //get texture color and apply light effects
+            const Uint32 rt = static_cast<Uint32>(data[textureIndex] * lightEffetR * shadowFactor);
+            const Uint32 gt = static_cast<Uint32>(data[textureIndex + 1] * lightEffetG * shadowFactor);
+            const Uint32 bt = static_cast<Uint32>(data[textureIndex + 2] * lightEffetB * shadowFactor);
+
+            // Write the final pixel color to the color buffer
+            window->colorBuffer[bufferIndex] = (255u << 24) | (rt << 16) | (gt << 8) | bt;
         }
     }
 }

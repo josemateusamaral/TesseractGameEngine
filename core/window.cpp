@@ -54,7 +54,7 @@ void Window::clean()
     SDL_RenderClear(renderer);
 
     // clean zBuffer
-    std::fill(this->zBuffer, this->zBuffer + (this->width * this->height), std::numeric_limits<float>::infinity());
+    std::fill(this->zBuffer, this->zBuffer + (this->width * this->height), 0.0f);
 
     // clear color buffer
     std::fill(colorBuffer,colorBuffer + (width * height),this->backgroundColor);

@@ -26,7 +26,7 @@ class Light
         virtual void createShadowMapper() = 0;
         virtual ~Light();
 
-        virtual void apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB) = 0;
+        virtual void apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB, bool isTwoSided) = 0;
 
 };
 
@@ -39,7 +39,7 @@ class AmbientLight : public Light
 
         AmbientLight(float r, float g, float b);
 
-        void apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB) override;
+        void apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB, bool isTwoSided) override;
         void createShadowMapper();
 
 };
@@ -54,7 +54,7 @@ class DirectionalLight : public Light
         float dirX, dirY, dirZ;
 
         DirectionalLight(float r, float g, float b, float dirX, float dirY, float dirZ);
-        void apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB) override;
+        void apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB, bool isTwoSided) override;
         void createShadowMapper() override;
 
 };
@@ -66,9 +66,10 @@ class PointLight : public Light
 {
     public:
         float x, y, z;
+        float attenuationFactor = 0.0001f;
 
         PointLight(float r, float g, float b, float x, float y, float z);
 
-        void apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB) override;
+        void apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB, bool isTwoSided) override;
         void createShadowMapper() override;
 };

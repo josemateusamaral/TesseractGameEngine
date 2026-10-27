@@ -1,6 +1,7 @@
 #include "light.h"
 #include "vec3.h"
 #include "model.h"
+#include <cmath>
 
 Light::Light(){
 
@@ -31,7 +32,7 @@ AmbientLight::AmbientLight(float r, float g, float b)
 {
     
 }
-void AmbientLight::apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB)
+void AmbientLight::apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB, bool isTwoSided)
 {
     outR += this->r;
     outG += this->g;
@@ -51,7 +52,7 @@ DirectionalLight::DirectionalLight(float r, float g, float b, float dirX, float 
 
 }
 
-void DirectionalLight::apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB)
+void DirectionalLight::apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB, bool isTwoSided)
 {
     // polygon edges
     Vec3 v1 = p2 - p1;
@@ -97,7 +98,7 @@ PointLight::PointLight(float r, float g, float b, float x, float y, float z)
     this->z = z;
 }
 
-void PointLight::apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB)
+void PointLight::apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB, bool isTwoSided)
 {
     // edges
     Vec3 v1 = p2 - p1;
@@ -106,30 +107,53 @@ void PointLight::apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, floa
     // normal
     Vec3 normal = v1.produto_vetorial(v2).versor();
 
-    // polygon center
+    // Centro do triangulo
     Vec3 center(
-        (p1.x + p2.x + p3.x) / 3.0,
-        (p1.y + p2.y + p3.y) / 3.0,
-        (p1.z + p2.z + p3.z) / 3.0
+        (p1.x + p2.x + p3.x) / 3.0f,
+        (p1.y + p2.y + p3.y) / 3.0f,
+        (p1.z + p2.z + p3.z) / 3.0f
     );
 
-    // light direction
+    // direction and distance 
     Vec3 lightDir(
         this->x - center.x,
         this->y - center.y,
         this->z - center.z
     );
+
+    if (isTwoSided){
+        if(normal.produto_escalar(lightDir) < 0.0f){
+            normal = normal * -1.0f;
+        }
+    }
+
+    float distanceSquared =
+        lightDir.x * lightDir.x +
+        lightDir.y * lightDir.y +
+        lightDir.z * lightDir.z;
+
+    float distance = std::sqrt(distanceSquared);
+
+    if (distance < 0.0001f)
+        return;
+
+    // Normaliza a direcao da luz
     lightDir = lightDir.versor();
 
-    // Lambert
+    // lambert
     float intensity = normal.produto_escalar(lightDir);
     intensity = std::max(0.0f, intensity);
 
-    // apply color
+    // Attenuatuin
+    float attenuation = 1.0f / (1.0f + this->attenuationFactor * distanceSquared);
+
+    // intensity
+    intensity *= attenuation;
+
+    // Apply
     outR += this->r * intensity;
     outG += this->g * intensity;
     outB += this->b * intensity;
-
 }
 
 void PointLight::createShadowMapper()
