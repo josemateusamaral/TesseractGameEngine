@@ -1,3 +1,4 @@
+#include <cmath>
 #include "audio.h"
 #include <stdio.h>
 #include "camera.h"
@@ -44,25 +45,54 @@ Audio::Audio(const char* path)
 
 void Audio::play()
 {
+    if(audioDevice)
+        SDL_LockAudioDevice(audioDevice);
+
     this->position = 0;
     this->playing = true;
     this->looping = false;
+
+    if(audioDevice)
+        SDL_UnlockAudioDevice(audioDevice);
 }
 
 void Audio::loop(){
-    this->position = 0;   
+    if(audioDevice)
+        SDL_LockAudioDevice(audioDevice);
+
+    this->position = 0;
     this->playing = true;
-    this->looping = true; 
+    this->looping = true;
+
+    if(audioDevice)
+        SDL_UnlockAudioDevice(audioDevice);
 }
 
 void Audio::stop()
 {
+    if(audioDevice)
+        SDL_LockAudioDevice(audioDevice);
+
     this->playing = false;
     this->looping = false;
+
+    if(audioDevice)
+        SDL_UnlockAudioDevice(audioDevice);
 }
 
 void Audio::setPos(Vec3 *pos){
+    if(audioDevice)
+        SDL_LockAudioDevice(audioDevice);
+
     this->pos = pos;
+
+    if(audioDevice)
+        SDL_UnlockAudioDevice(audioDevice);
+}
+
+void Audio::setAudioDevice(SDL_AudioDeviceID device)
+{
+    this->audioDevice = device;
 }
 
 Audio::~Audio()
@@ -185,7 +215,6 @@ void AudioManager::audioCallback(void* userdata, Uint8* stream, int len)
             {
                 if(audio->looping){
                     audio->position = 0;
-                    printf("looping...");
                 }else{
                     audio->playing = false;
                     break;
@@ -200,13 +229,31 @@ void AudioManager::audioCallback(void* userdata, Uint8* stream, int len)
             }
         }
     }
+
+    // limitar amplitude final
+    for(int i = 0; i < sampleCount; i++)
+    {
+        if(out[i] > 1.0f)
+            out[i] = 1.0f;
+        else if(out[i] < -1.0f)
+            out[i] = -1.0f;
+    }
 }
 
 void AudioManager::addElement(Audio *audio)
 {
+    SDL_LockAudioDevice(audioDevice);
+
+    audio->setAudioDevice(audioDevice);
     audios[nAudios++] = audio;
+
+    SDL_UnlockAudioDevice(audioDevice);
 }
 
 void AudioManager::setCamera(Camera *camera){
+    SDL_LockAudioDevice(audioDevice);
+
     this->camera = camera;
+
+    SDL_UnlockAudioDevice(audioDevice);
 }

@@ -19,12 +19,14 @@ class Audio {
         float minDistance = 2.0f;
         float maxDistance = 100.f;
         float distanceAttenuationFactor = 1.0f;
+        SDL_AudioDeviceID audioDevice = 0;
 
         bool playing = false;
         bool looping = false;
 
         Audio(const char* path);
         ~Audio();
+        void setAudioDevice(SDL_AudioDeviceID device);
 
         void play();
         void loop();

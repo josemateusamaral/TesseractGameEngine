@@ -1,6 +1,7 @@
 #include "tesseract.h"
 #include <stdio.h>
 #include <functional>
+#include <limits>
 
 Tesseract::Tesseract(int width, int height)
 {
