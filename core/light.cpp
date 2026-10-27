@@ -38,10 +38,6 @@ void AmbientLight::apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, fl
     outG += this->g;
     outB += this->b;
 }
-void AmbientLight::createShadowMapper()
-{
-    // ambient lights do not cast shadows in this implementation
-}
 
 
 
@@ -73,18 +69,6 @@ void DirectionalLight::apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG
     outR += r * intensity;
     outG += g * intensity;
     outB += b * intensity;
-}
-
-void DirectionalLight::createShadowMapper()
-{
-    this->shadowMapWidth = 640;
-    this->shadowMapHeight = 480;
-    this->shadowCamera = new Camera();
-    this->shadowCamera->setPos(Vec3(0, 0, 0));
-    this->shadowCamera->hpr.x = 1;
-    this->shadowCamera->hpr.y = 1;
-    this->shadowZBuffer = new float[shadowMapWidth * shadowMapHeight];
-    this->shadowEBuffer = new Model*[shadowMapWidth * shadowMapHeight];
 }
 
 
@@ -154,9 +138,4 @@ void PointLight::apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, floa
     outR += this->r * intensity;
     outG += this->g * intensity;
     outB += this->b * intensity;
-}
-
-void PointLight::createShadowMapper()
-{
-    // point lights do not cast shadows in this implementation
 }

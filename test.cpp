@@ -40,7 +40,7 @@ int main(int argc, char *args[])
 	engine.analitycs->fpsMeter->show();
 
 	// create ambient light
-	AmbientLight* ambientLight = new AmbientLight(0.4,0.4,0.4);
+	AmbientLight* ambientLight = new AmbientLight(0.1,0.1,0.1);
 	// create point light
 	PointLight* pointLight = new PointLight(0.6,0.6,0.6,-30,19,30);
 	// create directional light

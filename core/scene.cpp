@@ -7,11 +7,6 @@ Scene::Scene()
     qtdModels = 0;
     models = new Model*[modelsBufferSize]; 
 
-    //shadow casters details
-    shadowCastersBufferSize = 100;
-    qtdShadowCasters = 0;
-    shadowCasters = new Light*[shadowCastersBufferSize];
-
 }
 
 /**
@@ -27,16 +22,5 @@ void Scene::addModel(Model *model){
 
     models[qtdModels] = model;
     qtdModels++;
-
-}
-
-void Scene::addShadowCaster(Light *light){
-
-    shadowCasters[qtdShadowCasters] = light;
-    qtdShadowCasters++;
-    for(int i = 0; i < light->qtdAttachedModels; i++){
-        light->attachedModel[i]->shadowCast = true;
-        light->createShadowMapper();
-    }
 
 }

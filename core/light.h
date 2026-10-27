@@ -14,16 +14,9 @@ class Light
         int qtdAttachedModels;
         int attachedModelBufferSize = 100;
 
-        //shadow map details
-        int shadowMapWidth, shadowMapHeight;
-        Camera *shadowCamera;
-        float* shadowZBuffer;
-        Model** shadowEBuffer;
-
         Light();
         Light(float r, float g, float b);
         void attachModel(Model *model);
-        virtual void createShadowMapper() = 0;
         virtual ~Light();
 
         virtual void apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB, bool isTwoSided) = 0;
@@ -38,14 +31,12 @@ class AmbientLight : public Light
     public:
 
         AmbientLight(float r, float g, float b);
-
         void apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB, bool isTwoSided) override;
-        void createShadowMapper();
 
 };
 
 
-// create shadow maps for all models that cast shadows
+
 class DirectionalLight : public Light
 {
     public:
@@ -55,7 +46,6 @@ class DirectionalLight : public Light
 
         DirectionalLight(float r, float g, float b, float dirX, float dirY, float dirZ);
         void apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB, bool isTwoSided) override;
-        void createShadowMapper() override;
 
 };
 
@@ -69,7 +59,6 @@ class PointLight : public Light
         float attenuationFactor = 0.0001f;
 
         PointLight(float r, float g, float b, float x, float y, float z);
-
         void apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG, float &outB, bool isTwoSided) override;
-        void createShadowMapper() override;
+
 };

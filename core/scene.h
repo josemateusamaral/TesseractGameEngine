@@ -11,15 +11,10 @@ class Scene
         int qtdModels;
         int modelsBufferSize;
 
-        Light **shadowCasters;
-        int qtdShadowCasters;
-        int shadowCastersBufferSize;
-
         Scene();
         ~Scene();
 
         void addModel(Model *model);
-        void addShadowCaster(Light *light);
 
 };
 

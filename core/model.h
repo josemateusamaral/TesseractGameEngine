@@ -23,7 +23,6 @@ class Model
         int polygonCount;
         unsigned int* indices = nullptr;
         unsigned int indexCount;
-        bool* shadowMapBuffer = nullptr;
 
         //diffuse texture
         Texture* diffuseTexture = nullptr;
@@ -32,7 +31,6 @@ class Model
         int corR = 255;
         int corG = 255;
         int corB = 255;
-        bool shadowCast = false;
 
         int nVertices;
         Vec3 angulo;

@@ -66,16 +66,6 @@ void Tesseract::run(function<void()> userUpdate) {
 
     float updateFPSCount = 0.0;
 
-    // create shadow maps for all models that cast shadows
-    int shadowMapWidth = this->window->getWidth();
-    int shadowMapHeight = this->window->getHeight();
-    Camera *shadowCamera = new Camera();
-    shadowCamera->setPos(Vec3(0, 0, 0));
-    shadowCamera->hpr.x = 1;
-    shadowCamera->hpr.y = 1;
-    float* shadowZBuffer = new float[shadowMapWidth * shadowMapHeight];
-    Model** shadowEBuffer = new Model*[shadowMapWidth * shadowMapHeight];
-
     while (!this->quit) {
 
         // process inputs
@@ -88,22 +78,6 @@ void Tesseract::run(function<void()> userUpdate) {
 
         // clear color buffer and z buffer
         this->window->clean();
-        
-        // create shadow maps
-        if(this->scene->qtdShadowCasters > 0){
-            
-            for(int i = 0; i < this->scene->qtdShadowCasters; i++){
-                
-                Light* light = this->scene->shadowCasters[i];
-                std::fill(light->shadowZBuffer, light->shadowZBuffer + (light->shadowMapWidth * light->shadowMapHeight), std::numeric_limits<float>::infinity());
-                
-                for(int i = 0; i < this->scene->qtdModels; i++){
-                    Model* model = this->scene->models[i];
-                    std::fill(model->shadowMapBuffer,model->shadowMapBuffer + (100*100),false);
-                    this->renderer->createShadowMap(light->shadowCamera, light->shadowZBuffer, light->shadowEBuffer, model, light->shadowMapWidth, light->shadowMapHeight);
-                }
-            }
-        }
 
         // render scene
         for(int i = 0; i < this->scene->qtdModels; i++){
