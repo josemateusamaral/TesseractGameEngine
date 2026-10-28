@@ -11,6 +11,8 @@ class Window
         SDL_Window* window = NULL;   
         SDL_Texture* texture;
         uint32_t backgroundColor;
+        bool vsync;
+        bool fullscreen;
 
     public:
 
@@ -18,8 +20,8 @@ class Window
         float* zBuffer;
         uint32_t* colorBuffer;
         
-
-        Window(int width,int height);
+        Window(int width, int height, bool vsync = true, bool fullscreen = false);
+        
         ~Window();
 
         SDL_Window* getWindow();
@@ -28,6 +30,12 @@ class Window
         int getWidth();
         int getHeight();
         void setBackgroundColor(uint8_t r, uint8_t g, uint8_t b);
+
+        void setVSync(bool enabled);
+        void setFullscreen(bool enabled);
+
+        bool isVSyncEnabled();
+        bool isFullscreen();
 
 };
 

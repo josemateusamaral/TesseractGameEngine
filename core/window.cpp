@@ -9,14 +9,50 @@
  * @param width Largura em pixel
  * @param height Altura em pixel
  */
-Window::Window(int width,int height)
-:width{width}, height{height}
+Window::Window(int width, int height, bool vsync, bool fullscreen)
+    : width{width},
+      height{height},
+      vsync{vsync},
+      fullscreen{fullscreen}
 {
+    Uint32 windowFlags = SDL_WINDOW_SHOWN;
 
-    window = SDL_CreateWindow( "Tesseract Game Engine", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN );
-    renderer = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED);
-    zBuffer = new float[width*height];
-    colorBuffer = new uint32_t[width*height*3];
+    if (fullscreen)
+        windowFlags |= SDL_WINDOW_FULLSCREEN;
+
+    window = SDL_CreateWindow(
+        "Tesseract Game Engine",
+        SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_UNDEFINED,
+        width,
+        height,
+        windowFlags
+    );
+
+    if (!window)
+    {
+        std::cout << "SDL_CreateWindow Error: "
+                  << SDL_GetError() << std::endl;
+        return;
+    }
+
+    //create renderer
+    Uint32 rendererFlags = SDL_RENDERER_ACCELERATED;
+    if (vsync)
+        rendererFlags |= SDL_RENDERER_PRESENTVSYNC;
+    renderer = SDL_CreateRenderer(window, -1, rendererFlags);
+    if (!renderer)
+    {
+        std::cout << "SDL_CreateRenderer Error: "
+                  << SDL_GetError() << std::endl;
+        return;
+    }
+
+    //create buffers
+    zBuffer = new float[width * height];
+    colorBuffer = new uint32_t[width * height];
+
+    //create texture
     texture = SDL_CreateTexture(
         renderer,
         SDL_PIXELFORMAT_ARGB8888,
@@ -24,8 +60,9 @@ Window::Window(int width,int height)
         width,
         height
     );
-    backgroundColor = (255 << 24) | (255 << 16) | (255 << 8) | 255;
 
+    //set background color Uint32
+    backgroundColor = (255 << 24) | (255 << 16) | (255 << 8) |255;
 }
 
 /**
@@ -73,12 +110,71 @@ SDL_Window* Window::getWindow(){
     return this->window;
 }
 
-Window::~Window()
-{
-    SDL_DestroyWindow(window);
-}
-
 void Window::setBackgroundColor(uint8_t r, uint8_t g, uint8_t b){
     backgroundColor = (255 << 24) | (r << 16) | (g << 8) | b;
 }
 
+void Window::setVSync(bool enabled)
+{
+    if (vsync == enabled)
+        return;
+
+    vsync = enabled;
+
+    SDL_DestroyRenderer(renderer);
+
+    Uint32 rendererFlags = SDL_RENDERER_ACCELERATED;
+
+    if (vsync)
+        rendererFlags |= SDL_RENDERER_PRESENTVSYNC;
+
+    renderer = SDL_CreateRenderer(window, -1, rendererFlags);
+
+    if (!renderer)
+    {
+        std::cout << "SDL_CreateRenderer Error: "
+                  << SDL_GetError() << std::endl;
+        return;
+    }
+
+    texture = SDL_CreateTexture(
+        renderer,
+        SDL_PIXELFORMAT_ARGB8888,
+        SDL_TEXTUREACCESS_STREAMING,
+        width,
+        height
+    );
+}
+
+bool Window::isVSyncEnabled()
+{
+    return vsync;
+}
+
+void Window::setFullscreen(bool enabled)
+{
+    if (fullscreen == enabled)
+        return;
+
+    fullscreen = enabled;
+
+    if (fullscreen)
+        SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    else
+        SDL_SetWindowFullscreen(window, 0);
+}
+
+bool Window::isFullscreen()
+{
+    return fullscreen;
+}
+
+Window::~Window()
+{
+    SDL_DestroyTexture(texture);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+
+    delete[] zBuffer;
+    delete[] colorBuffer;
+}

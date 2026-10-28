@@ -32,7 +32,7 @@ int main(int argc, char *args[])
 		printf("Failed to start Tesseract Game Engine !");
 		return -1;
 	}
-	engine.window->setBackgroundColor(0,0,0); // sky blue
+	engine.window->setBackgroundColor(0,0,0);
 	engine.setCaptureMouse(true);
 	engine.camera->setPos(Vec3(-6.2,35,21));
 	engine.camera->hpr = Vec3(11,90,0);
@@ -40,7 +40,7 @@ int main(int argc, char *args[])
 	engine.analitycs->fpsMeter->show();
 
 	// create ambient light
-	AmbientLight* ambientLight = new AmbientLight(1,1,1);
+	AmbientLight* ambientLight = new AmbientLight(0.4,0.4,0.4);
 	// create point light
 	PointLight* pointLight = new PointLight(0.6,0.6,0.6,-30,19,30);
 	// create directional light
