@@ -10,10 +10,7 @@
  * @param height Altura em pixel
  */
 Window::Window(int width, int height, bool vsync, bool fullscreen)
-    : width{width},
-      height{height},
-      vsync{vsync},
-      fullscreen{fullscreen}
+    : width{width},height{height},vsync{vsync},fullscreen{fullscreen}
 {
     Uint32 windowFlags = SDL_WINDOW_SHOWN;
 

@@ -47,7 +47,7 @@ int main(int argc, char *args[])
 	DirectionalLight* directionalLight = new DirectionalLight(0.6,0.6,0.6,0,0,-1);
 
 	//create table
-	Model* table = new Model("samples/model_loading/table.glb");
+	Model* table = new Model("samples/FPS_Camera/assets/models/table.glb");
 	table->setPos(-30, -13, 30);
 	table->setScale(18);
 	engine.scene->addModel(table);
@@ -55,20 +55,20 @@ int main(int argc, char *args[])
 	table->setLight(pointLight);
 
 	//create radio
-	Model* radio = new Model("samples/model_loading/radio.glb");
+	Model* radio = new Model("samples/FPS_Camera/assets/models/radio.glb");
 	radio->setPos(-30, 19, 30);
 	radio->setScale(20);
 	radio->rotate(0, 90, 0);
 	engine.scene->addModel(radio);
 	radio->setLight(ambientLight);
 	radio->setLight(pointLight);
-	Audio *audio = new Audio("samples/audio_loading/radio_broadcast.wav");
+	Audio *audio = new Audio("samples/FPS_Camera/assets/audios/radio_broadcast.wav");
 	audio->setPos(new Vec3(-30, 21, 30));
 	audio->volume = 0.5;
 	engine.audio->addElement(audio);
 
 	//create interior
-	Model* model = new Model("samples/model_loading/interior.glb");
+	Model* model = new Model("samples/FPS_Camera/assets/models/interior.glb");
 	model->setPos(0, 45, 40);
 	model->setScale(140);
 	model->rotate(0, 90, 0);
@@ -78,7 +78,7 @@ int main(int argc, char *args[])
 	model->setLight(ambientLight);
 
 	//create ground
-	Model* ground = new Model("samples/model_loading/ground_plane.glb");
+	Model* ground = new Model("samples/FPS_Camera/assets/models/ground_plane.glb");
 	ground->setPos(-30, -12, 30);
 	ground->setScale(200);
 	engine.scene->addModel(ground);
@@ -187,7 +187,6 @@ int main(int argc, char *args[])
 			engine.camera->hpr.y = 1;
 
 	});
-
 
 	// game loop
 	engine.run([&]() {
