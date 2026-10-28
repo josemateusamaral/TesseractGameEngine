@@ -3,6 +3,10 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "vendor/stb_image.h"
 
+Texture::Texture(){
+    
+}
+
 Texture::Texture(unsigned char* data, int width, int height)
     : data(data), width(width), height(height) {}
 

@@ -1,6 +1,5 @@
 #include "camera.h"
 #include <cmath>
-#include "math.h"
 
 //Definicao do ponteiro para a classe Singleton.
 Camera *Camera::camera = nullptr;

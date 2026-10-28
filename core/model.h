@@ -24,8 +24,10 @@ class Model
         unsigned int* indices = nullptr;
         unsigned int indexCount;
 
-        //diffuse texture
-        Texture* diffuseTexture = nullptr;
+        //textures
+        Texture** diffuseTextures;
+        int qtdTextures;
+        int* textureIndexes;
 
         int renderType = 3;
         int corR = 255;

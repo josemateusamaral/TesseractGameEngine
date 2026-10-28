@@ -38,7 +38,7 @@ bool Model::getBackfaceCulling(){
 void Model::loadModel(string path)
 {
 
-    printf("\nLoading model: %s\n",path.c_str());
+    printf("\n--- LOADING MODEL ---\nPath: %s\n",path.c_str());
 
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(path,aiProcess_Triangulate |aiProcess_FlipUVs);
@@ -55,6 +55,7 @@ void Model::loadModel(string path)
     }
 
     printf("Meshs found: %d\n",scene->mNumMeshes);
+    printf("Materials found: %d\n",scene->mNumMaterials);
 
     //calculate vertices amount
     unsigned int totalVertices = 0;
@@ -75,6 +76,11 @@ void Model::loadModel(string path)
     this->uvs = new Vec3[nVertices];
     this->polygonCount = totalFaces;
 
+    this->diffuseTextures = new Texture*[scene->mNumMaterials];
+    this->qtdTextures = scene->mNumMaterials;
+    this->textureIndexes = new int[totalFaces];
+    int textureIndexPos = 0;
+
     //indexes
     this->indexCount = totalFaces * 3;
     this->indices = new unsigned int[indexCount];
@@ -88,6 +94,7 @@ void Model::loadModel(string path)
 
         aiMesh* mesh = scene->mMeshes[m];
         printf("Loading mesh %d: %d vertices, %d faces\n",m,mesh->mNumVertices,mesh->mNumFaces);
+        printf("Material index: %d\n",mesh->mMaterialIndex);
 
         //load vertices and uvs
         for (unsigned int i = 0; i < mesh->mNumVertices; i++)
@@ -119,6 +126,8 @@ void Model::loadModel(string path)
         for (unsigned int i = 0; i < mesh->mNumFaces; i++)
         {
             aiFace face = mesh->mFaces[i];
+            this->textureIndexes[textureIndexPos] = mesh->mMaterialIndex;
+            textureIndexPos++;
 
             if (face.mNumIndices != 3)
                 continue;
@@ -129,15 +138,14 @@ void Model::loadModel(string path)
         }
 
         vertexOffset += mesh->mNumVertices;
+
     }
 
+    for(int i = 0; i < scene->mNumMaterials; i++){
 
-    //load texture
-    aiMesh* firstMesh = scene->mMeshes[0];
+        printf("Loading material: %d\n",i);
 
-    if (scene->mNumMaterials > 0)
-    {
-        aiMaterial* material = scene->mMaterials[firstMesh->mMaterialIndex];
+        aiMaterial* material = scene->mMaterials[i];
         aiString str;
 
         if (material->GetTexture(aiTextureType_DIFFUSE,0,&str) == AI_SUCCESS){
@@ -165,26 +173,28 @@ void Model::loadModel(string path)
             }
 
             if (data){
-                this->diffuseTexture = new Texture((unsigned char*)data, width, height);
+                this->diffuseTextures[i] = new Texture((unsigned char*)data, width, height);
                 printf("(%dx%d) difusseTexture loaded\n",width,height);
             }
             else{
-                printf("Error loading texture: %s\n",stbi_failure_reason());
+                printf("Error loading texture from material %d: %s\nApplying default texture for material %d.\n",i,stbi_failure_reason(),i);
             }
         }
         else
         {
-            printf("Warning: No texture found.\n");
+            printf("Warning: No texture found on material %d.\nApplying default texture for material %d.\n",i,i);
         }
-    }
 
+    }
+    
     printf(
-        "Model '%s' loaded - %d meshes, %d vertices, %d faces\n",
-        path.c_str(),
+        "Total loaded: %d meshes, %d vertices, %d faces, %d materials\n",
         scene->mNumMeshes,
         this->nVertices,
-        this->polygonCount
+        this->polygonCount,
+        this->qtdTextures
     );
+    printf("--- MODEL LOADED ---\n\n");
 
 }
 

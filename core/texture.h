@@ -12,6 +12,7 @@ class Texture
         int width;
         int height;
 
+        Texture();
         Texture(unsigned char* data, int width, int height);
         Texture(string path);
 

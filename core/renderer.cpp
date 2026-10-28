@@ -91,11 +91,9 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
             maxRight = p2.x;
         }
         if(maxRight >= windowWidth) maxRight = windowWidth - 1;
-
+        
+        //discart poligon out of the screen or the size of 1 pixel
         if((maxRight - maxLeft) * (topY - bottomY) < 1) continue;
-
-        // screen space test
-        //if(!model->screenSpaceBuffer[i0] && !model->screenSpaceBuffer[i1] && !model->screenSpaceBuffer[i2]){
 
         //polygon
         Vec3 v0 = model->vertices[i0];
@@ -134,6 +132,9 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
                 continue;
             }
         }
+
+        // texture index
+        int textureIndex = model->textureIndexes[i/3];
     
         this->drawTexturedPolygon(
             //window
@@ -151,9 +152,9 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
             model->uvs[i1],
             model->uvs[i2],
             //texture
-            (unsigned char*)model->diffuseTexture->data,
-            model->diffuseTexture->width,
-            model->diffuseTexture->height,
+            (unsigned char*)model->diffuseTextures[textureIndex]->data,
+            model->diffuseTextures[textureIndex]->width,
+            model->diffuseTextures[textureIndex]->height,            
             //lights
             model->lights,
             model->nLights,
@@ -163,6 +164,7 @@ void Renderer::render(Model *model, Window *window, Camera *camera) {
             maxRight,
             !model->getBackfaceCulling()
         );
+
     }
 
 }

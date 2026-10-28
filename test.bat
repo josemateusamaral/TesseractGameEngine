@@ -4,7 +4,7 @@ echo -- CLEANING --
 
 if exist test.exe del /q test.exe
 if exist CMakeCache.txt del /q CMakeCache.txt
-if exist CMakeFiles rmdir /s /q CMakeFiles
+::if exist CMakeFiles rmdir /s /q CMakeFiles
 if exist Makefile del /q Makefile
 
 echo.
