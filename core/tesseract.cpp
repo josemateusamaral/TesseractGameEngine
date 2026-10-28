@@ -58,7 +58,6 @@ bool Tesseract::isRunning(){
     return this->initialized && !this->quit;
 }
 
-
 void Tesseract::run(function<void()> userUpdate) {
 
     Uint32 lastFrameTicktime = SDL_GetTicks();

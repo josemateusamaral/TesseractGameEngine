@@ -77,7 +77,7 @@ class Text : public GUIElement
 {
     public:
 
-        Text(std::string text, const char* fontPath = "core/assets/fonts/opensans.ttf");
+        Text(std::string text, const char* fontPath = "assets/engine_assets/fonts/opensans.ttf");
         ~Text();
         
         void render( uint32_t* colorBuffer, int bufferWidth, int bufferHeight);
@@ -90,7 +90,7 @@ class Button : public GUIElement
 {
     public:
 
-        Button(std::string text, const char* fontPath = "core/assets/fonts/opensans.ttf");
+        Button(std::string text, const char* fontPath = "assets/engine_assets/fonts/opensans.ttf");
         ~Button();
         
         void render( uint32_t* colorBuffer, int bufferWidth, int bufferHeight);
