@@ -36,6 +36,7 @@ int main(int argc, char *args[])
 	engine.setCaptureMouse(true);
 	engine.camera->setPos(Vec3(-6.2,35,21));
 	engine.camera->hpr = Vec3(11,90,0);
+	engine.window->setVSync(false);
 
 	engine.analitycs->fpsMeter->show();
 

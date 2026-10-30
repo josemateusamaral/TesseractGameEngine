@@ -1,6 +1,6 @@
+#include <bits/stdc++.h>
 #include "window.h"
 #include "Vec3.h"
-#include <bits/stdc++.h>
 #include "light.h"
 
 /**
