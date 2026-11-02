@@ -25,11 +25,7 @@ int main(int argc, char *args[])
 	engine.camera->hpr = Vec3(23.929991,66.240021,0);
 
 	// create ambient light
-	AmbientLight* ambientLight = new AmbientLight(0.4,0.4,0.4);
-	// create point light
-	PointLight* pointLight = new PointLight(0.6,0.6,0.6,-30,19,30);
-	// create directional light
-	DirectionalLight* directionalLight = new DirectionalLight(0.6,0.6,0.6,0,0,-1);
+	AmbientLight* ambientLight = new AmbientLight(1,1,1);
 
 	//create ground
 	Model* ground = new Model("assets/models/polygon.glb");
@@ -37,7 +33,6 @@ int main(int argc, char *args[])
 	ground->setScale(60);
 	engine.scene->addModel(ground);
 	ground->setLight(ambientLight);
-	ground->setLight(pointLight);
 	
 	// bind keys
 	engine.input->bindKey("escape", "release", [&engine]() {
