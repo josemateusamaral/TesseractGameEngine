@@ -2,12 +2,6 @@
   The engine is in its beginning state, so it will take some time to be really useful.<br><br>
   The engine was born in the course of computer science at the Instituto Federal Catarinense on the campus of Blumenau. It was initially intended to be an assessment method for object-oriented programming.<br><br>
 
-  ## Screenshots
-  ![Tesseract Game Engine Screenshot](samples/renders/Screenshot_1.png)
-  ![Tesseract Game Engine Screenshot](samples/renders/Screenshot_4.png)
-  ![Tesseract Game Engine Screenshot](samples/renders/Screenshot_2.png)
-  ![Tesseract Game Engine Screenshot](samples/renders/Screenshot_3.png)
-
 
   <br>
   
