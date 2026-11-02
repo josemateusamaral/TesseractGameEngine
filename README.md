@@ -21,8 +21,8 @@
       __> pacman -S mingw-w64-ucrt-x86_64-assimp<br>
       __> pacman -S mingw-w64-ucrt-x86_64-SDL2_ttf<br>
   - Then add the path C:\msys64\ucrt64\bin to your environment variables.<br>
-  - Now you should be able to run the command bellow to run the test.cpp example and also use tools like gcc and g++. This is the easiest way to start working on windows without have to set too many things.<br>
-      __> ./test.bat<br>
+  - Now you should be able to run the command bellow inside one of the sample projects folders to run the main.cpp of the sample and also use tools like gcc and g++. This is the easiest way to start working on windows without have to set too many things.<br>
+      __> ./build.bat<br>
 
 <br><br>
 RUN TEST SAMPLE ON UBUNTU<br>
@@ -32,8 +32,8 @@ RUN TEST SAMPLE ON UBUNTU<br>
       __> sudo apt install libsdl2-dev<br>
       __> sudo apt install libassimp-dev<br>
       __> sudo apt install libsdl2-ttf-dev<br>
-  - Now you should be able to run the command bellow to run the test.cpp example. This is the easiest way to start working on Ubuntu without have to set too many things.<br>
-      __> sh ./test.sh<br>
+  - Now you should be able to run the command bellow  inside one of the sample projects folders to run the main.cpp example. This is the easiest way to start working on Ubuntu without have to set too many things.<br>
+      __> sh ./build.sh<br>
 
 
 
