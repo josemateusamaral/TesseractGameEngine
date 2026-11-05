@@ -61,6 +61,12 @@ void DirectionalLight::apply(Vec3 p1, Vec3 p2, Vec3 p3, float &outR, float &outG
     Vec3 lightDir(dirX, dirY, dirZ);
     lightDir = lightDir.versor();
 
+    if (isTwoSided){
+        if(normal.produto_escalar(lightDir) < 0.0f){
+            normal = normal * -1.0f;
+        }
+    }
+
     // Lambert
     float intensity = normal.produto_escalar(lightDir);
     intensity = std::max(0.0f, intensity);

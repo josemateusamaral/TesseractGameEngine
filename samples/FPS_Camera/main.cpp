@@ -53,7 +53,7 @@ int main(int argc, char *args[])
 	table->setScale(18);
 	engine.scene->addModel(table);
 	table->setLight(ambientLight);
-	table->setLight(pointLight);
+	table->setLight(directionalLight);
 
 	//create radio
 	Model* radio = new Model("assets/models/radio.glb");
@@ -62,7 +62,7 @@ int main(int argc, char *args[])
 	radio->rotate(0, 90, 0);
 	engine.scene->addModel(radio);
 	radio->setLight(ambientLight);
-	radio->setLight(pointLight);
+	radio->setLight(directionalLight);
 	Audio *audio = new Audio("assets/audios/radio_broadcast.wav");
 	audio->setPos(new Vec3(-30, 21, 30));
 	audio->volume = 0.5;
@@ -75,7 +75,7 @@ int main(int argc, char *args[])
 	model->rotate(0, 90, 0);
 	model->setBackfaceCulling(false);
 	engine.scene->addModel(model);
-	model->setLight(pointLight);
+	model->setLight(directionalLight);
 	model->setLight(ambientLight);
 
 	//create ground
@@ -84,7 +84,7 @@ int main(int argc, char *args[])
 	ground->setScale(200);
 	engine.scene->addModel(ground);
 	ground->setLight(ambientLight);
-	ground->setLight(pointLight);
+	ground->setLight(directionalLight);
 
 	//create text
 	Text *information = new Text("[ F ] interact");
