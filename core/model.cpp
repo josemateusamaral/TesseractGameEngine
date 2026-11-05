@@ -177,6 +177,9 @@ void Model::loadModel(string path)
                 printf("(%dx%d) difusseTexture loaded\n",width,height);
             }
             else{
+                unsigned char* whitePixel = new unsigned char[3]{255, 255, 255};
+                this->diffuseTextures[i] = new Texture(whitePixel, 1, 1);
+                stbi_image_free(data);
                 printf("Error loading texture from material %d: %s\nApplying default texture for material %d.\n",i,stbi_failure_reason(),i);
             }
         }
