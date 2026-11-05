@@ -185,6 +185,10 @@ void Model::loadModel(string path)
         }
         else
         {
+            unsigned char* data = nullptr;
+            unsigned char* whitePixel = new unsigned char[3]{255, 255, 255};
+            this->diffuseTextures[i] = new Texture(whitePixel, 1, 1);
+            stbi_image_free(data);
             printf("Warning: No texture found on material %d.\nApplying default texture for material %d.\n",i,i);
         }
 
