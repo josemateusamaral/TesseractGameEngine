@@ -34,7 +34,7 @@ if not exist "%BUILD_DIR%" mkdir "%BUILD_DIR%"
 echo.
 echo -- CONFIGURING %BUILD_TYPE% BUILD --
 
-cmake -S . -B "%BUILD_DIR%" -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B "%BUILD_DIR%" -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=%BUILD_TYPE%
 
 if errorlevel 1 (
     echo.

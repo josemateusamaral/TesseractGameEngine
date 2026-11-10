@@ -174,14 +174,14 @@ int main(int argc, char *args[])
 	engine.input->bindMouseMotion([&engine]() {
 
 		//rotate camera left and right using mouse movement
-		engine.camera->hpr.x += engine.input->mouseMotionVector->y * 0.01 * engine.deltaTime;
+		engine.camera->hpr.x += engine.input->mouseMotionVector->y * 0.1;
 		if(engine.camera->hpr.x == 0) 
 			engine.camera->hpr.x = 360;
 		if(engine.camera->hpr.x > 360)
 			engine.camera->hpr.x = 1;
 		
 		//rotate camera up and down using mouse movement
-		engine.camera->hpr.y += engine.input->mouseMotionVector->x * 0.01 * engine.deltaTime;
+		engine.camera->hpr.y += engine.input->mouseMotionVector->x * 0.1;
 		if(engine.camera->hpr.y == 0) 
 			engine.camera->hpr.y = 360;
 		if(engine.camera->hpr.y > 360)
